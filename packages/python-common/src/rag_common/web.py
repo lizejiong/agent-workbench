@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.exceptions import HTTPException
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from .context import request_id_context
@@ -90,7 +90,9 @@ async def _validation_error(
     )
 
 
-async def _http_error(request: Request, exc: HTTPException) -> JSONResponse:
+async def _http_error(request: Request, exc: HTTPException) -> Response:
+    if exc.status_code < 200 or exc.status_code in {204, 205, 304}:
+        return Response(status_code=exc.status_code, headers=exc.headers)
     category = ServiceError if exc.status_code >= 500 else ClientError
     return _error_response(
         request,

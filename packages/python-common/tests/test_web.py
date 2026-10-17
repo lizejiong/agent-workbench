@@ -2,6 +2,7 @@ import asyncio
 import logging
 import re
 
+import h11
 import httpx
 import pytest
 from fastapi import FastAPI, HTTPException, Request
@@ -58,6 +59,14 @@ def app():
     async def plain():
         return PlainTextResponse("original")
 
+    @application.get("/status/{status_code}")
+    async def status_response(status_code: int):
+        raise HTTPException(
+            status_code,
+            "status detail",
+            headers={"X-Custom": "preserved", "X-Request-Id": "conflict"},
+        )
+
     return application
 
 
@@ -113,6 +122,62 @@ async def test_errors_have_matching_header_and_body_ids(
     if path == "/error/http":
         assert response.headers["retry-after"] == "3"
     assert get_request_id() is None
+
+
+@pytest.mark.parametrize("status", [100, 101, 199, 204, 205, 304])
+async def test_http_bodyless_statuses_preserve_headers_with_empty_body(app, status):
+    messages = []
+    await app(
+        make_scope(
+            path=f"/status/{status}",
+            headers=[(b"x-request-id", b"bodyless-request")],
+        ),
+        AsyncReceive(),
+        collect_into(messages),
+    )
+    start = messages[0]
+    assert start["type"] == "http.response.start"
+    assert start["status"] == status
+    headers = dict(start["headers"])
+    assert headers[b"x-custom"] == b"preserved"
+    assert headers[b"x-request-id"] == b"bodyless-request"
+    body_frames = messages[1:]
+    assert body_frames
+    assert all(frame["type"] == "http.response.body" for frame in body_frames)
+    assert all(frame.get("body", b"") == b"" for frame in body_frames)
+    assert not body_frames[-1].get("more_body", False)
+    assert get_request_id() is None
+
+
+@pytest.mark.parametrize("status", [204, 304])
+async def test_bodyless_http_statuses_serialize_with_h11(app, status):
+    messages = []
+    await app(
+        make_scope(path=f"/status/{status}"), AsyncReceive(), collect_into(messages)
+    )
+    connection = h11.Connection(h11.SERVER)
+    connection.receive_data(b"GET / HTTP/1.1\r\nHost: test\r\n\r\n")
+    assert isinstance(connection.next_event(), h11.Request)
+    assert isinstance(connection.next_event(), h11.EndOfMessage)
+    for message in messages:
+        if message["type"] == "http.response.start":
+            connection.send(
+                h11.Response(status_code=message["status"], headers=message["headers"])
+            )
+        else:
+            connection.send(h11.Data(data=message.get("body", b"")))
+            if not message.get("more_body", False):
+                connection.send(h11.EndOfMessage())
+    assert connection.our_state is h11.DONE
+
+
+@pytest.mark.parametrize("status", [200, 203, 206, 303, 305])
+async def test_adjacent_http_statuses_keep_result_body(client, status):
+    response = await client.get(f"/status/{status}")
+    assert response.status_code == status
+    assert response.json()["message"] == "status detail"
+    assert response.json()["requestId"] == response.headers["x-request-id"]
+    assert response.headers["x-custom"] == "preserved"
 
 
 @pytest.mark.parametrize(
@@ -250,15 +315,15 @@ async def test_unexpected_error_logs_diagnostic(client, caplog):
     assert any(record.exc_info for record in caplog.records)
 
 
-def make_scope(*, headers=None, scope_type="http"):
+def make_scope(*, path="/stream", headers=None, scope_type="http"):
     return {
         "type": scope_type,
         "asgi": {"version": "3.0", "spec_version": "2.4"},
         "http_version": "1.1",
         "method": "GET",
         "scheme": "http",
-        "path": "/stream",
-        "raw_path": b"/stream",
+        "path": path,
+        "raw_path": path.encode(),
         "query_string": b"",
         "root_path": "",
         "headers": headers or [],
