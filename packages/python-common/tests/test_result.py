@@ -1,8 +1,9 @@
 import json
 import re
+from contextlib import nullcontext
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from rag_common import ClientError, RemoteError, Result, ServiceError, get_request_id
 from rag_common.context import request_id_context
@@ -51,6 +52,55 @@ def test_blank_explicit_request_ids_fall_back(request_id):
     assert re.fullmatch(
         r"[a-f0-9]{32}", Result.success(request_id=request_id).request_id
     )
+
+
+@pytest.mark.parametrize("context_id", [None, "current"])
+@pytest.mark.parametrize(
+    "request_fields",
+    [
+        {},
+        {"request_id": None},
+        {"request_id": ""},
+        {"request_id": " \t"},
+        {"requestId": None},
+        {"requestId": ""},
+        {"requestId": " \t"},
+    ],
+)
+def test_constructor_and_validation_resolve_missing_or_blank_ids(
+    context_id, request_fields
+):
+    payload = {"code": "0", "message": "success", **request_fields}
+    with request_id_context(context_id) if context_id else nullcontext():
+        for result in (Result(**payload), Result.model_validate(payload)):
+            if context_id is None:
+                assert re.fullmatch(r"[a-f0-9]{32}", result.request_id)
+            else:
+                assert result.request_id == context_id
+            assert result.model_dump() == {
+                "code": "0",
+                "message": "success",
+                "data": None,
+                "requestId": result.request_id,
+            }
+    assert get_request_id() is None
+
+
+@pytest.mark.parametrize("field", ["request_id", "requestId"])
+def test_constructor_and_validation_preserve_explicit_ids(field):
+    payload = {"code": "0", "message": "success", field: " explicit "}
+    with request_id_context("current"):
+        assert Result(**payload).request_id == " explicit "
+        assert Result.model_validate(payload).request_id == " explicit "
+
+
+@pytest.mark.parametrize("value", [42, False, [], {}])
+def test_constructor_and_validation_reject_invalid_id_types(value):
+    payload = {"code": "0", "message": "success", "requestId": value}
+    with pytest.raises(ValidationError):
+        Result(**payload)
+    with pytest.raises(ValidationError):
+        Result.model_validate(payload)
 
 
 def test_context_resets_after_exception():

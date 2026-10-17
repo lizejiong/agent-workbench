@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .context import get_request_id
 
@@ -21,6 +21,13 @@ class Result[T](BaseModel):
     message: str
     data: T | None = None
     request_id: str = Field(default_factory=_resolve_request_id, alias="requestId")
+
+    @field_validator("request_id", mode="before")
+    @classmethod
+    def _normalize_request_id(cls, value: object) -> object:
+        if value is None or isinstance(value, str):
+            return _resolve_request_id(value)
+        return value
 
     @classmethod
     def success(
