@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling>=1.32,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rag-common"
+version = "0.1.0"
+description = "RAG 服务共享的轻量 FastAPI 契约、请求上下文与可选 Redis 缓存"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["fastapi>=0.115,<1", "pydantic>=2.11,<3"]
+
+[project.optional-dependencies]
+redis = ["redis>=8.1,<9"]
+
+[dependency-groups]
+dev = ["pytest>=9,<10", "pytest-asyncio>=1.4,<2", "httpx>=0.28,<1", "ruff>=0.17,<1"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rag_common"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]

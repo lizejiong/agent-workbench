@@ -1,11 +1,11 @@
 # RAG Agent 项目
 
-当前仓库包含 Java 公共组件和服务目录骨架。
+当前仓库包含 Java 公共组件、Python 公共包和服务目录骨架。
 
 ```text
 packages/
   java-starters/       Java 公共组件（Maven 多模块）
-  python-common/       FastAPI 公共包目录
+  python-common/       FastAPI 公共包（响应契约、请求上下文、可选 Redis 缓存）
 services/
   ai-service/          独立 Java AI 服务目录
   backend/             Java 业务后端目录
@@ -36,4 +36,10 @@ sh ./mvnw -B -Dmaven.repo.local=.cache/maven/repository verify
 
 首次构建需要下载 Maven（未缓存时）及依赖。上述命令将依赖缓存存放在忽略目录 `.cache/maven/repository`。Java 服务初始化后，通过 `<parent>` 继承根 POM 并按需引用组件；仅放入 `<modules>` 不会自动形成继承或引入依赖。
 
-六个组件的职责、使用方式、配置和上游来源见 [Java 公共组件说明](packages/java-starters/README.md)。业务服务、Python 和前端尚未创建工程内部结构。
+六个组件的职责、使用方式、配置和上游来源见 [Java 公共组件说明](packages/java-starters/README.md)。
+
+## Python 公共包
+
+Python 3.12+，从仓库根目录运行 `pip install -e "./packages/python-common[redis]"`；无需 Redis 时去掉 `[redis]`。FastAPI 示例、缓存生命周期与开发验证命令见 [Python 公共包说明](packages/python-common/README.md)。
+
+业务服务和前端仍为目录占位，尚未创建工程内部结构。

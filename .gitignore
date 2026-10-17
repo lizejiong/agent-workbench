@@ -32,6 +32,12 @@ __pycache__/
 .venv/
 venv/
 env/
+*.egg-info/
+build/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
 
 # Operating system files
 .DS_Store
