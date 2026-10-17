@@ -1,0 +1,39 @@
+# Local dependency and build caches
+.cache/
+**/target/
+**/node_modules/
+**/dist/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+*.swp
+*.swo
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
