@@ -1,0 +1,92 @@
+server:
+  port: ${AI_PORT:8081}
+spring:
+  application:
+    name: rag-ai-service
+  codec:
+    max-in-memory-size: 16MB
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+ai:
+  enabled: ${AI_ENABLED:true}
+  providers:
+    bailian:
+      kind: BAILIAN
+      base-url: ${BAILIAN_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      api-key: ${BAILIAN_API_KEY:}
+      rerank-url: ${BAILIAN_RERANK_URL:https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank}
+    deepseek:
+      kind: DEEPSEEK
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      api-key: ${DEEPSEEK_API_KEY:}
+    siliconflow:
+      kind: SILICONFLOW
+      base-url: ${SILICONFLOW_BASE_URL:https://api.siliconflow.cn/v1}
+      api-key: ${SILICONFLOW_API_KEY:}
+      rerank-url: ${SILICONFLOW_RERANK_URL:https://api.siliconflow.cn/v1/rerank}
+  models:
+    qwen-chat:
+      provider: bailian
+      model: ${BAILIAN_CHAT_MODEL:qwen-plus}
+      capabilities: [CHAT, THINKING, TOOLS, JSON]
+      max-output-tokens: 8192
+    qwen-vision:
+      provider: bailian
+      model: ${BAILIAN_VISION_MODEL:qwen3-vl-plus}
+      capabilities: [CHAT, VISION, THINKING]
+      max-output-tokens: 8192
+    deepseek-chat:
+      provider: deepseek
+      model: ${DEEPSEEK_CHAT_MODEL:deepseek-flash}
+      capabilities: [CHAT, THINKING, TOOLS, JSON]
+      max-output-tokens: 8192
+    silicon-chat:
+      provider: siliconflow
+      model: ${SILICONFLOW_CHAT_MODEL:Qwen/Qwen3-8B}
+      capabilities: [CHAT, THINKING, TOOLS, JSON]
+      max-output-tokens: 8192
+    qwen-embed:
+      provider: bailian
+      model: ${BAILIAN_EMBED_MODEL:text-embedding-v4}
+      capabilities: [EMBEDDING]
+      dimensions: 1024
+      allowed-dimensions: [64, 128, 256, 512, 768, 1024, 1536, 2048]
+      embedding-space: bailian-text-embedding-v4
+      batch-size: 10
+    silicon-embed:
+      provider: siliconflow
+      model: ${SILICONFLOW_EMBED_MODEL:BAAI/bge-m3}
+      capabilities: [EMBEDDING]
+      dimensions: 1024
+      embedding-space: siliconflow-bge-m3
+      batch-size: 32
+    qwen-rerank:
+      provider: bailian
+      model: ${BAILIAN_RERANK_MODEL:qwen3-rerank}
+      capabilities: [RERANK]
+    silicon-rerank:
+      provider: siliconflow
+      model: ${SILICONFLOW_RERANK_MODEL:BAAI/bge-reranker-v2-m3}
+      capabilities: [RERANK]
+  routes:
+    chat:
+      default-tier: STANDARD
+      candidates:
+        FAST: [silicon-chat, deepseek-chat, qwen-chat]
+        STANDARD: [qwen-chat, deepseek-chat, silicon-chat]
+        STRONG: [deepseek-chat, qwen-chat, silicon-chat]
+    vision:
+      default-tier: STANDARD
+      candidates:
+        FAST: [qwen-vision]
+        STANDARD: [qwen-vision]
+        STRONG: [qwen-vision]
+  embedding:
+    default-model: ${AI_EMBEDDING_MODEL:qwen-embed}
+    fallbacks: []
+  rerank:
+    default-model: ${AI_RERANK_MODEL:qwen-rerank}
+    fallbacks: [silicon-rerank]
