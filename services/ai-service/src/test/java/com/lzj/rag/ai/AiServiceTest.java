@@ -124,6 +124,7 @@ class AiServiceTest {
 
     @Test void malformedRequestsAreJsonAndJsonModeDoesNotStripFences() throws Exception {
         post("/ai/chat/stream", "{\"text\":\"x\",\"messages\":[]}", 400);
+        assertThat(post("/ai/chat", "{\"messages\":[{\"content\":\"x\"}]}", 400).path("code").asText()).isEqualTo("INVALID_INPUT");
         JsonNode failure = post("/ai/chat", "{\"text\":\"fenced\",\"json\":true}", 502);
         assertThat(failure.path("code").asText()).isEqualTo("INVALID_RESPONSE");
         assertThat(post("/ai/utils/estimate-tokens", "{\"text\":\"你好abcd\"}", 200).at("/data/estimated").asBoolean()).isTrue();
