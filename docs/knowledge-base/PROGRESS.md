@@ -1,10 +1,12 @@
 # 知识库进度
 
-## GitHub 公开发布准备（2026-10-25）
+## GitHub 公开发布（2026-10-25，已完成）
 
 用户明确授权将项目发布到个人 GitHub 公开仓库，并说明后续定位为 Agent、RAG 仅为其中一项能力。使用已登录账号 lizejiong，选定名称 agent-workbench（已核对可用）；README 更新项目定位，明确已交付模型/知识库/管理台和待建设 Agent 运行时，不改现有包名、构建坐标或业务实现。
 
 发布前核对 10 次提交中的 397 个历史 blob（约 3.45 MB），对本地真实密钥/密码及常见 API/GitHub 令牌、私钥格式做检查，未发现匹配。提交历史中只有 .env.example，无本地 .env、依赖、构建或运行缓存。此次只涉及定位文档，沿用既有代码与验证结果；通过 GitHub CLI 创建公开仓库并推送 main，结果以远端元数据及提交 SHA 核对为准。
+
+已创建公开仓库 [lizejiong/agent-workbench](https://github.com/lizejiong/agent-workbench)，本地 origin 为对应 HTTPS Git 地址，main 已推送并跟踪 origin/main。GitHub 返回 visibility=public、private=false、默认分支 main；不携带认证的独立 API 请求返回 HTTP 200。首次推送的 c1909f4 与远端 main SHA 完全一致；发布记录随后同样提交并推送。未公开本地密钥、上传文件或数据库内容。
 
 ## 管理台提交整理（2026-10-25）
 
