@@ -1,0 +1,103 @@
+{
+  "ingestion": {
+    "firstPid": 12296,
+    "vectorSource": "Local HTTP stub; real PostgreSQL/MinIO and two Java processes",
+    "hits": 8,
+    "status": "SUCCEEDED",
+    "attempts": 2,
+    "secondPid": 25244,
+    "jobId": "8d53fdc3-321f-4e91-b0f4-aa0517273ae2",
+    "generation": 1
+  },
+  "cleanup": {
+    "cleanup": {
+      "id": "4b5426e4-6d3b-4063-b1b2-8989df78a06f",
+      "documentId": "27b9fe8e-f24d-4ce7-a421-6f2831f8d590",
+      "status": "SUCCEEDED",
+      "stage": "OBJECT",
+      "attempts": 2,
+      "maxAttempts": 5,
+      "nextRunAt": null,
+      "leaseUntil": null,
+      "errorCode": null,
+      "errorMessage": null,
+      "createdAt": "2026-10-25T05:06:42.606268Z",
+      "completedAt": "2026-10-25T05:07:10.309429Z"
+    },
+    "disabledChunk": "eb607f2d-4ad1-3e86-abb7-ebe0012ca36e",
+    "firstPid": 12300,
+    "secondPid": 25868,
+    "vectorSource": "Local HTTP fixture; two real Java processes, PostgreSQL and MinIO"
+  },
+  "refresh": {
+    "hits": [
+      {
+        "chunkId": "ffa69cfe-1314-3b1a-ad8b-cf361c69027d",
+        "kbId": "52700149-3ef5-4e3a-85fa-b8cb454d6f72",
+        "documentId": "6ca8f713-3fc7-4b73-b7d7-9f955bba8a21",
+        "documentName": "remote.md",
+        "chunkIndex": 0,
+        "generation": 3,
+        "content": "Baking bread with flour.",
+        "score": 1.0,
+        "scoreType": "COSINE_SIMILARITY",
+        "sourceMetadata": {
+          "textEnd": 24,
+          "blockType": "PARAGRAPH",
+          "textStart": 0,
+          "offsetUnit": "UTF16",
+          "chapterPath": [
+            "Cooking"
+          ],
+          "overlapChars": 0,
+          "parserVersion": "commonmark-0.27.1-gfm-v1",
+          "sourceBlocks": [
+            {
+              "lineEnd": 3,
+              "lineStart": 3,
+              "blockIndex": 1
+            }
+          ]
+        },
+        "fileUrl": "/api/documents/6ca8f713-3fc7-4b73-b7d7-9f955bba8a21/file",
+        "fusionScore": null,
+        "rerankScore": null,
+        "channelScores": [
+          {
+            "channel": "VECTOR",
+            "rank": 1,
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY"
+          }
+        ]
+      }
+    ],
+    "firstPid": 12068,
+    "secondPid": 25280,
+    "run": {
+      "current": 1,
+      "size": 20,
+      "total": 1,
+      "records": [
+        {
+          "id": "9c413691-5ed2-4b64-aa45-e6fd86b0691d",
+          "documentId": "6ca8f713-3fc7-4b73-b7d7-9f955bba8a21",
+          "requestId": "8dfd9c13-0b59-4579-b271-afcee6331edc",
+          "triggerType": "MANUAL",
+          "status": "SUCCESS",
+          "jobId": "aee6b3a3-8637-48b0-8804-c6933e1d83b7",
+          "attempts": 2,
+          "maxAttempts": 3,
+          "httpStatus": 200,
+          "reason": "CONTENT_ACTIVATED",
+          "errorMessage": null,
+          "nextRunAt": null,
+          "startedAt": "2026-10-25T05:11:29.681187Z",
+          "completedAt": "2026-10-25T05:12:02.928229Z",
+          "durationMs": 33247
+        }
+      ]
+    },
+    "environment": "Two actual Java processes; PostgreSQL/MinIO; local HTTP source and embedding fixture"
+  }
+}

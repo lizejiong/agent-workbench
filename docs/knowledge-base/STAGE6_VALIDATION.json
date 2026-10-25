@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-24",
+  "stage": 6,
+  "sourceSnapshot": ".cache/stage6-build",
+  "sourceFilesVerified": 180,
+  "tests": {
+    "tests": 197,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 12
+  },
+  "passed": 185,
+  "artifacts": [
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT-stage6.jar",
+      "sha256": "81f220676bde0d75738a8ee29c716d7a719f54681ea4bb598affff74046b4a2c"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT-stage6.jar",
+      "sha256": "6f6ae0482e5f1f71d8832dac6ab65f8a99329e77dea90136403af67daffc9289"
+    }
+  ],
+  "openapi": {
+    "paths": 25,
+    "operations": 35,
+    "resolvedReferences": 287
+  },
+  "httpSmoke": {
+    "stages": 12,
+    "jobs": [
+      {
+        "status": "SUCCEEDED",
+        "count": 2
+      }
+    ],
+    "vectorRows": 0,
+    "generationRows": 0,
+    "modelRequests": 12
+  },
+  "example": "SAMPLE_MAINTENANCE.json",
+  "limits": [
+    "Explicit local HTTP embedding fixture, not live provider validation",
+    "Real PG/pgvector and MinIO; optional LocalPostgresTest not configured",
+    "Dedicated unversioned bucket required; retained S3 versions are rejected",
+    "Snapshot preserves completed stage 6 while user-authorized stage 7 develops in root"
+  ]
+}

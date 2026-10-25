@@ -1,0 +1,350 @@
+{
+  "result": "PASS",
+  "environment": "Two real independent packaged Java HTTP processes, same PostgreSQL; no model needed for rejected unauthorized scopes.",
+  "calls": [
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/api/kbs?size=100",
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 0,
+          "records": []
+        },
+        "requestId": "e3b141a7-d601-4439-88f3-2595701b310c"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/api/kbs/7199fac4-9675-4e56-abba-d8a3ed6163c6",
+      "status": 404,
+      "response": {
+        "code": "KB_NOT_FOUND",
+        "message": "Knowledge base not found",
+        "data": null,
+        "requestId": "575b912a-7e8c-4bac-acf2-5340d07486ac"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/api/kbs/7199fac4-9675-4e56-abba-d8a3ed6163c6/audit",
+      "status": 404,
+      "response": {
+        "code": "KB_NOT_FOUND",
+        "message": "Knowledge base not found",
+        "data": null,
+        "requestId": "2ad1bf90-b258-46c4-9508-b0996c72c827"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/api/documents/16a467e1-3fb5-4786-9336-d47f2cfa78d2",
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "50f81a6a-8efb-46b3-8624-be40b4dc875d"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/api/documents/16a467e1-3fb5-4786-9336-d47f2cfa78d2/file",
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "8d1dd163-45da-4fb7-bde9-4690bcb7e078"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/api/documents/16a467e1-3fb5-4786-9336-d47f2cfa78d2/chunks",
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "ad4ac01e-3b4d-4281-a166-da404d105dc7"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 404,
+      "response": {
+        "code": "KB_NOT_FOUND",
+        "message": "Knowledge base not found",
+        "data": null,
+        "requestId": "69ac924b-54fd-4d6e-b955-ee61088293f5"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/actuator/metrics",
+      "status": 200,
+      "response": {
+        "names": [
+          "application.ready.time",
+          "application.started.time",
+          "disk.free",
+          "disk.total",
+          "executor.active",
+          "executor.completed",
+          "executor.pool.core",
+          "executor.pool.max",
+          "executor.pool.size",
+          "executor.queue.remaining",
+          "executor.queued",
+          "hikaricp.connections",
+          "hikaricp.connections.acquire",
+          "hikaricp.connections.active",
+          "hikaricp.connections.creation",
+          "hikaricp.connections.idle",
+          "hikaricp.connections.max",
+          "hikaricp.connections.min",
+          "hikaricp.connections.pending",
+          "hikaricp.connections.timeout",
+          "hikaricp.connections.usage",
+          "http.server.requests",
+          "http.server.requests.active",
+          "jdbc.connections.active",
+          "jdbc.connections.idle",
+          "jdbc.connections.max",
+          "jdbc.connections.min",
+          "jvm.buffer.count",
+          "jvm.buffer.memory.used",
+          "jvm.buffer.total.capacity",
+          "jvm.classes.loaded",
+          "jvm.classes.unloaded",
+          "jvm.compilation.time",
+          "jvm.gc.live.data.size",
+          "jvm.gc.max.data.size",
+          "jvm.gc.memory.allocated",
+          "jvm.gc.memory.promoted",
+          "jvm.gc.overhead",
+          "jvm.gc.pause",
+          "jvm.info",
+          "jvm.memory.committed",
+          "jvm.memory.max",
+          "jvm.memory.usage.after.gc",
+          "jvm.memory.used",
+          "jvm.threads.daemon",
+          "jvm.threads.live",
+          "jvm.threads.peak",
+          "jvm.threads.started",
+          "jvm.threads.states",
+          "kb.cleanup.resources",
+          "kb.ingestion.jobs",
+          "kb.ingestion.stage",
+          "kb.keyword.sync",
+          "kb.metrics.snapshot.age",
+          "kb.metrics.snapshot.available",
+          "kb.model.failures",
+          "kb.refresh.runs",
+          "logback.events",
+          "process.cpu.time",
+          "process.cpu.usage",
+          "process.start.time",
+          "process.uptime",
+          "spring.security.authentications",
+          "spring.security.authentications.active",
+          "spring.security.authorizations",
+          "spring.security.authorizations.active",
+          "spring.security.filterchains",
+          "spring.security.filterchains.access.exceptions.after",
+          "spring.security.filterchains.access.exceptions.before",
+          "spring.security.filterchains.active",
+          "spring.security.filterchains.authentication.anonymous.after",
+          "spring.security.filterchains.authentication.anonymous.before",
+          "spring.security.filterchains.authentication.basic.after",
+          "spring.security.filterchains.authentication.basic.before",
+          "spring.security.filterchains.authorization.after",
+          "spring.security.filterchains.authorization.before",
+          "spring.security.filterchains.context.async.after",
+          "spring.security.filterchains.context.async.before",
+          "spring.security.filterchains.context.holder.after",
+          "spring.security.filterchains.context.holder.before",
+          "spring.security.filterchains.context.servlet.after",
+          "spring.security.filterchains.context.servlet.before",
+          "spring.security.filterchains.header.after",
+          "spring.security.filterchains.header.before",
+          "spring.security.filterchains.logout.after",
+          "spring.security.filterchains.logout.before",
+          "spring.security.filterchains.session.management.after",
+          "spring.security.filterchains.session.management.before",
+          "spring.security.filterchains.session.urlencoding.after",
+          "spring.security.filterchains.session.urlencoding.before",
+          "spring.security.http.secured.requests",
+          "spring.security.http.secured.requests.active",
+          "system.cpu.count",
+          "system.cpu.usage",
+          "tasks.scheduled.execution",
+          "tasks.scheduled.execution.active",
+          "tomcat.sessions.active.current",
+          "tomcat.sessions.active.max",
+          "tomcat.sessions.alive.max",
+          "tomcat.sessions.created",
+          "tomcat.sessions.expired",
+          "tomcat.sessions.rejected"
+        ]
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/actuator/env",
+      "status": 403,
+      "response": {
+        "code": "KB_FORBIDDEN",
+        "message": "Access denied",
+        "data": null,
+        "requestId": "3db1aa5b-90f0-4921-a1c5-1dfe6255a1e1"
+      }
+    },
+    {
+      "actor": "bob",
+      "method": "GET",
+      "path": "/actuator/health",
+      "status": 200,
+      "response": {
+        "status": "UP"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/api/kbs?size=100",
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 0,
+          "records": []
+        },
+        "requestId": "c9065846-8f6a-47b3-a898-6b5a7a4415af"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/api/kbs/7199fac4-9675-4e56-abba-d8a3ed6163c6",
+      "status": 404,
+      "response": {
+        "code": "KB_NOT_FOUND",
+        "message": "Knowledge base not found",
+        "data": null,
+        "requestId": "b83e5b51-d517-4d3c-a336-be6549a626b6"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/api/kbs/7199fac4-9675-4e56-abba-d8a3ed6163c6/audit",
+      "status": 404,
+      "response": {
+        "code": "KB_NOT_FOUND",
+        "message": "Knowledge base not found",
+        "data": null,
+        "requestId": "afef72ab-70b1-4bd1-9077-c4e5adf096ad"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/api/documents/16a467e1-3fb5-4786-9336-d47f2cfa78d2",
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "2f2581e8-c182-4723-9be3-4ef9cd9d1bd1"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/api/documents/16a467e1-3fb5-4786-9336-d47f2cfa78d2/file",
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "29c90414-e1c6-481d-af58-336cb9ec1392"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/api/documents/16a467e1-3fb5-4786-9336-d47f2cfa78d2/chunks",
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "71f57121-b8a3-449b-bf1b-ac73f39efb3e"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 404,
+      "response": {
+        "code": "KB_NOT_FOUND",
+        "message": "Knowledge base not found",
+        "data": null,
+        "requestId": "bc2e59c1-a4b8-4d24-913f-148bfd6f0537"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/actuator/metrics",
+      "status": 403,
+      "response": {
+        "code": "KB_FORBIDDEN",
+        "message": "Access denied",
+        "data": null,
+        "requestId": "58a1f7b6-2fc2-4444-980d-ddf9ffe74c16"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/actuator/env",
+      "status": 403,
+      "response": {
+        "code": "KB_FORBIDDEN",
+        "message": "Access denied",
+        "data": null,
+        "requestId": "78e3b00f-22dd-4688-90bd-66312ad22cd6"
+      }
+    },
+    {
+      "actor": "carol",
+      "method": "GET",
+      "path": "/actuator/health",
+      "status": 200,
+      "response": {
+        "status": "UP"
+      }
+    }
+  ]
+}

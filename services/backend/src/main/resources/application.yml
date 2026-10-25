@@ -1,0 +1,193 @@
+server:
+  port: ${KB_PORT:8080}
+  shutdown: graceful
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+  application:
+    name: rag-backend
+  datasource:
+    url: ${KB_DB_URL:jdbc:postgresql://localhost:54329/knowledge_base?connectTimeout=5&socketTimeout=30}
+    username: ${KB_DB_USERNAME:kb}
+    password: ${KB_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${KB_DB_POOL_SIZE:10}
+      connection-timeout: ${KB_DB_CONNECTION_TIMEOUT_MS:5000}
+      data-source-properties:
+        options: -c statement_timeout=${KB_DB_STATEMENT_TIMEOUT_MS:10000}
+  flyway:
+    locations: classpath:db/migration
+    table: kb_flyway_schema_history
+    clean-disabled: true
+    validate-on-migrate: true
+    baseline-on-migrate: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+      accept-float-as-int: false
+    mapper:
+      allow-coercion-of-scalars: false
+  mvc:
+    problemdetails:
+      enabled: false
+  servlet:
+    multipart:
+      max-file-size: ${KB_MAX_UPLOAD_SIZE:20MB}
+      max-request-size: ${KB_MAX_REQUEST_SIZE:21MB}
+      file-size-threshold: 0
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: never
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    default-statement-timeout: 10
+  type-handlers-package: com.lzj.rag.backend.persistence
+  global-config:
+    banner: false
+kb:
+  keyword:
+    enabled: ${KB_KEYWORD_ENABLED:false}
+    endpoint: ${KB_ES_ENDPOINT:http://localhost:9200}
+    api-key: ${KB_ES_API_KEY:}
+    index: ${KB_ES_INDEX:kb-chunks-v1}
+    analyzer: ${KB_ES_ANALYZER:cjk}
+    call-timeout: ${KB_ES_CALL_TIMEOUT:3s}
+    lease: ${KB_KEYWORD_LEASE:1m}
+    max-scope-documents: ${KB_KEYWORD_MAX_SCOPE_DOCUMENTS:2000}
+    batch-size: ${KB_KEYWORD_BATCH_SIZE:100}
+    max-attempts: ${KB_KEYWORD_MAX_ATTEMPTS:5}
+    poll-delay: ${KB_KEYWORD_POLL_DELAY_MS:1000}
+  retrieval:
+    strategy: ${KB_RETRIEVAL_STRATEGY:AUTO}
+    channel-candidates: ${KB_RETRIEVAL_CHANNEL_CANDIDATES:50}
+    fusion-candidates: ${KB_RETRIEVAL_FUSION_CANDIDATES:20}
+    rrf-constant: ${KB_RETRIEVAL_RRF_CONSTANT:60}
+    vector-weight: ${KB_RETRIEVAL_VECTOR_WEIGHT:1}
+    keyword-weight: ${KB_RETRIEVAL_KEYWORD_WEIGHT:1}
+    concurrency: ${KB_RETRIEVAL_CONCURRENCY:4}
+    vector-timeout: ${KB_RETRIEVAL_VECTOR_TIMEOUT:40s}
+    keyword-timeout: ${KB_RETRIEVAL_KEYWORD_TIMEOUT:5s}
+    rerank:
+      enabled: ${KB_RERANK_ENABLED:false}
+      model: ${KB_RERANK_MODEL:qwen-rerank}
+      timeout: ${KB_RERANK_TIMEOUT:10s}
+      max-input-chars: ${KB_RERANK_MAX_INPUT_CHARS:30000}
+      min-score: ${KB_RERANK_MIN_SCORE:}
+  remote:
+    enabled: ${KB_REMOTE_ENABLED:false}
+    allowed-hosts: ${KB_REMOTE_ALLOWED_HOSTS:}
+    trusted-private-hosts: ${KB_REMOTE_TRUSTED_PRIVATE_HOSTS:}
+    allowed-ports: ${KB_REMOTE_ALLOWED_PORTS:443,80}
+    allow-http: ${KB_REMOTE_ALLOW_HTTP:false}
+    connect-timeout: ${KB_REMOTE_CONNECT_TIMEOUT:5s}
+    read-timeout: ${KB_REMOTE_READ_TIMEOUT:10s}
+    download-timeout: ${KB_REMOTE_DOWNLOAD_TIMEOUT:30s}
+    max-redirects: ${KB_REMOTE_MAX_REDIRECTS:3}
+    max-download-bytes: ${KB_REMOTE_MAX_BYTES:20971520}
+    concurrency: ${KB_REMOTE_CONCURRENCY:2}
+    lease: ${KB_REFRESH_LEASE:45s}
+    run-deadline: ${KB_REFRESH_DEADLINE:15m}
+    max-attempts: ${KB_REFRESH_MAX_ATTEMPTS:3}
+    poll-delay: ${KB_REFRESH_POLL_DELAY_MS:1000}
+    heartbeat: 5000
+    cleanup-poll-delay: ${KB_REMOTE_CLEANUP_POLL_DELAY_MS:10000}
+  formats:
+    local-timeout: ${KB_PARSE_LOCAL_TIMEOUT:30s}
+    concurrency: ${KB_PARSE_CONCURRENCY:2}
+    process-heap-mb: ${KB_PARSE_HEAP_MB:256}
+    max-rows: ${KB_PARSE_MAX_ROWS:20000}
+    max-columns: ${KB_PARSE_MAX_COLUMNS:128}
+    max-sheets: ${KB_PARSE_MAX_SHEETS:32}
+    max-pages: ${KB_PARSE_MAX_PAGES:500}
+    max-image-pixels: ${KB_IMAGE_MAX_PIXELS:16777216}
+    max-image-bytes: ${KB_IMAGE_MAX_BYTES:2097152}
+    max-result-bytes: ${KB_PARSE_MAX_RESULT_BYTES:8388608}
+    mineru:
+      enabled: ${KB_MINERU_ENABLED:false}
+      base-url: ${KB_MINERU_BASE_URL:}
+      token: ${KB_MINERU_TOKEN:}
+      protocol: mineru-2.7.6-file-parse
+      timeout: ${KB_MINERU_TIMEOUT:90s}
+      connect-timeout: ${KB_MINERU_CONNECT_TIMEOUT:5s}
+      concurrency: ${KB_MINERU_CONCURRENCY:1}
+      backend: ${KB_MINERU_BACKEND:pipeline}
+      language: ${KB_MINERU_LANGUAGE:ch}
+    vlm:
+      enabled: ${KB_VLM_ENABLED:false}
+      model: ${KB_VLM_MODEL:qwen-vision}
+      max-output-tokens: ${KB_VLM_MAX_OUTPUT_TOKENS:2048}
+  maintenance:
+    max-batch-ids: ${KB_MAINTENANCE_MAX_BATCH_IDS:200}
+    model-deadline: ${KB_MAINTENANCE_MODEL_DEADLINE:40s}
+    cleanup-lease: ${KB_DOCUMENT_CLEANUP_LEASE:4m}
+  search:
+    max-top-k: ${KB_SEARCH_MAX_TOP_K:50}
+    max-kb-ids: ${KB_SEARCH_MAX_KB_IDS:16}
+    max-document-ids: ${KB_SEARCH_MAX_DOCUMENT_IDS:100}
+    max-query-chars: ${KB_SEARCH_MAX_QUERY_CHARS:4000}
+    deadline: ${KB_SEARCH_MODEL_DEADLINE:40s}
+  worker:
+    enabled: ${KB_WORKER_ENABLED:true}
+    concurrency: ${KB_WORKER_CONCURRENCY:2}
+    queue-capacity: ${KB_WORKER_QUEUE_CAPACITY:0}
+    max-attempts: ${KB_WORKER_MAX_ATTEMPTS:3}
+    lease: ${KB_WORKER_LEASE:30s}
+    heartbeat: ${KB_WORKER_HEARTBEAT:5s}
+    poll-delay: ${KB_WORKER_POLL_DELAY_MS:1000}
+    initial-delay: ${KB_WORKER_INITIAL_DELAY_MS:1000}
+    backoff: ${KB_WORKER_BACKOFF:2s}
+    max-backoff: ${KB_WORKER_MAX_BACKOFF:5m}
+    cleanup-delay: ${KB_GENERATION_CLEANUP_DELAY:10m}
+    cleanup-poll-delay: ${KB_CLEANUP_POLL_DELAY_MS:10000}
+    document-cleanup-poll-delay: ${KB_DOCUMENT_CLEANUP_POLL_DELAY_MS:10000}
+    cleanup-max-attempts: ${KB_CLEANUP_MAX_ATTEMPTS:5}
+  ai:
+    base-url: ${KB_AI_BASE_URL:http://127.0.0.1:8081}
+    token: ${KB_AI_TOKEN:}
+    connect-timeout: ${KB_AI_CONNECT_TIMEOUT:5s}
+    call-timeout: ${KB_AI_CALL_TIMEOUT:30s}
+    concurrency: ${KB_AI_CONCURRENCY:2}
+    batch-size: ${KB_AI_BATCH_SIZE:10}
+    max-batch-bytes: ${KB_AI_MAX_BATCH_BYTES:65536}
+    max-response-bytes: ${KB_AI_MAX_RESPONSE_BYTES:4194304}
+  ingestion:
+    deadline: ${KB_INGESTION_DEADLINE:120s}
+    max-parsed-chars: ${KB_MAX_PARSED_CHARS:1000000}
+    max-chunks: ${KB_MAX_CHUNKS:1000}
+    hard-chunk-chars: ${KB_HARD_CHUNK_CHARS:8192}
+    max-embedding-chars: ${KB_MAX_EMBEDDING_CHARS:16384}
+    write-batch-size: ${KB_INDEX_WRITE_BATCH_SIZE:100}
+  models:
+    default-profile: qwen-embed-1024
+    profiles:
+      qwen-embed-1024:
+        enabled: ${KB_MODEL_ENABLED:true}
+        model-id: qwen-embed
+        provider: bailian
+        model-name: text-embedding-v4
+        dimension: 1024
+        embedding-space: bailian-text-embedding-v4
+        config-version: ${KB_EMBEDDING_CONFIG_VERSION:bailian-text-embedding-v4-1024-v1}
+  storage:
+    enabled: ${KB_STORAGE_ENABLED:false}
+    endpoint: ${KB_S3_ENDPOINT:}
+    region: ${KB_S3_REGION:us-east-1}
+    bucket: ${KB_S3_BUCKET:}
+    path-style-access: ${KB_S3_PATH_STYLE:false}
+    max-upload-bytes: ${KB_MAX_UPLOAD_BYTES:20971520}
+    temp-directory: ${KB_UPLOAD_TEMP:}
+  security:
+    accounts:
+      - username: ${KB_USERNAME:}
+        password: ${KB_PASSWORD:}
+        tenant-id: ${KB_TENANT_ID:}
+        user-id: ${KB_USER_ID:}
+        operator: ${KB_OPERATOR:false}

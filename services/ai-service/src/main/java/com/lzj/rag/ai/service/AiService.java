@@ -101,7 +101,11 @@ public class AiService {
             int dimensions = request.dimensions() == null ? model.dimensions() == null ? 0 : model.dimensions() : request.dimensions();
             if (dimensions <= 0 || (model.allowedDimensions().isEmpty() ? !Objects.equals(model.dimensions(), dimensions)
                     : !model.allowedDimensions().contains(dimensions))) throw AiException.input("Unsupported embedding dimensions");
-            List<String> candidates = registry.operation(anchor, registry.config().embedding().fallbacks(), Capability.EMBEDDING)
+            var descriptor = registry.embeddingDescriptor(anchor, dimensions);
+            if (request.expectedConfigRevision() != null && !request.expectedConfigRevision().equals(descriptor.configRevision()))
+                throw new AiException(409, "MODEL_CONFIG_CHANGED", "Embedding configuration changed", false, false);
+            List<String> candidates = registry.operation(anchor, request.model() != null || request.expectedConfigRevision() != null
+                            ? List.of() : registry.config().embedding().fallbacks(), Capability.EMBEDDING)
                     .stream().filter(a -> {
                         var m = registry.model(a);
                         return Objects.equals(model.embeddingSpace(), m.embeddingSpace()) &&
@@ -117,14 +121,17 @@ public class AiService {
                         boolean[] seen = new boolean[group.size()];
                         for (var vector : reply.vectors()) {
                             int i = vector.index();
-                            if (i < 0 || i >= group.size() || seen[i] || vector.values().size() != dimensions) throw AiException.invalid();
+                            if (i < 0 || i >= group.size() || seen[i] || vector.values().size() != dimensions
+                                    || vector.values().stream().anyMatch(v -> v == null || !Double.isFinite(v) || Math.abs(v) > Float.MAX_VALUE)
+                                    || vector.values().stream().allMatch(v -> v == 0d)) throw AiException.invalid();
                             seen[i] = true; all.add(new Vector(offset + i, vector.values()));
                         }
                         usages.add(reply.usage());
                     });
                 }).then(Mono.fromSupplier(() -> {
                     all.sort(Comparator.comparingInt(Vector::index));
-                    return new EmbedResult(all, dimensions, alias, sum(usages), run.metrics());
+                    var actual = registry.embeddingDescriptor(alias, dimensions);
+                    return new EmbedResult(all, dimensions, alias, sum(usages), run.metrics(), actual.provider(), actual.embeddingSpace(), actual.configRevision());
                 }));
             }));
         });

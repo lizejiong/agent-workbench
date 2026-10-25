@@ -1,0 +1,1220 @@
+{
+  "info": {
+    "name": "Knowledge Base API Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "API-only delivery: select requests interactively; do not run destructive operations as a blind collection runner. Set credentials in a local/private environment; never export real keys. Job state is read from backend. Poll active jobs every 2s, stop at terminal state; reduce polling when hidden. Review manual overwrite and applyAll explicitly. There is no generated answer or user administration."
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{username}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "kbId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "kbVersion",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "documentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "documentVersion",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "chunkId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jobRequestId",
+      "value": "manual-job-change-for-new-job",
+      "type": "string"
+    },
+    {
+      "key": "scheduleVersion",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "sourceUrl",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cleanupId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "storageOperationId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Management entry",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/knowledge/management",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "OpenAPI",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/openapi/knowledge-base.yaml",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Configured retrieval capabilities",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/knowledge/search-capabilities",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Server model profiles",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kb-models",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Knowledge bases: search and paginate",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs?current=1&size=20&name=",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Create knowledge base",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/kbs",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"manual-{{$guid}}\",\n  \"embeddingProfileId\": \"qwen-embed-1024\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('kbId', d.id); pm.collectionVariables.set('kbVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Knowledge base details and document count",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('kbId', d.id); pm.collectionVariables.set('kbVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rename knowledge base",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{kbVersion}},\n  \"name\": \"renamed-{{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('kbId', d.id); pm.collectionVariables.set('kbVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Replace knowledge base metadata",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{kbVersion}},\n  \"name\": \"renamed-{{$guid}}\",\n  \"description\": \"Managed through API collection\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('kbId', d.id); pm.collectionVariables.set('kbVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bind an old unbound knowledge base",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/embedding-binding",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{kbVersion}},\n  \"embeddingProfileId\": \"qwen-embed-1024\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('kbId', d.id); pm.collectionVariables.set('kbVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload local file (choose file first)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "upload-{{$guid}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/documents",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": ""
+            },
+            {
+              "key": "metadata",
+              "type": "text",
+              "value": "{\"ingestionSpec\": {\"parseProfile\": \"fast\", \"splitter\": {\"maxChars\": 1024, \"overlapChars\": 128, \"tableRows\": 50}}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentId', d.id); pm.collectionVariables.set('documentVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Documents: search, state and pagination",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/documents?current=1&size=20&name=&status=",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Document details and latest ingestion time",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentId', d.id); pm.collectionVariables.set('documentVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Configure document ingestion",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"ingestionSpec\": {\n    \"schemaVersion\": 1,\n    \"parser\": \"AUTO\",\n    \"parseProfile\": \"fast\",\n    \"splitter\": {\n      \"kind\": \"STRUCTURAL\",\n      \"maxChars\": 1024,\n      \"overlapChars\": 128,\n      \"tableRows\": 50,\n      \"toleranceChars\": 512\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentId', d.id); pm.collectionVariables.set('documentVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authorized original file",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/file",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Submit durable ingestion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/ingestion-jobs",
+        "description": "Keep jobRequestId unchanged to replay the same submission. Save the returned jobId. This call returns quickly; poll the next two requests.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requestId\": \"{{jobRequestId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('jobId', d.id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Confirm replacement of manual changes (review first)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/ingestion-jobs",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requestId\": \"replace-{{$guid}}\",\n  \"confirmOverwriteEdited\": true,\n  \"expectedDocumentVersion\": {{documentVersion}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('jobId', d.id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ingestion jobs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/ingestion-jobs?current=1&size=20",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Job state",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/ingestion-jobs/{{jobId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('jobId', d.id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stage timings and sanitized failures",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/ingestion-jobs/{{jobId}}/stages?current=1&size=20",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Retry failed ingestion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/ingestion-jobs/{{jobId}}/retry",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requestId\": \"retry-{{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('jobId', d.id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cancel ingestion",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/ingestion-jobs/{{jobId}}/cancel",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Current chunks: paginate",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks?current=1&size=20",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; if (d.records.length) pm.collectionVariables.set('chunkId', d.records[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Add manual chunk",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"content\": \"人工维护正文。\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edit chunk",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks/{{chunkId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"content\": \"人工修订正文，向量化文本采用同一正文。\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disable chunk independently",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks/{{chunkId}}/enabled",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"enabled\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enable chunk",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks/{{chunkId}}/enabled",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"enabled\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Batch disable explicit chunk IDs",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks/batch-enabled",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"enabled\": false,\n  \"chunkIds\": [\n    \"{{chunkId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Explicitly enable all current chunks (review first)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks/batch-enabled",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"enabled\": true,\n  \"applyAll\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disable document",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/enabled",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"enabled\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentId', d.id); pm.collectionVariables.set('documentVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reenable document, preserve independent disabled chunks",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/enabled",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{documentVersion}},\n  \"enabled\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentId', d.id); pm.collectionVariables.set('documentVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vector search with explicit cosine threshold",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/knowledge/search",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"PostgreSQL connection\",\n  \"kbIds\": [\n    \"{{kbId}}\"\n  ],\n  \"topK\": 5,\n  \"strategy\": \"VECTOR\",\n  \"rerank\": false,\n  \"minScore\": 0.5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Structured retrieval with strategy and independent scores",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/knowledge/retrieve",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"PostgreSQL connection\",\n  \"kbIds\": [\n    \"{{kbId}}\"\n  ],\n  \"topK\": 5,\n  \"strategy\": \"AUTO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Import approved URL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "import-{{$guid}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/documents/import-url",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"{{sourceUrl}}\",\n  \"filename\": \"remote.md\",\n  \"ingest\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentId', d.document.id); pm.collectionVariables.set('documentVersion', d.document.version); if (d.jobId) pm.collectionVariables.set('jobId', d.jobId); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refresh schedule",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/refresh-schedule",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('scheduleVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Configure refresh timezone and cron",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/refresh-schedule",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": {{scheduleVersion}},\n  \"enabled\": true,\n  \"cron\": \"0 0 2 * * *\",\n  \"timezone\": \"Asia/Shanghai\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('scheduleVersion', d.version); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manual refresh",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/refresh",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requestId\": \"refresh-{{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Refresh run results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/refresh-runs?current=1&size=20",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Keyword synchronization state",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/keyword-index",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Keyword synchronization and cleanup including tombstones",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/keyword-sync?current=1&size=20",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Retry keyword synchronization",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/keyword-sync/{{documentId}}/retry",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Committed summary audit",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/audit?current=1&size=20&action=",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Storage compensation operations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/storage-operations?current=1&size=20",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Retry upload compensation",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}/storage-operations/{{storageOperationId}}/retry-cleanup",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Delete current chunk",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}/chunks/{{chunkId}}?version={{documentVersion}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('documentVersion', d.documentVersion); if (d.chunks.length) pm.collectionVariables.set('chunkId', d.chunks[0].id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete document, receive durable cleanup receipt",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/documents/{{documentId}}?version={{documentVersion}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code >= 200 && pm.response.code < 300) {",
+              "  const result = pm.response.json(); if (result.code === '0') { const d = result.data; pm.collectionVariables.set('cleanupId', d.id); }",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup receipt",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/document-cleanups/{{cleanupId}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Retry failed document cleanup",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/document-cleanups/{{cleanupId}}/retry",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Delete empty knowledge base after all cleanup",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/kbs/{{kbId}}?version={{kbVersion}}",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/actuator/health",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Metrics (operator account only)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/actuator/metrics",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    },
+    {
+      "name": "Durable pending job metric (operator only)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/actuator/metrics/kb.ingestion.jobs?tag=status:PENDING",
+        "description": "Uses the caller's existing server-mapped identity. Reload versions after 409; inspect job/stages for failures."
+      }
+    }
+  ]
+}

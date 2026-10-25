@@ -29,6 +29,7 @@ public class ModelRegistry {
             require(m.maxOutputTokens() > 0 && m.batchSize() > 0, "Invalid model limits: " + id);
             if (m.timeout() != null) positive(m.timeout());
             if (m.capabilities().contains(Capability.EMBEDDING)) {
+                require(m.configVersion()!=null && !m.configVersion().isBlank() && m.configVersion().length()<=256,"Embedding configVersion required: "+id);
                 require(m.dimensions() != null && m.dimensions() > 0 && m.embeddingSpace() != null
                         && !m.embeddingSpace().isBlank(), "Embedding identity required: " + id);
                 require(m.allowedDimensions().stream().allMatch(d -> d != null && d > 0), "Invalid dimensions: " + id);
@@ -60,6 +61,27 @@ public class ModelRegistry {
         return m;
     }
     public Provider provider(String alias) { return config.providers().get(model(alias).provider()); }
+    public record EmbeddingDescriptor(String modelId, String provider, Kind providerKind, String modelName,
+            int dimensions, String embeddingSpace, String configVersion, String configRevision, int batchSize,
+            boolean active, String protocolVersion) { }
+    public EmbeddingDescriptor embeddingDescriptor(String alias, Integer requestedDimensions) {
+        var m = model(alias);
+        if (!m.capabilities().contains(Capability.EMBEDDING)) throw AiException.input("Model lacks embedding capability");
+        int dimension = requestedDimensions == null ? m.dimensions() : requestedDimensions;
+        if (dimension <= 0 || (m.allowedDimensions().isEmpty() ? !Objects.equals(m.dimensions(), dimension) : !m.allowedDimensions().contains(dimension)))
+            throw AiException.input("Unsupported embedding dimensions");
+        try {
+            // Length-prefixed identity excludes credentials/URLs; deployments bump configVersion for semantic changes.
+            var bytes = new java.io.ByteArrayOutputStream();
+            try (var out = new java.io.DataOutputStream(bytes)) {
+                for (String value : List.of(alias, m.provider(), provider(alias).kind().name(), m.model(),
+                        Integer.toString(dimension), m.embeddingSpace(), m.configVersion())) out.writeUTF(value);
+            }
+            String revision = HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));
+            return new EmbeddingDescriptor(alias, m.provider(), provider(alias).kind(), m.model(), dimension, m.embeddingSpace(),
+                    m.configVersion(), revision, m.batchSize(), config.enabled() && active(alias), "embed-v1");
+        } catch (java.io.IOException | java.security.NoSuchAlgorithmException error) { throw new IllegalStateException(error); }
+    }
     public boolean active(String alias) {
         var m = model(alias); var p = provider(alias);
         return m.enabled() && p.enabled() && p.apiKey() != null && !p.apiKey().isBlank();

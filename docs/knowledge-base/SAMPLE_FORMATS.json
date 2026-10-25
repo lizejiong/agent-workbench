@@ -1,0 +1,5168 @@
+{
+  "note": "Actual HTTP calls. Configured external services may be protocol fixtures; inspect verification environment. Retained fixture UUIDs need the same server.",
+  "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+  "matrix": [
+    {
+      "extensions": [
+        "txt",
+        "md",
+        "markdown"
+      ],
+      "fast": "LOCAL",
+      "fidelity": "LOCAL_ALIAS",
+      "notes": "Strict UTF-8; fidelity aliases the same structural parser"
+    },
+    {
+      "extensions": [
+        "csv",
+        "xls",
+        "xlsx"
+      ],
+      "fast": "LOCAL",
+      "fidelity": "LOCAL_ALIAS",
+      "notes": "RFC4180 or POI formulas; fidelity aliases the same table parser"
+    },
+    {
+      "extensions": [
+        "pdf"
+      ],
+      "fast": "LOCAL_TEXT_ONLY",
+      "fidelity": "MINERU_CONFIGURED",
+      "notes": "Fast has no OCR; fidelity requires exact MinerU 2.7.6. Configured does not mean externally verified"
+    },
+    {
+      "extensions": [
+        "doc",
+        "docx",
+        "ppt",
+        "pptx"
+      ],
+      "fast": "LOCAL",
+      "fidelity": "UNAVAILABLE",
+      "notes": "Tika basic text/tables and available locations; no Office fidelity route"
+    },
+    {
+      "extensions": [
+        "png",
+        "jpg",
+        "jpeg"
+      ],
+      "fast": "VLM_CONFIGURED",
+      "fidelity": "VLM_ALIAS_CONFIGURED",
+      "notes": "Both profiles use AI vision; configured does not mean externally verified"
+    }
+  ],
+  "formats": {
+    "ordinary.pdf": {
+      "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+      "sha256": "1e3fc412692db6c0c6e132ebac71d65260166fc5202ae14114bd167240397d13",
+      "job": {
+        "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+        "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+        "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:37.882182Z",
+        "startedAt": "2026-10-24T14:02:38.032041Z",
+        "completedAt": "2026-10-24T14:02:41.273477Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "0c7602c3-6096-38a9-8f84-bcaaf6a3414f",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "Database overview: PostgreSQL connection.",
+          "embeddingText": "Database overview: PostgreSQL connection.",
+          "contentHash": "7d5067485c61b9bc089a46ba27a0a073e4db8dd1bce7bc3d22d1dec26b310447",
+          "charCount": 41,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 41,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "blockIndex": 0,
+                "pageNumber": 1
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:41.163469Z",
+          "updatedAt": "2026-10-24T14:02:41.163469Z"
+        },
+        {
+          "id": "30909cae-a8b0-3e39-b62c-441bebb8e4d7",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 1,
+          "content": "Backup policy: retain seven days.",
+          "embeddingText": "Backup policy: retain seven days.",
+          "contentHash": "ea15ac8696bf16aceec284ee145f687e870cab96d8eae9f69ca56f201311564d",
+          "charCount": 33,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 33,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "blockIndex": 1,
+                "pageNumber": 2
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:41.163469Z",
+          "updatedAt": "2026-10-24T14:02:41.163469Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "handbook.docx": {
+      "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+      "sha256": "83740f5e5cd8d70e186de1850a286fd0d4c49ef2a262088f9954a1c439a59029",
+      "job": {
+        "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+        "requestId": "ingest-91f158920112413295ede039097071ed",
+        "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:42.120425Z",
+        "startedAt": "2026-10-24T14:02:42.202931Z",
+        "completedAt": "2026-10-24T14:02:45.96482Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "e33b21ef-8baf-3405-b0fb-4307b8c51057",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "PostgreSQL 数据库连接说明。",
+          "embeddingText": "章节：Database handbook\nPostgreSQL 数据库连接说明。",
+          "contentHash": "237da5c6f8f0117c5ed5b8b7f8d300440c7f0c019f54e5bcba86f0c6d83c1330",
+          "charCount": 19,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 19,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [
+              "Database handbook"
+            ],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "blockIndex": 1
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:45.941374Z",
+          "updatedAt": "2026-10-24T14:02:45.941374Z"
+        },
+        {
+          "id": "09e91d2f-b3dc-3324-9f4d-83f4c74610e4",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 1,
+          "content": "| 项目 | 值 |\n| --- | --- |\n| 苹果 | 2 |",
+          "embeddingText": "章节：Database handbook\n项目：苹果；值：2",
+          "contentHash": "f22ceaab70832aa5993b8cefa1dddb780d1667d3ed9d54ed9d36cff0c37ad713",
+          "charCount": 35,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 1,
+            "rowStart": 1,
+            "blockType": "TABLE",
+            "chapterPath": [
+              "Database handbook"
+            ],
+            "sourceBlocks": [
+              {
+                "blockIndex": 2,
+                "headerPolicy": "FIRST_ROW"
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:45.941374Z",
+          "updatedAt": "2026-10-24T14:02:45.941374Z"
+        },
+        {
+          "id": "5c2db2af-c5d4-3a95-b5ee-58aa0bf993d7",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 2,
+          "content": "| 项目 | 值 |\n| --- | --- |\n| 备注 |  |",
+          "embeddingText": "章节：Database handbook\n项目：备注；值：",
+          "contentHash": "9826b66fb6c8a4108587e99b35a258ede2279c7e7544240924ea5e18e3496b45",
+          "charCount": 34,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 2,
+            "blockType": "TABLE",
+            "chapterPath": [
+              "Database handbook"
+            ],
+            "sourceBlocks": [
+              {
+                "blockIndex": 2,
+                "headerPolicy": "FIRST_ROW"
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:45.941374Z",
+          "updatedAt": "2026-10-24T14:02:45.941374Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "slides.pptx": {
+      "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+      "sha256": "ba014621e5e54ed93a4104a5a6b375fd0fca08373474a76439dce40a223045fb",
+      "job": {
+        "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+        "requestId": "ingest-f590947a508d460596c63681e142e52a",
+        "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:46.911568Z",
+        "startedAt": "2026-10-24T14:02:46.99857Z",
+        "completedAt": "2026-10-24T14:02:49.757221Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "edb03d9f-c1ca-318b-a147-3c29ffb7236b",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "Database overview\n\nPostgreSQL connection handbook.",
+          "embeddingText": "Database overview\n\nPostgreSQL connection handbook.",
+          "contentHash": "a9f56f1a0d45f31e3fe68d959df43ccfb519090ad008e2e2674b841df39d98b8",
+          "charCount": 50,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 50,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "blockIndex": 0,
+                "slideNumber": 1
+              },
+              {
+                "blockIndex": 1,
+                "slideNumber": 1
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:49.719859Z",
+          "updatedAt": "2026-10-24T14:02:49.719859Z"
+        },
+        {
+          "id": "6f12c4cc-ce4f-3548-ba9c-8a56031e766f",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 1,
+          "content": "| Item | Count |\n| --- | --- |\n| Apple | 2 |",
+          "embeddingText": "Item：Apple；Count：2",
+          "contentHash": "bb8bd771b3e460d97f6eb32c9b94bdedbaa5c39154d8ca1e58703b961c861b38",
+          "charCount": 44,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 1,
+            "rowStart": 1,
+            "blockType": "TABLE",
+            "chapterPath": [],
+            "sourceBlocks": [
+              {
+                "blockIndex": 2,
+                "slideNumber": 1,
+                "headerPolicy": "FIRST_ROW"
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:49.719859Z",
+          "updatedAt": "2026-10-24T14:02:49.719859Z"
+        },
+        {
+          "id": "6c9b0094-0596-3040-90da-7f0f84a15cdf",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 2,
+          "content": "Backup evidence on slide two.",
+          "embeddingText": "Backup evidence on slide two.",
+          "contentHash": "9da80892d6c805b8810c7d4a52888c7bca2df9a40840a6418f4247ba6b1bd655",
+          "charCount": 29,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 29,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "blockIndex": 3,
+                "slideNumber": 2
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:49.719859Z",
+          "updatedAt": "2026-10-24T14:02:49.719859Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "legacy.ppt": {
+      "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+      "sha256": "0785df280ccfb2a11c934507dbd2ecbc0a9b9a86f36d7001ffde8c3e60c5f51d",
+      "job": {
+        "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+        "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+        "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:50.326679Z",
+        "startedAt": "2026-10-24T14:02:50.396717Z",
+        "completedAt": "2026-10-24T14:02:52.6324Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "1ea58019-21aa-3859-8304-a41ca91e4d69",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "Legacy database slide.",
+          "embeddingText": "Legacy database slide.",
+          "contentHash": "4567944a1e91cdbecc0c2da8ab9d00c6ab32c9ef0678bffbe3db5ca34f0002c8",
+          "charCount": 22,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 22,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "blockIndex": 0,
+                "slideNumber": 1
+              }
+            ],
+            "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:52.615468Z",
+          "updatedAt": "2026-10-24T14:02:52.615468Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "multi-sheet.xls": {
+      "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+      "sha256": "602e49d989a735ce40bf4846b1644064d2d9c8935668a8d45cdfa1ee6dbf2f22",
+      "job": {
+        "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+        "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+        "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:53.15094Z",
+        "startedAt": "2026-10-24T14:02:53.274708Z",
+        "completedAt": "2026-10-24T14:02:55.453042Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "86a9c0e6-9357-3d2a-a896-85d319a4959c",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 苹果 | 2 | 1.5 | 3.00 |  |",
+          "embeddingText": "章节：销售\n名称：苹果；数量：2；单价：1.5；总额：3.00；备注：",
+          "contentHash": "2a3ffc401a52da9a630dc795182557f26e78189b0ad2fbf9b60b9733e8c32f6e",
+          "charCount": 85,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 2,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "销售",
+            "rowNumbers": [
+              2
+            ],
+            "chapterPath": [
+              "销售"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "销售",
+                "blockIndex": 0,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:55.422238Z",
+          "updatedAt": "2026-10-24T14:02:55.422238Z"
+        },
+        {
+          "id": "261093ee-e328-3a0d-bdf0-42ab34b3cbbd",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 1,
+          "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 梨 | 3 | 1.5 | 4.50 |  |",
+          "embeddingText": "章节：销售\n名称：梨；数量：3；单价：1.5；总额：4.50；备注：",
+          "contentHash": "139a4d30cf128efb372a5e529f9d3eee8667f9fd76c4a80daf08cce8586bbaff",
+          "charCount": 84,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 3,
+            "rowStart": 3,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "销售",
+            "rowNumbers": [
+              3
+            ],
+            "chapterPath": [
+              "销售"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "销售",
+                "blockIndex": 0,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:55.422238Z",
+          "updatedAt": "2026-10-24T14:02:55.422238Z"
+        },
+        {
+          "id": "38b7d49f-03c9-3d22-9038-981f923a9f34",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 2,
+          "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 空行之后 | 5 | 1.5 | 7.50 |  |",
+          "embeddingText": "章节：销售\n名称：空行之后；数量：5；单价：1.5；总额：7.50；备注：",
+          "contentHash": "4ed29c4b07f3fa4b78ecd57c475b7f9bf827899d11e0b6b7487a7fb9911d10e3",
+          "charCount": 87,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 5,
+            "rowStart": 5,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "销售",
+            "rowNumbers": [
+              5
+            ],
+            "chapterPath": [
+              "销售"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "销售",
+                "blockIndex": 0,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:55.422238Z",
+          "updatedAt": "2026-10-24T14:02:55.422238Z"
+        },
+        {
+          "id": "ee437229-6352-376f-8cb4-47c5ff4f76b5",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 3,
+          "content": "| SKU | Value |\n| --- | --- |\n| 中文库存 | Available |",
+          "embeddingText": "章节：Stock\nSKU：中文库存；Value：Available",
+          "contentHash": "c10e4230dd60ee0d5b5fd116b048d7be40b84ded46b4fd4965a1aa9d05b1701a",
+          "charCount": 50,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 2,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "Stock",
+            "rowNumbers": [
+              2
+            ],
+            "chapterPath": [
+              "Stock"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "Stock",
+                "blockIndex": 1,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:55.422238Z",
+          "updatedAt": "2026-10-24T14:02:55.422238Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "multi-sheet.xlsx": {
+      "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+      "sha256": "c1afaef5473c0b4137a51ad884be96641731ed90f428c4b5596ab170e98a6af4",
+      "job": {
+        "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+        "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+        "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:55.997987Z",
+        "startedAt": "2026-10-24T14:02:56.129671Z",
+        "completedAt": "2026-10-24T14:02:58.630676Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "3e9946cb-f19e-377e-86cd-d8b1cf8937f6",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 苹果 | 2 | 1.5 | 3.00 |  |",
+          "embeddingText": "章节：销售\n名称：苹果；数量：2；单价：1.5；总额：3.00；备注：",
+          "contentHash": "2a3ffc401a52da9a630dc795182557f26e78189b0ad2fbf9b60b9733e8c32f6e",
+          "charCount": 85,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 2,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "销售",
+            "rowNumbers": [
+              2
+            ],
+            "chapterPath": [
+              "销售"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "销售",
+                "blockIndex": 0,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:58.61423Z",
+          "updatedAt": "2026-10-24T14:02:58.61423Z"
+        },
+        {
+          "id": "73865a2a-29a6-37e0-a203-8dae434494a2",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 1,
+          "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 梨 | 3 | 1.5 | 4.50 |  |",
+          "embeddingText": "章节：销售\n名称：梨；数量：3；单价：1.5；总额：4.50；备注：",
+          "contentHash": "139a4d30cf128efb372a5e529f9d3eee8667f9fd76c4a80daf08cce8586bbaff",
+          "charCount": 84,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 3,
+            "rowStart": 3,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "销售",
+            "rowNumbers": [
+              3
+            ],
+            "chapterPath": [
+              "销售"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "销售",
+                "blockIndex": 0,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:58.61423Z",
+          "updatedAt": "2026-10-24T14:02:58.61423Z"
+        },
+        {
+          "id": "ce646517-82f3-3170-95aa-ac84a3c081a4",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 2,
+          "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 空行之后 | 5 | 1.5 | 7.50 |  |",
+          "embeddingText": "章节：销售\n名称：空行之后；数量：5；单价：1.5；总额：7.50；备注：",
+          "contentHash": "4ed29c4b07f3fa4b78ecd57c475b7f9bf827899d11e0b6b7487a7fb9911d10e3",
+          "charCount": 87,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 5,
+            "rowStart": 5,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "销售",
+            "rowNumbers": [
+              5
+            ],
+            "chapterPath": [
+              "销售"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "销售",
+                "blockIndex": 0,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:58.61423Z",
+          "updatedAt": "2026-10-24T14:02:58.61423Z"
+        },
+        {
+          "id": "56e7305e-d3a6-362f-9dd5-08d36798c368",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 3,
+          "content": "| SKU | Value |\n| --- | --- |\n| 中文库存 | Available |",
+          "embeddingText": "章节：Stock\nSKU：中文库存；Value：Available",
+          "contentHash": "c10e4230dd60ee0d5b5fd116b048d7be40b84ded46b4fd4965a1aa9d05b1701a",
+          "charCount": 50,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 2,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "sheetName": "Stock",
+            "rowNumbers": [
+              2
+            ],
+            "chapterPath": [
+              "Stock"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "sheetName": "Stock",
+                "blockIndex": 1,
+                "formulaPolicy": "EVALUATE"
+              }
+            ],
+            "formulaPolicy": "EVALUATE",
+            "parserVersion": "poi-5.5.1-evaluate-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:02:58.61423Z",
+          "updatedAt": "2026-10-24T14:02:58.61423Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "quoted.csv": {
+      "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+      "sha256": "6f324525d04ec8603ffe38114a44f666e6a4810f71a20a164f422aaeedb839e2",
+      "job": {
+        "id": "5aa02e02-89c9-4433-abfd-8f47098b626b",
+        "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf",
+        "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:02:59.35508Z",
+        "startedAt": "2026-10-24T14:02:59.427778Z",
+        "completedAt": "2026-10-24T14:03:01.073561Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "c64de136-d4e1-3919-893d-351166a2e843",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "| 名称 | 数量 | 备注 |\n| --- | --- | --- |\n| 苹果 | 2 | 第一行<br>第二行 |",
+          "embeddingText": "章节：CSV\n名称：苹果；数量：2；备注：第一行\n第二行",
+          "contentHash": "617b1161e3557d6ad2a211ae8f989c2592e5b4571cabb77eb8a3581c6b24e5ce",
+          "charCount": 60,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 2,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "tableName": "CSV",
+            "rowNumbers": [
+              2
+            ],
+            "chapterPath": [
+              "CSV"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "tableName": "CSV",
+                "blockIndex": 0,
+                "formulaPolicy": "LITERAL_TEXT",
+                "rowNumberUnit": "CSV_RECORD"
+              }
+            ],
+            "formulaPolicy": "LITERAL_TEXT",
+            "parserVersion": "commons-csv-1.14.1-rfc4180-v1",
+            "rowNumberUnit": "CSV_RECORD",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:01.038511Z",
+          "updatedAt": "2026-10-24T14:03:01.038511Z"
+        },
+        {
+          "id": "749027de-cb4d-3bff-90a4-cadc59025b8b",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 1,
+          "content": "| 名称 | 数量 | 备注 |\n| --- | --- | --- |\n| 梨 |  | 中文空值 |",
+          "embeddingText": "章节：CSV\n名称：梨；数量：；备注：中文空值",
+          "contentHash": "863a852e5ac8ddca6447faef9ee76f34f5540f6726840730cca66385e6d5a399",
+          "charCount": 52,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 3,
+            "rowStart": 3,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "tableName": "CSV",
+            "rowNumbers": [
+              3
+            ],
+            "chapterPath": [
+              "CSV"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "tableName": "CSV",
+                "blockIndex": 0,
+                "formulaPolicy": "LITERAL_TEXT",
+                "rowNumberUnit": "CSV_RECORD"
+              }
+            ],
+            "formulaPolicy": "LITERAL_TEXT",
+            "parserVersion": "commons-csv-1.14.1-rfc4180-v1",
+            "rowNumberUnit": "CSV_RECORD",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:01.038511Z",
+          "updatedAt": "2026-10-24T14:03:01.038511Z"
+        },
+        {
+          "id": "5a8da2a7-698d-3217-bc46-de5ce6bc6464",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 2,
+          "content": "| 名称 | 数量 | 备注 |\n| --- | --- | --- |\n| 公式文本 | =SUM(1,2) | 不计算 |",
+          "embeddingText": "章节：CSV\n名称：公式文本；数量：=SUM(1,2)；备注：不计算",
+          "contentHash": "f24470025b4177fe18238d460616ea3c1dfdd8d9b9a4b96ebf4a765906753fbd",
+          "charCount": 63,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 4,
+            "rowStart": 4,
+            "blockType": "TABLE",
+            "headerRow": 1,
+            "tableName": "CSV",
+            "rowNumbers": [
+              4
+            ],
+            "chapterPath": [
+              "CSV"
+            ],
+            "sourceBlocks": [
+              {
+                "headerRow": 1,
+                "tableName": "CSV",
+                "blockIndex": 0,
+                "formulaPolicy": "LITERAL_TEXT",
+                "rowNumberUnit": "CSV_RECORD"
+              }
+            ],
+            "formulaPolicy": "LITERAL_TEXT",
+            "parserVersion": "commons-csv-1.14.1-rfc4180-v1",
+            "rowNumberUnit": "CSV_RECORD",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:01.038511Z",
+          "updatedAt": "2026-10-24T14:03:01.038511Z"
+        }
+      ],
+      "verification": "local parser, server-configured embedding"
+    },
+    "scanned.pdf-fast": {
+      "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+      "sha256": "2b54f93e42cbd91c3b4ce8480bed48048a1ce32d2a26522e7f1abdda863a2433",
+      "job": {
+        "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+        "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+        "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "FAILED",
+        "stage": "PARSE",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:03:01.574803Z",
+        "startedAt": "2026-10-24T14:03:01.62716Z",
+        "completedAt": "2026-10-24T14:03:03.512681Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": "KB_OCR_REQUIRED",
+        "errorMessage": "Execution ended; inspect stage and errorCode. Source contents and provider details are omitted.",
+        "aiConfigRevision": null,
+        "retryOf": null
+      },
+      "verification": "local explicit no-OCR rejection"
+    },
+    "scanned.pdf-fidelity": {
+      "job": {
+        "id": "0916e68f-44d9-486a-be5e-c7af299ad34b",
+        "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8",
+        "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+        "documentConfigRevision": 2,
+        "targetGeneration": 2,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:03:04.319058Z",
+        "startedAt": "2026-10-24T14:03:04.3736Z",
+        "completedAt": "2026-10-24T14:03:05.937069Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "8af23c7a-99bd-30f3-aacd-4b1954c3506f",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 2,
+          "chunkIndex": 0,
+          "content": "INVOICE 42; Apples: 2.",
+          "embeddingText": "章节：Invoice\nINVOICE 42; Apples: 2.",
+          "contentHash": "8be6d632eb665298f6393f75a7f0c3da8dc0bf518cab1eb2d7c78c6c6038bbcf",
+          "charCount": 22,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 22,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [
+              "Invoice"
+            ],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "bbox": [
+                  0.0,
+                  100.0,
+                  1000.0,
+                  200.0
+                ],
+                "blockIndex": 1,
+                "pageNumber": 1,
+                "provenance": "MINERU_2_7_6"
+              }
+            ],
+            "parserVersion": "mineru-2.7.6-content-list-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:05.918873Z",
+          "updatedAt": "2026-10-24T14:03:05.918873Z"
+        },
+        {
+          "id": "7f16ca4b-9ee0-3110-9bfb-99cc6670a8a2",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 2,
+          "chunkIndex": 1,
+          "content": "| 项目 | 数量 |\n| --- | --- |\n| 苹果 | 2 |\n| 苹果 | 3 |",
+          "embeddingText": "章节：Invoice\n项目：苹果；数量：2\n项目：苹果；数量：3",
+          "contentHash": "e3273468e1d0a233b693d4cedb571945f21769be0ce1d00ad4a6f2af5450bf54",
+          "charCount": 47,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "rowEnd": 2,
+            "rowStart": 1,
+            "blockType": "TABLE",
+            "chapterPath": [
+              "Invoice"
+            ],
+            "sourceBlocks": [
+              {
+                "blockIndex": 2,
+                "pageNumber": 1,
+                "provenance": "MINERU_2_7_6",
+                "headerPolicy": "FIRST_ROW"
+              }
+            ],
+            "parserVersion": "mineru-2.7.6-content-list-v1",
+            "headerRepeated": true
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:05.918873Z",
+          "updatedAt": "2026-10-24T14:03:05.918873Z"
+        }
+      ],
+      "verification": "external service as configured; does not establish recognition quality"
+    },
+    "invoice.png": {
+      "sha256": "761d44ccba616ff569ba8932dcf14534757f8310517fe1d95f5e84fc9495225c",
+      "job": {
+        "id": "fbaa02cd-33ea-4187-9518-de254a4e6d17",
+        "requestId": "ingest-4e1810051ebb459d9dc4097014c43111",
+        "documentId": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:03:06.536316Z",
+        "startedAt": "2026-10-24T14:03:06.568622Z",
+        "completedAt": "2026-10-24T14:03:06.679991Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "06800a0e-9ac5-3d27-a9c0-6b01d4a88531",
+          "documentId": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+          "embeddingText": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+          "contentHash": "a72b831c61cff1b4a3dd60df26a033e19206039ee08ee3d9bce2276d84656db7",
+          "charCount": 58,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 58,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "vlmModel": "qwen-vision",
+                "generated": true,
+                "blockIndex": 0,
+                "imageWidth": 400,
+                "provenance": "VLM_DESCRIPTION_AND_OCR",
+                "imageHeight": 160,
+                "imageNumber": 1
+              }
+            ],
+            "parserVersion": "ai-vision-description-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:06.664452Z",
+          "updatedAt": "2026-10-24T14:03:06.664452Z"
+        }
+      ],
+      "verification": "external vision as configured; manually review OCR text"
+    },
+    "invoice.jpeg": {
+      "sha256": "e7be09cb5379e3a4b7439f6fd29a4db54bd6ef60e906422d80dad5db64421b2f",
+      "job": {
+        "id": "ce073f10-c2e4-466c-b80c-5e947ec0a10b",
+        "requestId": "ingest-2c57739f91d14d4892b0d9a00cfab1c4",
+        "documentId": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+        "documentConfigRevision": 1,
+        "targetGeneration": 1,
+        "jobType": "INGEST",
+        "status": "SUCCEEDED",
+        "stage": "PUBLISH",
+        "attempts": 1,
+        "maxAttempts": 3,
+        "createdAt": "2026-10-24T14:03:07.557254Z",
+        "startedAt": "2026-10-24T14:03:07.671988Z",
+        "completedAt": "2026-10-24T14:03:07.738519Z",
+        "nextRunAt": null,
+        "leaseUntil": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "retryOf": null
+      },
+      "chunks": [
+        {
+          "id": "b4e05acd-8483-38df-9162-a9b44014a8b8",
+          "documentId": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "generation": 1,
+          "chunkIndex": 0,
+          "content": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+          "embeddingText": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+          "contentHash": "a72b831c61cff1b4a3dd60df26a033e19206039ee08ee3d9bce2276d84656db7",
+          "charCount": 58,
+          "tokenCount": null,
+          "tokenCountEstimated": false,
+          "enabled": true,
+          "edited": false,
+          "metadata": {
+            "textEnd": 58,
+            "blockType": "PARAGRAPH",
+            "textStart": 0,
+            "offsetUnit": "UTF16",
+            "chapterPath": [],
+            "overlapChars": 0,
+            "sourceBlocks": [
+              {
+                "vlmModel": "qwen-vision",
+                "generated": true,
+                "blockIndex": 0,
+                "imageWidth": 400,
+                "provenance": "VLM_DESCRIPTION_AND_OCR",
+                "imageHeight": 160,
+                "imageNumber": 1
+              }
+            ],
+            "parserVersion": "ai-vision-description-ocr-v1"
+          },
+          "createdBy": "user-alice",
+          "updatedBy": "user-alice",
+          "createdAt": "2026-10-24T14:03:07.722686Z",
+          "updatedAt": "2026-10-24T14:03:07.722686Z"
+        }
+      ],
+      "verification": "external vision as configured; manually review OCR text"
+    }
+  },
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/api/knowledge/formats",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [
+          {
+            "extensions": [
+              "txt",
+              "md",
+              "markdown"
+            ],
+            "fast": "LOCAL",
+            "fidelity": "LOCAL_ALIAS",
+            "notes": "Strict UTF-8; fidelity aliases the same structural parser"
+          },
+          {
+            "extensions": [
+              "csv",
+              "xls",
+              "xlsx"
+            ],
+            "fast": "LOCAL",
+            "fidelity": "LOCAL_ALIAS",
+            "notes": "RFC4180 or POI formulas; fidelity aliases the same table parser"
+          },
+          {
+            "extensions": [
+              "pdf"
+            ],
+            "fast": "LOCAL_TEXT_ONLY",
+            "fidelity": "MINERU_CONFIGURED",
+            "notes": "Fast has no OCR; fidelity requires exact MinerU 2.7.6. Configured does not mean externally verified"
+          },
+          {
+            "extensions": [
+              "doc",
+              "docx",
+              "ppt",
+              "pptx"
+            ],
+            "fast": "LOCAL",
+            "fidelity": "UNAVAILABLE",
+            "notes": "Tika basic text/tables and available locations; no Office fidelity route"
+          },
+          {
+            "extensions": [
+              "png",
+              "jpg",
+              "jpeg"
+            ],
+            "fast": "VLM_CONFIGURED",
+            "fidelity": "VLM_ALIAS_CONFIGURED",
+            "notes": "Both profiles use AI vision; configured does not mean externally verified"
+          }
+        ],
+        "requestId": "format-check-3955e07bebc340b8ae590bffd7390687"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs",
+      "request": {
+        "name": "formats-acceptance-ba422d6aacc94e82b66f3be209adca5b"
+      },
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "formats-acceptance-ba422d6aacc94e82b66f3be209adca5b",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-24T14:02:36.121285Z",
+          "updatedAt": "2026-10-24T14:02:36.121285Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_9ffaa179_a52f_418c_b73e_a395cd29bde9",
+          "embeddingAiConfigRevision": null
+        },
+        "requestId": "format-check-51cc0f00819d4816ac34013ebee34aaf"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "ordinary.pdf",
+          "originalFilename": "ordinary.pdf",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/bdaa9215-277c-4e12-905c-814a446c3892/original",
+          "mimeType": "application/pdf",
+          "fileSize": 1049,
+          "contentHash": "1e3fc412692db6c0c6e132ebac71d65260166fc5202ae14114bd167240397d13",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:37.7636621Z",
+          "updatedAt": "2026-10-24T14:02:37.7636621Z"
+        },
+        "requestId": "format-check-444bb2c8b4f3406f91d59fb4ab5a7413"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/bdaa9215-277c-4e12-905c-814a446c3892/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:37.968195Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-0d2f8bf9390b42409efa907d5935a843"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:08.03204Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-8dad62f0e06c4796a2889e95a58d7527"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:08.03204Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-02b147053c5f40f6843b6019584e5a97"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:08.03204Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-becd1c991cc34b929d9609b922c5a34f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:09.747848Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-8e71d556be1c48b89d7d1c0d43238b4f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:09.747848Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-9b1e190d663e4f6c9fccb6bdf13bf560"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "EMBED",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:09.747848Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-58c17caefa58412cbd3a0bcfdf9ad34f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "b21787fd-0a2e-4d0a-b76c-5e65fce67363",
+          "requestId": "ingest-e017b1c1e98e4c8b898b1438f969df47",
+          "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:37.882182Z",
+          "startedAt": "2026-10-24T14:02:38.032041Z",
+          "completedAt": "2026-10-24T14:02:41.273477Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-9eaea43b0af64526813c216f9114d3aa"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/bdaa9215-277c-4e12-905c-814a446c3892/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 2,
+          "records": [
+            {
+              "id": "0c7602c3-6096-38a9-8f84-bcaaf6a3414f",
+              "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Database overview: PostgreSQL connection.",
+              "embeddingText": "Database overview: PostgreSQL connection.",
+              "contentHash": "7d5067485c61b9bc089a46ba27a0a073e4db8dd1bce7bc3d22d1dec26b310447",
+              "charCount": 41,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 41,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 0,
+                    "pageNumber": 1
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:41.163469Z",
+              "updatedAt": "2026-10-24T14:02:41.163469Z"
+            },
+            {
+              "id": "30909cae-a8b0-3e39-b62c-441bebb8e4d7",
+              "documentId": "bdaa9215-277c-4e12-905c-814a446c3892",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "Backup policy: retain seven days.",
+              "embeddingText": "Backup policy: retain seven days.",
+              "contentHash": "ea15ac8696bf16aceec284ee145f687e870cab96d8eae9f69ca56f201311564d",
+              "charCount": 33,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 33,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 1,
+                    "pageNumber": 2
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:41.163469Z",
+              "updatedAt": "2026-10-24T14:02:41.163469Z"
+            }
+          ]
+        },
+        "requestId": "format-check-fbd5b404f1d644f18e007f4dbd4971f2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "handbook.docx",
+          "originalFilename": "handbook.docx",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/c59cee13-e325-4862-ae37-c33ea24037a0/original",
+          "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "fileSize": 2834,
+          "contentHash": "83740f5e5cd8d70e186de1850a286fd0d4c49ef2a262088f9954a1c439a59029",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:42.041897Z",
+          "updatedAt": "2026-10-24T14:02:42.041897Z"
+        },
+        "requestId": "format-check-fc36a66b7c3946b68b34176ae77e65bc"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/c59cee13-e325-4862-ae37-c33ea24037a0/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-91f158920112413295ede039097071ed"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:42.148448Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-e2f994a67cee4c39894f3536d67532cd"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:12.202929Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-da7b5941b6334696a88087fca5942a73"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:12.202929Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-23400989e9e24553875fd868fc194301"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:12.202929Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-c20518ec7ab94fe280480ab6f7b44992"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:12.202929Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-691feb8f9fd54735a41dd9df07b0502f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:12.202929Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-73c53e2a301840ea8f6c211de705b491"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:14.760305Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-d1113f554d1d4387a14320faa2fb6f33"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "EMBED",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:14.760305Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-e7b611371b9f465f982960b1abc7b626"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4dc6dbf-ba93-4b50-a2ff-84d1aa34b17c",
+          "requestId": "ingest-91f158920112413295ede039097071ed",
+          "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:42.120425Z",
+          "startedAt": "2026-10-24T14:02:42.202931Z",
+          "completedAt": "2026-10-24T14:02:45.96482Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-755d649c3bd34114bc783db2f6359a53"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/c59cee13-e325-4862-ae37-c33ea24037a0/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 3,
+          "records": [
+            {
+              "id": "e33b21ef-8baf-3405-b0fb-4307b8c51057",
+              "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "PostgreSQL 数据库连接说明。",
+              "embeddingText": "章节：Database handbook\nPostgreSQL 数据库连接说明。",
+              "contentHash": "237da5c6f8f0117c5ed5b8b7f8d300440c7f0c019f54e5bcba86f0c6d83c1330",
+              "charCount": 19,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 19,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Database handbook"
+                ],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 1
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:45.941374Z",
+              "updatedAt": "2026-10-24T14:02:45.941374Z"
+            },
+            {
+              "id": "09e91d2f-b3dc-3324-9f4d-83f4c74610e4",
+              "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "| 项目 | 值 |\n| --- | --- |\n| 苹果 | 2 |",
+              "embeddingText": "章节：Database handbook\n项目：苹果；值：2",
+              "contentHash": "f22ceaab70832aa5993b8cefa1dddb780d1667d3ed9d54ed9d36cff0c37ad713",
+              "charCount": 35,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 1,
+                "rowStart": 1,
+                "blockType": "TABLE",
+                "chapterPath": [
+                  "Database handbook"
+                ],
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 2,
+                    "headerPolicy": "FIRST_ROW"
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:45.941374Z",
+              "updatedAt": "2026-10-24T14:02:45.941374Z"
+            },
+            {
+              "id": "5c2db2af-c5d4-3a95-b5ee-58aa0bf993d7",
+              "documentId": "c59cee13-e325-4862-ae37-c33ea24037a0",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 2,
+              "content": "| 项目 | 值 |\n| --- | --- |\n| 备注 |  |",
+              "embeddingText": "章节：Database handbook\n项目：备注；值：",
+              "contentHash": "9826b66fb6c8a4108587e99b35a258ede2279c7e7544240924ea5e18e3496b45",
+              "charCount": 34,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 2,
+                "blockType": "TABLE",
+                "chapterPath": [
+                  "Database handbook"
+                ],
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 2,
+                    "headerPolicy": "FIRST_ROW"
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:45.941374Z",
+              "updatedAt": "2026-10-24T14:02:45.941374Z"
+            }
+          ]
+        },
+        "requestId": "format-check-e10211eb85834ff69d740c26b946d194"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "2914870e-505b-4f4f-af61-e12996981348",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "slides.pptx",
+          "originalFilename": "slides.pptx",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/2914870e-505b-4f4f-af61-e12996981348/original",
+          "mimeType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "fileSize": 26313,
+          "contentHash": "ba014621e5e54ed93a4104a5a6b375fd0fca08373474a76439dce40a223045fb",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:46.8235073Z",
+          "updatedAt": "2026-10-24T14:02:46.8235073Z"
+        },
+        "requestId": "format-check-735f2c6ffb2f421d919d5623b536bd80"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/2914870e-505b-4f4f-af61-e12996981348/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-f590947a508d460596c63681e142e52a"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:46.937774Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-0299f4a2a3974638a17a153ff268e5d5"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": "2026-10-24T14:02:46.99857Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:16.998569Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-d7d0ca05de9e468c9f5871eb0a0c4f3d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": "2026-10-24T14:02:46.99857Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:16.998569Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-074ab4d355bc4d64ab4e0835b0dd8630"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": "2026-10-24T14:02:46.99857Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:16.998569Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-1291a0285d2448fe961eb6c045ee3481"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": "2026-10-24T14:02:46.99857Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:16.998569Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-8c38ec5679a14af6a2fc856d5d7e5c33"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": "2026-10-24T14:02:46.99857Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:16.998569Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-4e44000064ef4bc588c1393e18c48947"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1927b236-2bd2-4980-aeb9-949ef9c0dce1",
+          "requestId": "ingest-f590947a508d460596c63681e142e52a",
+          "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:46.911568Z",
+          "startedAt": "2026-10-24T14:02:46.99857Z",
+          "completedAt": "2026-10-24T14:02:49.757221Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-c7f4805ac8864cb19406b0ba90dece17"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/2914870e-505b-4f4f-af61-e12996981348/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 3,
+          "records": [
+            {
+              "id": "edb03d9f-c1ca-318b-a147-3c29ffb7236b",
+              "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Database overview\n\nPostgreSQL connection handbook.",
+              "embeddingText": "Database overview\n\nPostgreSQL connection handbook.",
+              "contentHash": "a9f56f1a0d45f31e3fe68d959df43ccfb519090ad008e2e2674b841df39d98b8",
+              "charCount": 50,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 50,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 0,
+                    "slideNumber": 1
+                  },
+                  {
+                    "blockIndex": 1,
+                    "slideNumber": 1
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:49.719859Z",
+              "updatedAt": "2026-10-24T14:02:49.719859Z"
+            },
+            {
+              "id": "6f12c4cc-ce4f-3548-ba9c-8a56031e766f",
+              "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "| Item | Count |\n| --- | --- |\n| Apple | 2 |",
+              "embeddingText": "Item：Apple；Count：2",
+              "contentHash": "bb8bd771b3e460d97f6eb32c9b94bdedbaa5c39154d8ca1e58703b961c861b38",
+              "charCount": 44,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 1,
+                "rowStart": 1,
+                "blockType": "TABLE",
+                "chapterPath": [],
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 2,
+                    "slideNumber": 1,
+                    "headerPolicy": "FIRST_ROW"
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:49.719859Z",
+              "updatedAt": "2026-10-24T14:02:49.719859Z"
+            },
+            {
+              "id": "6c9b0094-0596-3040-90da-7f0f84a15cdf",
+              "documentId": "2914870e-505b-4f4f-af61-e12996981348",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 2,
+              "content": "Backup evidence on slide two.",
+              "embeddingText": "Backup evidence on slide two.",
+              "contentHash": "9da80892d6c805b8810c7d4a52888c7bca2df9a40840a6418f4247ba6b1bd655",
+              "charCount": 29,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 29,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 3,
+                    "slideNumber": 2
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:49.719859Z",
+              "updatedAt": "2026-10-24T14:02:49.719859Z"
+            }
+          ]
+        },
+        "requestId": "format-check-68aba3b5b2aa48199c46521eb33671ef"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "legacy.ppt",
+          "originalFilename": "legacy.ppt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/0c659e3b-b71f-472e-9b59-83475aea3401/original",
+          "mimeType": "application/vnd.ms-powerpoint",
+          "fileSize": 10752,
+          "contentHash": "0785df280ccfb2a11c934507dbd2ecbc0a9b9a86f36d7001ffde8c3e60c5f51d",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:50.2554959Z",
+          "updatedAt": "2026-10-24T14:02:50.2554959Z"
+        },
+        "requestId": "format-check-c7d663c931f14cca8aaa788556afdbcc"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/0c659e3b-b71f-472e-9b59-83475aea3401/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+          "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:50.326679Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:50.343433Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-721cedca6e7d45808218de4c5a48e874"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+          "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:50.326679Z",
+          "startedAt": "2026-10-24T14:02:50.396717Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:20.396717Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-1138512d14be425b80c53d5c3b408f16"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+          "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:50.326679Z",
+          "startedAt": "2026-10-24T14:02:50.396717Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:20.396717Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-4d65afaa2f20416c9a11ea2def09a404"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+          "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:50.326679Z",
+          "startedAt": "2026-10-24T14:02:50.396717Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:20.396717Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-3c9b4e5e27bf415d8ae23f43e848588a"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+          "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:50.326679Z",
+          "startedAt": "2026-10-24T14:02:50.396717Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:20.396717Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-5824617dcd6346ad893c44992ea03f54"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "3e961d55-0356-41e6-b4b1-52fb7ace5f04",
+          "requestId": "ingest-ac675cfe58264d698cf5a2956aefa7f4",
+          "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:50.326679Z",
+          "startedAt": "2026-10-24T14:02:50.396717Z",
+          "completedAt": "2026-10-24T14:02:52.6324Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-2b5c814c9b6d4660974c382be242a8df"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/0c659e3b-b71f-472e-9b59-83475aea3401/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 1,
+          "records": [
+            {
+              "id": "1ea58019-21aa-3859-8304-a41ca91e4d69",
+              "documentId": "0c659e3b-b71f-472e-9b59-83475aea3401",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Legacy database slide.",
+              "embeddingText": "Legacy database slide.",
+              "contentHash": "4567944a1e91cdbecc0c2da8ab9d00c6ab32c9ef0678bffbe3db5ca34f0002c8",
+              "charCount": 22,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 22,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 0,
+                    "slideNumber": 1
+                  }
+                ],
+                "parserVersion": "tika-3.3.3-fast-no-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:52.615468Z",
+              "updatedAt": "2026-10-24T14:02:52.615468Z"
+            }
+          ]
+        },
+        "requestId": "format-check-22077ee9a149432d9427ccc5ad5a1cd6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "multi-sheet.xls",
+          "originalFilename": "multi-sheet.xls",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/fe6d06e7-db66-4b98-a73e-ca434f68f00d/original",
+          "mimeType": "application/vnd.ms-excel",
+          "fileSize": 5120,
+          "contentHash": "602e49d989a735ce40bf4846b1644064d2d9c8935668a8d45cdfa1ee6dbf2f22",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:53.0582777Z",
+          "updatedAt": "2026-10-24T14:02:53.0582777Z"
+        },
+        "requestId": "format-check-5b5c27e14be246f69d26a295a26aa3b6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/fe6d06e7-db66-4b98-a73e-ca434f68f00d/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-e0140900e4094eb1a90f2524e119187a"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+          "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:53.15094Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:53.171904Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-19328526e99f4284a847e146c4f03369"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/638f9c51-5877-47d8-a474-3d274e5949e3",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+          "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:53.15094Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:53.171904Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-5fd6a0564a184e35a73fef4b1384145c"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/638f9c51-5877-47d8-a474-3d274e5949e3",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+          "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:53.15094Z",
+          "startedAt": "2026-10-24T14:02:53.274708Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:23.274708Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-dd69bd9df3aa42c8a988a5786eeb58fa"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/638f9c51-5877-47d8-a474-3d274e5949e3",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+          "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:53.15094Z",
+          "startedAt": "2026-10-24T14:02:53.274708Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:23.274708Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-bae597c5033b40209615f3150a72a094"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/638f9c51-5877-47d8-a474-3d274e5949e3",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+          "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:53.15094Z",
+          "startedAt": "2026-10-24T14:02:53.274708Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:24.776236Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-c58353d6bc23490a879345319137f96b"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/638f9c51-5877-47d8-a474-3d274e5949e3",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "638f9c51-5877-47d8-a474-3d274e5949e3",
+          "requestId": "ingest-e0140900e4094eb1a90f2524e119187a",
+          "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:53.15094Z",
+          "startedAt": "2026-10-24T14:02:53.274708Z",
+          "completedAt": "2026-10-24T14:02:55.453042Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-498df27f66004ee793dbe2711507e69c"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/fe6d06e7-db66-4b98-a73e-ca434f68f00d/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 4,
+          "records": [
+            {
+              "id": "86a9c0e6-9357-3d2a-a896-85d319a4959c",
+              "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 苹果 | 2 | 1.5 | 3.00 |  |",
+              "embeddingText": "章节：销售\n名称：苹果；数量：2；单价：1.5；总额：3.00；备注：",
+              "contentHash": "2a3ffc401a52da9a630dc795182557f26e78189b0ad2fbf9b60b9733e8c32f6e",
+              "charCount": 85,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 2,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "销售",
+                "rowNumbers": [
+                  2
+                ],
+                "chapterPath": [
+                  "销售"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "销售",
+                    "blockIndex": 0,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:55.422238Z",
+              "updatedAt": "2026-10-24T14:02:55.422238Z"
+            },
+            {
+              "id": "261093ee-e328-3a0d-bdf0-42ab34b3cbbd",
+              "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 梨 | 3 | 1.5 | 4.50 |  |",
+              "embeddingText": "章节：销售\n名称：梨；数量：3；单价：1.5；总额：4.50；备注：",
+              "contentHash": "139a4d30cf128efb372a5e529f9d3eee8667f9fd76c4a80daf08cce8586bbaff",
+              "charCount": 84,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 3,
+                "rowStart": 3,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "销售",
+                "rowNumbers": [
+                  3
+                ],
+                "chapterPath": [
+                  "销售"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "销售",
+                    "blockIndex": 0,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:55.422238Z",
+              "updatedAt": "2026-10-24T14:02:55.422238Z"
+            },
+            {
+              "id": "38b7d49f-03c9-3d22-9038-981f923a9f34",
+              "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 2,
+              "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 空行之后 | 5 | 1.5 | 7.50 |  |",
+              "embeddingText": "章节：销售\n名称：空行之后；数量：5；单价：1.5；总额：7.50；备注：",
+              "contentHash": "4ed29c4b07f3fa4b78ecd57c475b7f9bf827899d11e0b6b7487a7fb9911d10e3",
+              "charCount": 87,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 5,
+                "rowStart": 5,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "销售",
+                "rowNumbers": [
+                  5
+                ],
+                "chapterPath": [
+                  "销售"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "销售",
+                    "blockIndex": 0,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:55.422238Z",
+              "updatedAt": "2026-10-24T14:02:55.422238Z"
+            },
+            {
+              "id": "ee437229-6352-376f-8cb4-47c5ff4f76b5",
+              "documentId": "fe6d06e7-db66-4b98-a73e-ca434f68f00d",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 3,
+              "content": "| SKU | Value |\n| --- | --- |\n| 中文库存 | Available |",
+              "embeddingText": "章节：Stock\nSKU：中文库存；Value：Available",
+              "contentHash": "c10e4230dd60ee0d5b5fd116b048d7be40b84ded46b4fd4965a1aa9d05b1701a",
+              "charCount": 50,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 2,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "Stock",
+                "rowNumbers": [
+                  2
+                ],
+                "chapterPath": [
+                  "Stock"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "Stock",
+                    "blockIndex": 1,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:55.422238Z",
+              "updatedAt": "2026-10-24T14:02:55.422238Z"
+            }
+          ]
+        },
+        "requestId": "format-check-d50e8515d8564eac8214fa0247a8406c"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "multi-sheet.xlsx",
+          "originalFilename": "multi-sheet.xlsx",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/f33b6a2b-39ca-4697-b26c-3ac2ab8769c2/original",
+          "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "fileSize": 4045,
+          "contentHash": "c1afaef5473c0b4137a51ad884be96641731ed90f428c4b5596ab170e98a6af4",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:55.8986544Z",
+          "updatedAt": "2026-10-24T14:02:55.8986544Z"
+        },
+        "requestId": "format-check-25eb1b72eae24b98b018be4ad0945452"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/f33b6a2b-39ca-4697-b26c-3ac2ab8769c2/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:56.016071Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-75fcf9a5dce14e948c95772bbf32c0f2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:56.016071Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-25ba0d29b7984d4aac2146abf9744f1d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": "2026-10-24T14:02:56.129671Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:26.12967Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-2b9f033c137041d2b2c5e95a680bc10a"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": "2026-10-24T14:02:56.129671Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:26.12967Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-0d939a6912d64c61a92dca535709d231"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": "2026-10-24T14:02:56.129671Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:26.12967Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-e59828ea6625430fa19fb3b2ed1f6853"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": "2026-10-24T14:02:56.129671Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:26.12967Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-0410d713c1b5441b82b7d200cf3e0877"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bb63b8b4-1cd3-4b77-83f9-9cab6712618b",
+          "requestId": "ingest-07316517fad547bf83ef6096d8c8c88d",
+          "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:55.997987Z",
+          "startedAt": "2026-10-24T14:02:56.129671Z",
+          "completedAt": "2026-10-24T14:02:58.630676Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-3fca5d19c03d43d3ac094c9e6fac0d5f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/f33b6a2b-39ca-4697-b26c-3ac2ab8769c2/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 4,
+          "records": [
+            {
+              "id": "3e9946cb-f19e-377e-86cd-d8b1cf8937f6",
+              "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 苹果 | 2 | 1.5 | 3.00 |  |",
+              "embeddingText": "章节：销售\n名称：苹果；数量：2；单价：1.5；总额：3.00；备注：",
+              "contentHash": "2a3ffc401a52da9a630dc795182557f26e78189b0ad2fbf9b60b9733e8c32f6e",
+              "charCount": 85,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 2,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "销售",
+                "rowNumbers": [
+                  2
+                ],
+                "chapterPath": [
+                  "销售"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "销售",
+                    "blockIndex": 0,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:58.61423Z",
+              "updatedAt": "2026-10-24T14:02:58.61423Z"
+            },
+            {
+              "id": "73865a2a-29a6-37e0-a203-8dae434494a2",
+              "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 梨 | 3 | 1.5 | 4.50 |  |",
+              "embeddingText": "章节：销售\n名称：梨；数量：3；单价：1.5；总额：4.50；备注：",
+              "contentHash": "139a4d30cf128efb372a5e529f9d3eee8667f9fd76c4a80daf08cce8586bbaff",
+              "charCount": 84,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 3,
+                "rowStart": 3,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "销售",
+                "rowNumbers": [
+                  3
+                ],
+                "chapterPath": [
+                  "销售"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "销售",
+                    "blockIndex": 0,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:58.61423Z",
+              "updatedAt": "2026-10-24T14:02:58.61423Z"
+            },
+            {
+              "id": "ce646517-82f3-3170-95aa-ac84a3c081a4",
+              "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 2,
+              "content": "| 名称 | 数量 | 单价 | 总额 | 备注 |\n| --- | --- | --- | --- | --- |\n| 空行之后 | 5 | 1.5 | 7.50 |  |",
+              "embeddingText": "章节：销售\n名称：空行之后；数量：5；单价：1.5；总额：7.50；备注：",
+              "contentHash": "4ed29c4b07f3fa4b78ecd57c475b7f9bf827899d11e0b6b7487a7fb9911d10e3",
+              "charCount": 87,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 5,
+                "rowStart": 5,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "销售",
+                "rowNumbers": [
+                  5
+                ],
+                "chapterPath": [
+                  "销售"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "销售",
+                    "blockIndex": 0,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:58.61423Z",
+              "updatedAt": "2026-10-24T14:02:58.61423Z"
+            },
+            {
+              "id": "56e7305e-d3a6-362f-9dd5-08d36798c368",
+              "documentId": "f33b6a2b-39ca-4697-b26c-3ac2ab8769c2",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 3,
+              "content": "| SKU | Value |\n| --- | --- |\n| 中文库存 | Available |",
+              "embeddingText": "章节：Stock\nSKU：中文库存；Value：Available",
+              "contentHash": "c10e4230dd60ee0d5b5fd116b048d7be40b84ded46b4fd4965a1aa9d05b1701a",
+              "charCount": 50,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 2,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "sheetName": "Stock",
+                "rowNumbers": [
+                  2
+                ],
+                "chapterPath": [
+                  "Stock"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "sheetName": "Stock",
+                    "blockIndex": 1,
+                    "formulaPolicy": "EVALUATE"
+                  }
+                ],
+                "formulaPolicy": "EVALUATE",
+                "parserVersion": "poi-5.5.1-evaluate-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:02:58.61423Z",
+              "updatedAt": "2026-10-24T14:02:58.61423Z"
+            }
+          ]
+        },
+        "requestId": "format-check-d854461897b74612bdf2f8c40240865c"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "quoted.csv",
+          "originalFilename": "quoted.csv",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/6716f9cf-cd88-4bae-bd76-11f7e0c00253/original",
+          "mimeType": "text/plain",
+          "fileSize": 109,
+          "contentHash": "6f324525d04ec8603ffe38114a44f666e6a4810f71a20a164f422aaeedb839e2",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:02:59.252708Z",
+          "updatedAt": "2026-10-24T14:02:59.252708Z"
+        },
+        "requestId": "format-check-8b971d81d0b94325a7bb4a868aaccec6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/6716f9cf-cd88-4bae-bd76-11f7e0c00253/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5aa02e02-89c9-4433-abfd-8f47098b626b",
+          "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:59.35508Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:02:59.374424Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-d922918e33044bce8e277337cf125fa9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/5aa02e02-89c9-4433-abfd-8f47098b626b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5aa02e02-89c9-4433-abfd-8f47098b626b",
+          "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:59.35508Z",
+          "startedAt": "2026-10-24T14:02:59.427778Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:29.427778Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-9a34e6c49ee6447cb333a56fd2954377"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/5aa02e02-89c9-4433-abfd-8f47098b626b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5aa02e02-89c9-4433-abfd-8f47098b626b",
+          "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:59.35508Z",
+          "startedAt": "2026-10-24T14:02:59.427778Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:29.780613Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-f0f5112644684f7f9d1cef0f1f249be4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/5aa02e02-89c9-4433-abfd-8f47098b626b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5aa02e02-89c9-4433-abfd-8f47098b626b",
+          "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:59.35508Z",
+          "startedAt": "2026-10-24T14:02:59.427778Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:29.780613Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-5abe395f80cf4ef1a1209cf9ea5d63fa"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/5aa02e02-89c9-4433-abfd-8f47098b626b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5aa02e02-89c9-4433-abfd-8f47098b626b",
+          "requestId": "ingest-399418b5cfcf478489e1f3cc3e0aeddf",
+          "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:02:59.35508Z",
+          "startedAt": "2026-10-24T14:02:59.427778Z",
+          "completedAt": "2026-10-24T14:03:01.073561Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-1c3f2e64ccd84467aa4ffbc083d6ba58"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/6716f9cf-cd88-4bae-bd76-11f7e0c00253/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 3,
+          "records": [
+            {
+              "id": "c64de136-d4e1-3919-893d-351166a2e843",
+              "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "| 名称 | 数量 | 备注 |\n| --- | --- | --- |\n| 苹果 | 2 | 第一行<br>第二行 |",
+              "embeddingText": "章节：CSV\n名称：苹果；数量：2；备注：第一行\n第二行",
+              "contentHash": "617b1161e3557d6ad2a211ae8f989c2592e5b4571cabb77eb8a3581c6b24e5ce",
+              "charCount": 60,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 2,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "tableName": "CSV",
+                "rowNumbers": [
+                  2
+                ],
+                "chapterPath": [
+                  "CSV"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "tableName": "CSV",
+                    "blockIndex": 0,
+                    "formulaPolicy": "LITERAL_TEXT",
+                    "rowNumberUnit": "CSV_RECORD"
+                  }
+                ],
+                "formulaPolicy": "LITERAL_TEXT",
+                "parserVersion": "commons-csv-1.14.1-rfc4180-v1",
+                "rowNumberUnit": "CSV_RECORD",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:01.038511Z",
+              "updatedAt": "2026-10-24T14:03:01.038511Z"
+            },
+            {
+              "id": "749027de-cb4d-3bff-90a4-cadc59025b8b",
+              "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "| 名称 | 数量 | 备注 |\n| --- | --- | --- |\n| 梨 |  | 中文空值 |",
+              "embeddingText": "章节：CSV\n名称：梨；数量：；备注：中文空值",
+              "contentHash": "863a852e5ac8ddca6447faef9ee76f34f5540f6726840730cca66385e6d5a399",
+              "charCount": 52,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 3,
+                "rowStart": 3,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "tableName": "CSV",
+                "rowNumbers": [
+                  3
+                ],
+                "chapterPath": [
+                  "CSV"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "tableName": "CSV",
+                    "blockIndex": 0,
+                    "formulaPolicy": "LITERAL_TEXT",
+                    "rowNumberUnit": "CSV_RECORD"
+                  }
+                ],
+                "formulaPolicy": "LITERAL_TEXT",
+                "parserVersion": "commons-csv-1.14.1-rfc4180-v1",
+                "rowNumberUnit": "CSV_RECORD",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:01.038511Z",
+              "updatedAt": "2026-10-24T14:03:01.038511Z"
+            },
+            {
+              "id": "5a8da2a7-698d-3217-bc46-de5ce6bc6464",
+              "documentId": "6716f9cf-cd88-4bae-bd76-11f7e0c00253",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 2,
+              "content": "| 名称 | 数量 | 备注 |\n| --- | --- | --- |\n| 公式文本 | =SUM(1,2) | 不计算 |",
+              "embeddingText": "章节：CSV\n名称：公式文本；数量：=SUM(1,2)；备注：不计算",
+              "contentHash": "f24470025b4177fe18238d460616ea3c1dfdd8d9b9a4b96ebf4a765906753fbd",
+              "charCount": 63,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 4,
+                "rowStart": 4,
+                "blockType": "TABLE",
+                "headerRow": 1,
+                "tableName": "CSV",
+                "rowNumbers": [
+                  4
+                ],
+                "chapterPath": [
+                  "CSV"
+                ],
+                "sourceBlocks": [
+                  {
+                    "headerRow": 1,
+                    "tableName": "CSV",
+                    "blockIndex": 0,
+                    "formulaPolicy": "LITERAL_TEXT",
+                    "rowNumberUnit": "CSV_RECORD"
+                  }
+                ],
+                "formulaPolicy": "LITERAL_TEXT",
+                "parserVersion": "commons-csv-1.14.1-rfc4180-v1",
+                "rowNumberUnit": "CSV_RECORD",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:01.038511Z",
+              "updatedAt": "2026-10-24T14:03:01.038511Z"
+            }
+          ]
+        },
+        "requestId": "format-check-c6ced8933fda4841985747bcca0d67f7"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "scanned.pdf",
+          "originalFilename": "scanned.pdf",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/2147d0cb-7240-47ec-a382-46edfa19dd86/original",
+          "mimeType": "application/pdf",
+          "fileSize": 2409,
+          "contentHash": "2b54f93e42cbd91c3b4ce8480bed48048a1ce32d2a26522e7f1abdda863a2433",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:03:01.4960297Z",
+          "updatedAt": "2026-10-24T14:03:01.4960297Z"
+        },
+        "requestId": "format-check-639b83391ccb4bc38ec08ae22cb435e3"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/2147d0cb-7240-47ec-a382-46edfa19dd86/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+          "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:01.574803Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:03:01.592257Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-907418a2ab7441109fc670950d7c89c4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fec531d9-1822-4313-b5f8-c64e79f15e6c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+          "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:01.574803Z",
+          "startedAt": "2026-10-24T14:03:01.62716Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:31.627159Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-2cb29abbd86442c78cb1d6023bae6305"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fec531d9-1822-4313-b5f8-c64e79f15e6c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+          "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:01.574803Z",
+          "startedAt": "2026-10-24T14:03:01.62716Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:31.627159Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-8aedf22decfb47358c3c03ed0a7d8d36"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fec531d9-1822-4313-b5f8-c64e79f15e6c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+          "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:01.574803Z",
+          "startedAt": "2026-10-24T14:03:01.62716Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:31.627159Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-28aa0e95998a470191e9c6c23206a5b9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fec531d9-1822-4313-b5f8-c64e79f15e6c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+          "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:01.574803Z",
+          "startedAt": "2026-10-24T14:03:01.62716Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:31.627159Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-946a9a6d01944b72b0fd81af2291f006"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fec531d9-1822-4313-b5f8-c64e79f15e6c",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fec531d9-1822-4313-b5f8-c64e79f15e6c",
+          "requestId": "ingest-c25e54cfe5a84858abb6bc41d0b86b88",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "FAILED",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:01.574803Z",
+          "startedAt": "2026-10-24T14:03:01.62716Z",
+          "completedAt": "2026-10-24T14:03:03.512681Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": "KB_OCR_REQUIRED",
+          "errorMessage": "Execution ended; inspect stage and errorCode. Source contents and provider details are omitted.",
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-ae6fc7fb2aed4b6d8756ac4a2d6076c3"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/2147d0cb-7240-47ec-a382-46edfa19dd86",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "scanned.pdf",
+          "originalFilename": "scanned.pdf",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/2147d0cb-7240-47ec-a382-46edfa19dd86/original",
+          "mimeType": "application/pdf",
+          "fileSize": 2409,
+          "contentHash": "2b54f93e42cbd91c3b4ce8480bed48048a1ce32d2a26522e7f1abdda863a2433",
+          "enabled": true,
+          "processStatus": "FAILED",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:03:01.49603Z",
+          "updatedAt": "2026-10-24T14:03:03.514636Z"
+        },
+        "requestId": "format-check-d57a3f8b88af484b97b6fbbf204b462c"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/2147d0cb-7240-47ec-a382-46edfa19dd86",
+      "request": {
+        "version": 1,
+        "ingestionSpec": {
+          "parseProfile": "fidelity"
+        }
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "scanned.pdf",
+          "originalFilename": "scanned.pdf",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/2147d0cb-7240-47ec-a382-46edfa19dd86/original",
+          "mimeType": "application/pdf",
+          "fileSize": 2409,
+          "contentHash": "2b54f93e42cbd91c3b4ce8480bed48048a1ce32d2a26522e7f1abdda863a2433",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fidelity"
+          },
+          "configRevision": 2,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 2,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:03:01.49603Z",
+          "updatedAt": "2026-10-24T14:03:04.220433Z"
+        },
+        "requestId": "format-check-5a3f87b153a04224b83e278e26efe5a8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/2147d0cb-7240-47ec-a382-46edfa19dd86/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0916e68f-44d9-486a-be5e-c7af299ad34b",
+          "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 2,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:04.319058Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:03:04.335343Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-c4f1d08a710d493383005af3029543a0"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/0916e68f-44d9-486a-be5e-c7af299ad34b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0916e68f-44d9-486a-be5e-c7af299ad34b",
+          "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 2,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:04.319058Z",
+          "startedAt": "2026-10-24T14:03:04.3736Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:34.3736Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-ec52a84d5d6b469cb2b71ffc46bf5c25"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/0916e68f-44d9-486a-be5e-c7af299ad34b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0916e68f-44d9-486a-be5e-c7af299ad34b",
+          "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 2,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:04.319058Z",
+          "startedAt": "2026-10-24T14:03:04.3736Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:34.785566Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-64b0cefc58fe4573aabc061806f1def9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/0916e68f-44d9-486a-be5e-c7af299ad34b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0916e68f-44d9-486a-be5e-c7af299ad34b",
+          "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 2,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "PARSE",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:04.319058Z",
+          "startedAt": "2026-10-24T14:03:04.3736Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:34.785566Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-30d3828e68fe48188d2f5a14488d6891"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/0916e68f-44d9-486a-be5e-c7af299ad34b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0916e68f-44d9-486a-be5e-c7af299ad34b",
+          "requestId": "ingest-ff346a366bf94bbf846f2b55cd22d2e8",
+          "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+          "documentConfigRevision": 2,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:04.319058Z",
+          "startedAt": "2026-10-24T14:03:04.3736Z",
+          "completedAt": "2026-10-24T14:03:05.937069Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-1dde1e96416a40319591e77b9aa36ca0"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/2147d0cb-7240-47ec-a382-46edfa19dd86/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 2,
+          "records": [
+            {
+              "id": "8af23c7a-99bd-30f3-aacd-4b1954c3506f",
+              "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 2,
+              "chunkIndex": 0,
+              "content": "INVOICE 42; Apples: 2.",
+              "embeddingText": "章节：Invoice\nINVOICE 42; Apples: 2.",
+              "contentHash": "8be6d632eb665298f6393f75a7f0c3da8dc0bf518cab1eb2d7c78c6c6038bbcf",
+              "charCount": 22,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 22,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Invoice"
+                ],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "bbox": [
+                      0.0,
+                      100.0,
+                      1000.0,
+                      200.0
+                    ],
+                    "blockIndex": 1,
+                    "pageNumber": 1,
+                    "provenance": "MINERU_2_7_6"
+                  }
+                ],
+                "parserVersion": "mineru-2.7.6-content-list-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:05.918873Z",
+              "updatedAt": "2026-10-24T14:03:05.918873Z"
+            },
+            {
+              "id": "7f16ca4b-9ee0-3110-9bfb-99cc6670a8a2",
+              "documentId": "2147d0cb-7240-47ec-a382-46edfa19dd86",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 2,
+              "chunkIndex": 1,
+              "content": "| 项目 | 数量 |\n| --- | --- |\n| 苹果 | 2 |\n| 苹果 | 3 |",
+              "embeddingText": "章节：Invoice\n项目：苹果；数量：2\n项目：苹果；数量：3",
+              "contentHash": "e3273468e1d0a233b693d4cedb571945f21769be0ce1d00ad4a6f2af5450bf54",
+              "charCount": 47,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "rowEnd": 2,
+                "rowStart": 1,
+                "blockType": "TABLE",
+                "chapterPath": [
+                  "Invoice"
+                ],
+                "sourceBlocks": [
+                  {
+                    "blockIndex": 2,
+                    "pageNumber": 1,
+                    "provenance": "MINERU_2_7_6",
+                    "headerPolicy": "FIRST_ROW"
+                  }
+                ],
+                "parserVersion": "mineru-2.7.6-content-list-v1",
+                "headerRepeated": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:05.918873Z",
+              "updatedAt": "2026-10-24T14:03:05.918873Z"
+            }
+          ]
+        },
+        "requestId": "format-check-911a943469954ab1822b3bd32fdb475e"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "invoice.png",
+          "originalFilename": "invoice.png",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5/original",
+          "mimeType": "image/png",
+          "fileSize": 1857,
+          "contentHash": "761d44ccba616ff569ba8932dcf14534757f8310517fe1d95f5e84fc9495225c",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:03:06.4649173Z",
+          "updatedAt": "2026-10-24T14:03:06.4649173Z"
+        },
+        "requestId": "format-check-c548d95b5ae44acfa0e8a36422448149"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-4e1810051ebb459d9dc4097014c43111"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fbaa02cd-33ea-4187-9518-de254a4e6d17",
+          "requestId": "ingest-4e1810051ebb459d9dc4097014c43111",
+          "documentId": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:06.536316Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:03:06.552116Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-d8d91947b72347dd8a5b6e51a01648cb"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fbaa02cd-33ea-4187-9518-de254a4e6d17",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fbaa02cd-33ea-4187-9518-de254a4e6d17",
+          "requestId": "ingest-4e1810051ebb459d9dc4097014c43111",
+          "documentId": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "SPLIT",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:06.536316Z",
+          "startedAt": "2026-10-24T14:03:06.568622Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T14:03:36.568622Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-3b1eb3803a614d0991a53df251562be9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/fbaa02cd-33ea-4187-9518-de254a4e6d17",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "fbaa02cd-33ea-4187-9518-de254a4e6d17",
+          "requestId": "ingest-4e1810051ebb459d9dc4097014c43111",
+          "documentId": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:06.536316Z",
+          "startedAt": "2026-10-24T14:03:06.568622Z",
+          "completedAt": "2026-10-24T14:03:06.679991Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-6a4ff1eaa26445dfa550e0342c07d334"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 1,
+          "records": [
+            {
+              "id": "06800a0e-9ac5-3d27-a9c0-6b01d4a88531",
+              "documentId": "bfdd0a45-04eb-433e-a8c5-76cbe5bb37f5",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+              "embeddingText": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+              "contentHash": "a72b831c61cff1b4a3dd60df26a033e19206039ee08ee3d9bce2276d84656db7",
+              "charCount": 58,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 58,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "vlmModel": "qwen-vision",
+                    "generated": true,
+                    "blockIndex": 0,
+                    "imageWidth": 400,
+                    "provenance": "VLM_DESCRIPTION_AND_OCR",
+                    "imageHeight": 160,
+                    "imageNumber": 1
+                  }
+                ],
+                "parserVersion": "ai-vision-description-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:06.664452Z",
+              "updatedAt": "2026-10-24T14:03:06.664452Z"
+            }
+          ]
+        },
+        "requestId": "format-check-72fef6df4c2d4472a3edbc6c7208d262"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/9ffaa179-a52f-418c-b73e-a395cd29bde9/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+          "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+          "name": "invoice.jpeg",
+          "originalFilename": "invoice.jpeg",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/9ffaa179-a52f-418c-b73e-a395cd29bde9/ead6bce8-c68c-4c47-9639-72c179bceda2/original",
+          "mimeType": "image/jpeg",
+          "fileSize": 5295,
+          "contentHash": "e7be09cb5379e3a4b7439f6fd29a4db54bd6ef60e906422d80dad5db64421b2f",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 1,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:03:07.4634332Z",
+          "updatedAt": "2026-10-24T14:03:07.4634332Z"
+        },
+        "requestId": "format-check-0d1f6435d18b4c8da91a9dc2e076067e"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/ead6bce8-c68c-4c47-9639-72c179bceda2/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-2c57739f91d14d4892b0d9a00cfab1c4"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "ce073f10-c2e4-466c-b80c-5e947ec0a10b",
+          "requestId": "ingest-2c57739f91d14d4892b0d9a00cfab1c4",
+          "documentId": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:07.557254Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:03:07.573111Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-0f65cde6c54b4215b8b299c35b97eb4e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/ce073f10-c2e4-466c-b80c-5e947ec0a10b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "ce073f10-c2e4-466c-b80c-5e947ec0a10b",
+          "requestId": "ingest-2c57739f91d14d4892b0d9a00cfab1c4",
+          "documentId": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:07.557254Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:03:07.573111Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "format-check-90bead18d7a045a4800b295aa0fb1a14"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/ce073f10-c2e4-466c-b80c-5e947ec0a10b",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "ce073f10-c2e4-466c-b80c-5e947ec0a10b",
+          "requestId": "ingest-2c57739f91d14d4892b0d9a00cfab1c4",
+          "documentId": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:03:07.557254Z",
+          "startedAt": "2026-10-24T14:03:07.671988Z",
+          "completedAt": "2026-10-24T14:03:07.738519Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "format-check-ff682f1e6ea146829f53e129a66a1c8e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/ead6bce8-c68c-4c47-9639-72c179bceda2/chunks?size=100",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 1,
+          "records": [
+            {
+              "id": "b4e05acd-8483-38df-9162-a9b44014a8b8",
+              "documentId": "ead6bce8-c68c-4c47-9639-72c179bceda2",
+              "kbId": "9ffaa179-a52f-418c-b73e-a395cd29bde9",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+              "embeddingText": "Description: invoice. Visible text: INVOICE 42; Apples: 2.",
+              "contentHash": "a72b831c61cff1b4a3dd60df26a033e19206039ee08ee3d9bce2276d84656db7",
+              "charCount": 58,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 58,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "vlmModel": "qwen-vision",
+                    "generated": true,
+                    "blockIndex": 0,
+                    "imageWidth": 400,
+                    "provenance": "VLM_DESCRIPTION_AND_OCR",
+                    "imageHeight": 160,
+                    "imageNumber": 1
+                  }
+                ],
+                "parserVersion": "ai-vision-description-ocr-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T14:03:07.722686Z",
+              "updatedAt": "2026-10-24T14:03:07.722686Z"
+            }
+          ]
+        },
+        "requestId": "format-check-bbb62d6b87c8420aa4e5b560da5881bd"
+      }
+    }
+  ],
+  "verificationEnvironment": "Actual packaged Java JAR, PostgreSQL/pgvector and MinIO. Embedding, VLM and MinerU are explicit local HTTP fixtures; live external OCR and provider semantics have NOT been validated."
+}

@@ -50,6 +50,12 @@ class AiServiceTest {
         p.add("ai.limits.total-timeout", () -> "3s");
         p.add("ai.limits.circuit-failures", () -> 100);
         p.add("ai.limits.circuit-cooldown", () -> "30ms");
+        p.add("ai.models.disabled-embed.provider",()->"bailian");
+        p.add("ai.models.disabled-embed.model",()->"disabled-test-model");
+        p.add("ai.models.disabled-embed.enabled",()->false);
+        p.add("ai.models.disabled-embed.capabilities[0]",()->"EMBEDDING");
+        p.add("ai.models.disabled-embed.dimensions",()->2);
+        p.add("ai.models.disabled-embed.embedding-space",()->"bailian-text-embedding-v4");
     }
     @BeforeEach void setup() {
         bodies.clear(); calls.clear();
@@ -104,6 +110,23 @@ class AiServiceTest {
         assertThat(calls.get("BAAI/bge-m3").get()).isEqualTo(2);
         assertThat(bodies.get("BAAI/bge-m3").has("dimensions")).isFalse();
         post("/ai/embed", "{\"text\":\"1\",\"dimensions\":17}", 400);
+    }
+    @Test void embeddingMetadataPinsRevisionAndRejectsChangedConfigurationBeforeProviderCall() throws Exception {
+        byte[] bytes=client.get().uri("/ai/embedding-models/qwen-embed?dimensions=2").exchange().expectStatus().isOk().expectBody().returnResult().getResponseBody();
+        JsonNode profile=JSON.readTree(bytes).path("data");String revision=profile.path("configRevision").asText();
+        assertThat(revision).hasSize(64);assertThat(profile.path("active").asBoolean()).isTrue();
+        assertThat(profile.toString()).doesNotContain("local-test-key","apiKey","baseUrl");
+        post("/ai/embed","{\"text\":\"1\",\"model\":\"qwen-embed\",\"dimensions\":2,\"expectedConfigRevision\":\"wrong\"}",409);
+        assertThat(calls).isEmpty();
+        var result=post("/ai/embed",JSON.writeValueAsString(Map.of("text","1","model","qwen-embed","dimensions",2,"expectedConfigRevision",revision)),200).path("data");
+        assertThat(result.path("configRevision").asText()).isEqualTo(revision);
+        assertThat(result.path("provider").asText()).isEqualTo("bailian");
+    }
+    @Test void explicitlySelectedEmbeddingNeverFallsBackAfterBatchFailureOrWhenUnavailable() throws Exception {
+        post("/ai/embed","{\"texts\":[\"1\",\"2\",\"3\"],\"model\":\"qwen-embed\",\"dimensions\":2}",502);
+        assertThat(calls).doesNotContainKey("BAAI/bge-m3");
+        calls.clear();post("/ai/embed","{\"text\":\"1\",\"model\":\"disabled-embed\",\"dimensions\":2}",503);
+        assertThat(calls).isEmpty();
     }
 
     @Test void rerankUsesNativeMappingsAndStableOrder() throws Exception {

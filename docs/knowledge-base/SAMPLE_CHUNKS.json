@@ -1,0 +1,168 @@
+{
+  "vectorSource" : "Local HTTP protocol stub; not a live model",
+  "source" : "src/test/resources/knowledge-base/sample.md",
+  "chunks" : [ {
+    "id" : "6524e2ee-94a5-3384-a146-ab1553eb638d",
+    "chunkIndex" : 0,
+    "content" : "The application reads KB_DB_URL from the environment. Use a private PostgreSQL database and keep the account password in the",
+    "embeddingText" : "章节：Deployment Guide > Database\nThe application reads KB_DB_URL from the environment. Use a private PostgreSQL database and keep the account password in the",
+    "contentHash" : "b6c8a8af066d2d8821e999d501ba6b0517b2f3094d9b921465adf0efb85f59b2",
+    "charCount" : 124,
+    "metadata" : {
+      "textStart" : 0,
+      "overlapChars" : 0,
+      "blockType" : "PARAGRAPH",
+      "offsetUnit" : "UTF16",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "textEnd" : 124,
+      "sourceBlocks" : [ {
+        "lineStart" : 5,
+        "lineEnd" : 5,
+        "blockIndex" : 2
+      } ],
+      "chapterPath" : [ "Deployment Guide", "Database" ]
+    }
+  }, {
+    "id" : "f0a43e9b-a46f-34ce-befb-69b6fcdd8f07",
+    "chunkIndex" : 1,
+    "content" : "password in the deployment secret configuration.\n\nThe metadata transaction is separate from object storage. A document keeps it",
+    "embeddingText" : "章节：Deployment Guide > Database\npassword in the deployment secret configuration.\n\nThe metadata transaction is separate from object storage. A document keeps it",
+    "contentHash" : "da5477b8d0cd44e675a520bf5444cd32d98f8a4bf3b32c015761e6f8a5265306",
+    "charCount" : 127,
+    "metadata" : {
+      "textStart" : 108,
+      "overlapChars" : 16,
+      "blockType" : "PARAGRAPH",
+      "offsetUnit" : "UTF16",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "textEnd" : 236,
+      "sourceBlocks" : [ {
+        "lineStart" : 5,
+        "lineEnd" : 5,
+        "blockIndex" : 2
+      }, {
+        "lineStart" : 7,
+        "lineEnd" : 7,
+        "blockIndex" : 3
+      } ],
+      "chapterPath" : [ "Deployment Guide", "Database" ]
+    }
+  }, {
+    "id" : "a3506eeb-80f7-3633-94a9-24e9bd54cd6d",
+    "chunkIndex" : 2,
+    "content" : "ocument keeps its original object key for authorized downloads.",
+    "embeddingText" : "章节：Deployment Guide > Database\nocument keeps its original object key for authorized downloads.",
+    "contentHash" : "6e92b5f4def1f21b7360ebf4afb26005267c3ff21fefa1468b22f5a5bad49036",
+    "charCount" : 63,
+    "metadata" : {
+      "textStart" : 220,
+      "overlapChars" : 16,
+      "blockType" : "PARAGRAPH",
+      "offsetUnit" : "UTF16",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "textEnd" : 283,
+      "sourceBlocks" : [ {
+        "lineStart" : 7,
+        "lineEnd" : 7,
+        "blockIndex" : 3
+      } ],
+      "chapterPath" : [ "Deployment Guide", "Database" ]
+    }
+  }, {
+    "id" : "74475e8b-0b56-39b4-a75a-bd4e7a322fe3",
+    "chunkIndex" : 3,
+    "content" : "String url = System.getenv(\"KB_DB_URL\");\nconnect(url);",
+    "embeddingText" : "章节：Deployment Guide > Database\nString url = System.getenv(\"KB_DB_URL\");\nconnect(url);",
+    "contentHash" : "cad1c61882eb62b9c2bf593ff28232805e48b0430042c8288452f1cfae713ff9",
+    "charCount" : 54,
+    "metadata" : {
+      "chapterPath" : [ "Deployment Guide", "Database" ],
+      "sourceBlocks" : [ {
+        "lineStart" : 9,
+        "lineEnd" : 12,
+        "language" : "java",
+        "blockIndex" : 4
+      } ],
+      "blockType" : "CODE",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1"
+    }
+  }, {
+    "id" : "69144513-22fe-3958-9369-74120cdbbfe4",
+    "chunkIndex" : 4,
+    "content" : "| Field | Value |\n| --- | --- |\n| host | localhost |\n| port | 54329 |",
+    "embeddingText" : "章节：Deployment Guide > Database\nField：host；Value：localhost\nField：port；Value：54329",
+    "contentHash" : "c9b84ac1b734ea9b72ac18b34cf9b91395a55b8cc47585c2d95c4594979df0dc",
+    "charCount" : 69,
+    "metadata" : {
+      "rowEnd" : 2,
+      "rowStart" : 1,
+      "headerRepeated" : true,
+      "chapterPath" : [ "Deployment Guide", "Database" ],
+      "blockType" : "TABLE",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "sourceBlocks" : [ {
+        "lineStart" : 14,
+        "lineEnd" : 18,
+        "blockIndex" : 5
+      } ]
+    }
+  }, {
+    "id" : "9c75fd50-3593-368c-a801-be228dbedb80",
+    "chunkIndex" : 5,
+    "content" : "| Field | Value |\n| --- | --- |\n| mode | private |",
+    "embeddingText" : "章节：Deployment Guide > Database\nField：mode；Value：private",
+    "contentHash" : "d12fc0a006b94db980afcbc283dc6e2835ff9b99b549a629bfa238182be4d2f0",
+    "charCount" : 50,
+    "metadata" : {
+      "rowEnd" : 3,
+      "rowStart" : 3,
+      "headerRepeated" : true,
+      "chapterPath" : [ "Deployment Guide", "Database" ],
+      "blockType" : "TABLE",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "sourceBlocks" : [ {
+        "lineStart" : 14,
+        "lineEnd" : 18,
+        "blockIndex" : 5
+      } ]
+    }
+  }, {
+    "id" : "1e32b512-50dc-3cb7-a224-d69d764763ad",
+    "chunkIndex" : 6,
+    "content" : "- Inspect the persisted stage and error code.\n- Correct the configuration, then invoke ingestion again.",
+    "embeddingText" : "章节：Deployment Guide > Recovery\n- Inspect the persisted stage and error code.\n- Correct the configuration, then invoke ingestion again.",
+    "contentHash" : "a25276bee9e5187f2294f9f7dbcd4ead603d2500b05e0b3e3c0435bd762908fb",
+    "charCount" : 103,
+    "metadata" : {
+      "chapterPath" : [ "Deployment Guide", "Recovery" ],
+      "sourceBlocks" : [ {
+        "lineStart" : 22,
+        "lineEnd" : 23,
+        "blockIndex" : 7
+      } ],
+      "blockType" : "LIST",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1"
+    }
+  }, {
+    "id" : "9c331570-f192-36ac-92e4-a7ec46bfcb3f",
+    "chunkIndex" : 7,
+    "content" : "An unsuccessful generation must not replace the previous published evidence.",
+    "embeddingText" : "章节：Deployment Guide > Recovery\nAn unsuccessful generation must not replace the previous published evidence.",
+    "contentHash" : "b4f74b75a0a85180bc389c374524bf14bc4fb9322dff208030b1011f6a24c3db",
+    "charCount" : 76,
+    "metadata" : {
+      "textStart" : 0,
+      "overlapChars" : 0,
+      "blockType" : "PARAGRAPH",
+      "offsetUnit" : "UTF16",
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "textEnd" : 76,
+      "sourceBlocks" : [ {
+        "lineStart" : 25,
+        "lineEnd" : 25,
+        "blockIndex" : 8
+      } ],
+      "chapterPath" : [ "Deployment Guide", "Recovery" ]
+    }
+  } ]
+}

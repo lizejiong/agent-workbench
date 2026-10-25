@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-24",
+  "stage": 8,
+  "build": {
+    "result": "SUCCESS",
+    "modules": 10,
+    "fullVerifyCompletedAt": "2026-10-24T22:44:45+08:00",
+    "totals": {
+      "tests": 225,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "passed": 213,
+    "sourceFilesVerified": 222,
+    "directory": ".cache/stage8-build"
+  },
+  "httpSmoke": {
+    "scripts": [
+      "acceptance.py",
+      "refresh_acceptance.py"
+    ],
+    "embeddingCalls": 3,
+    "mineruCalled": false,
+    "visionCalls": 0,
+    "pid": 2672,
+    "externalServices": "Local HTTP protocol fixtures"
+  },
+  "openapi": {
+    "paths": 30,
+    "operations": 41,
+    "resolvedReferences": 349
+  },
+  "artifacts": [
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar",
+      "sha256": "daa34ffc6aa8b941c96acf6545dc5c28dbfcd0852d1d4c8360efc77511a70661"
+    },
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT-stage8.jar",
+      "sha256": "daa34ffc6aa8b941c96acf6545dc5c28dbfcd0852d1d4c8360efc77511a70661"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT-stage8.jar",
+      "sha256": "51f4911d29887d2fcee0693cd56f8a5bbe20b50f01e3c2b215bd24320ba8d1dd"
+    }
+  ],
+  "examples": [
+    "SAMPLE_REFRESH.json",
+    "SAMPLE_REFRESH_RESTART.json"
+  ],
+  "remoteCases": 18,
+  "networkPolicyCases": 1,
+  "restart": {
+    "firstPid": 22876,
+    "secondPid": 2304,
+    "attempts": 2,
+    "activeGeneration": 3
+  },
+  "limits": [
+    "Embedding is an explicit local HTTP fixture; live provider semantic quality is unverified.",
+    "PostgreSQL/pgvector, MinIO, source HTTP server and two restart Java processes are real.",
+    "Production source allowlist, DNS/egress integration, model providers and application Docker image are not validated.",
+    "Remote sources require exact host/port approval; redirects use full hash comparison, no target validator reuse.",
+    "Optional LocalPostgresTest skipped; no mixed search, answer generation or management UI added."
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "method": "POST",
+  "path": "/api/knowledge/search",
+  "request": {
+    "query": "PostgreSQL connection",
+    "kbIds": [
+      "9ce0e10f-4d5b-4723-a771-2f4503f88cc5"
+    ],
+    "topK": 3,
+    "minScore": 0.7
+  },
+  "response": {
+    "code": "0",
+    "message": "success",
+    "data": [
+      {
+        "chunkId": "fafb7ca3-cedc-367a-8ff3-25f0199d1d34",
+        "kbId": "9ce0e10f-4d5b-4723-a771-2f4503f88cc5",
+        "documentId": "1ea01214-25ba-4f92-a09f-537ffeed0214",
+        "documentName": "database.md",
+        "chunkIndex": 0,
+        "generation": 1,
+        "content": "PostgreSQL connection reads KB_DB_URL from the environment. Keep credentials in the deployment configuration.",
+        "score": 1.0,
+        "scoreType": "COSINE_SIMILARITY",
+        "sourceMetadata": {
+          "textEnd": 109,
+          "blockType": "PARAGRAPH",
+          "textStart": 0,
+          "offsetUnit": "UTF16",
+          "chapterPath": [
+            "Operations",
+            "Database"
+          ],
+          "overlapChars": 0,
+          "parserVersion": "commonmark-0.27.1-gfm-v1",
+          "sourceBlocks": [
+            {
+              "lineEnd": 5,
+              "lineStart": 5,
+              "blockIndex": 2
+            }
+          ]
+        },
+        "fileUrl": "/api/documents/1ea01214-25ba-4f92-a09f-537ffeed0214/file"
+      },
+      {
+        "chunkId": "9d04e088-bd58-3cdf-a49a-75d03d1f5828",
+        "kbId": "9ce0e10f-4d5b-4723-a771-2f4503f88cc5",
+        "documentId": "0d15ce53-c6ed-4644-a675-28c72da556a0",
+        "documentName": "backup.md",
+        "chunkIndex": 0,
+        "generation": 1,
+        "content": "Database backup uses pg_dump. Restore the snapshot before switching the PostgreSQL connection.",
+        "score": 0.800000011920929,
+        "scoreType": "COSINE_SIMILARITY",
+        "sourceMetadata": {
+          "textEnd": 94,
+          "blockType": "PARAGRAPH",
+          "textStart": 0,
+          "offsetUnit": "UTF16",
+          "chapterPath": [
+            "Operations",
+            "Backups"
+          ],
+          "overlapChars": 0,
+          "parserVersion": "commonmark-0.27.1-gfm-v1",
+          "sourceBlocks": [
+            {
+              "lineEnd": 5,
+              "lineStart": 5,
+              "blockIndex": 2
+            }
+          ]
+        },
+        "fileUrl": "/api/documents/0d15ce53-c6ed-4644-a675-28c72da556a0/file"
+      }
+    ],
+    "requestId": "search-check-e97d2a6a6c64414e911d870e10edc304"
+  },
+  "sourceFiles": [
+    "services/backend/src/test/resources/knowledge-base/search/database.md",
+    "services/backend/src/test/resources/knowledge-base/search/backup.md",
+    "services/backend/src/test/resources/knowledge-base/search/cooking.md"
+  ],
+  "vectorSource": "Local deterministic HTTP topic fixture; real PostgreSQL/pgvector and MinIO, no live provider validation"
+}

@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-25",
+  "stage": 9,
+  "result": "PASS_AS_PART_OF_STAGE10_FINAL_VALIDATION",
+  "hybridCases": 19,
+  "realBm25": "Elasticsearch8.19.17/cjk",
+  "fullBuild": "STAGE10_VALIDATION.json",
+  "httpExample": "SAMPLE_HYBRID.json",
+  "limits": [
+    "Embedding/Rerank are explicit local HTTP fixtures; no live provider semantic quality claim.",
+    "Boot optional Elasticsearch auto-configuration corrected and regression-tested in final stage10 build.",
+    "Structured retrieval only; answer generation not requested."
+  ]
+}

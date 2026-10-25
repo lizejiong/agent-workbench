@@ -1,0 +1,2325 @@
+{
+  "result": "PASS",
+  "environment": "Actual packaged Java JAR, PG/pgvector, MinIO and paused/unpaused real ES8.19.17. Model and rerank are explicit HTTP fixtures.",
+  "cases": [
+    "failed rebuild preserves generation 1",
+    "successful rebuild serves only generation 3",
+    "completed requestId replay",
+    "real ES pause vector fallback",
+    "failed keyword synchronization retries after unpause",
+    "malformed rerank fallback",
+    "rerank threshold fail closed",
+    "immediate deletion and eventual S3/ES cleanup",
+    "model failure metrics and safe owner audit"
+  ],
+  "calls": [
+    {
+      "method": "POST",
+      "path": "/api/kbs",
+      "status": 201,
+      "request": {
+        "name": "delivery-fault-d4cb2ff2a2a74b1e950d0bedcf194253"
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+          "name": "delivery-fault-d4cb2ff2a2a74b1e950d0bedcf194253",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-25T05:17:43.103431Z",
+          "updatedAt": "2026-10-25T05:17:43.103431Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_733b7384_0af0_4546_8ee3_5aae7b55f551",
+          "embeddingAiConfigRevision": null,
+          "documentCount": 0
+        },
+        "requestId": "delivery-fault-7044b58995a4459f82b52d7052434722"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/733b7384-0af0-4546-8ee3-5aae7b55f551/documents",
+      "status": 201,
+      "request": "multipart fixture",
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+          "name": "database.md",
+          "originalFilename": "database.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/733b7384-0af0-4546-8ee3-5aae7b55f551/a4b018ea-f1bb-426b-8185-bedcf9506923/original",
+          "mimeType": "text/plain",
+          "fileSize": 54,
+          "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:17:43.3105661Z",
+          "updatedAt": "2026-10-25T05:17:43.3105661Z",
+          "sourceUrl": null,
+          "lastIngestedAt": null
+        },
+        "requestId": "delivery-fault-84d419f749374aedb7fdfe632c172113"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/ingestion-jobs",
+      "status": 202,
+      "request": {
+        "requestId": "ingest-b7f8f244c0284b69bdd1530b108911b2"
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "623c3310-fecd-40d7-ae08-b22cb751038a",
+          "requestId": "ingest-b7f8f244c0284b69bdd1530b108911b2",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:43.422801Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:17:43.456475Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-0524784ba85a4a5e90d17efb906a9584"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/623c3310-fecd-40d7-ae08-b22cb751038a",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "623c3310-fecd-40d7-ae08-b22cb751038a",
+          "requestId": "ingest-b7f8f244c0284b69bdd1530b108911b2",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "EMBED",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:43.422801Z",
+          "startedAt": "2026-10-25T05:17:43.505065Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-25T05:18:13.505064Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-f873f859b2854c5cb6826f322e2947c6"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/623c3310-fecd-40d7-ae08-b22cb751038a",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "623c3310-fecd-40d7-ae08-b22cb751038a",
+          "requestId": "ingest-b7f8f244c0284b69bdd1530b108911b2",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:43.422801Z",
+          "startedAt": "2026-10-25T05:17:43.505065Z",
+          "completedAt": "2026-10-25T05:17:43.658706Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-0fe391d070c64d7cb1caf94b585820ed"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "VECTOR",
+        "rerank": false
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "efb2843e-eab5-36b3-b2e0-19f6a032c69a",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "documentName": "database.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "PostgreSQL connection evidence DLV-90210.",
+              "score": 0.0,
+              "scoreType": "COSINE_SIMILARITY",
+              "sourceMetadata": {
+                "textEnd": 41,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Database"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/file",
+              "fusionScore": null,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "VECTOR",
+          "strategy": "VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 5,
+          "fusionCandidates": 5,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-194f656c0b5e46cdaa1a8aee1c08d8da"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/ingestion-jobs",
+      "status": 202,
+      "request": {
+        "requestId": "ingest-50c453b0978247f598c078f3352244fa"
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+          "requestId": "ingest-50c453b0978247f598c078f3352244fa",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:44.389886Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:17:44.41611Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-a3076adc414843d58106c4781bf54156"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/89f3dae0-82cd-4b72-a633-8dee17a5c789",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+          "requestId": "ingest-50c453b0978247f598c078f3352244fa",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:44.389886Z",
+          "startedAt": "2026-10-25T05:17:44.489285Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-25T05:18:14.489282Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-2bc0450de42d43ba8caa8a018d51953a"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/89f3dae0-82cd-4b72-a633-8dee17a5c789",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+          "requestId": "ingest-50c453b0978247f598c078f3352244fa",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "FAILED",
+          "stage": "EMBED",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:44.389886Z",
+          "startedAt": "2026-10-25T05:17:44.489285Z",
+          "completedAt": "2026-10-25T05:17:44.582808Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": "KB_MODEL_INVALID_RESPONSE",
+          "errorMessage": "Execution ended; inspect stage and errorCode. Source contents and provider details are omitted.",
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-37c5689601c248aaa6be091b78ce58c6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "VECTOR",
+        "rerank": false
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "efb2843e-eab5-36b3-b2e0-19f6a032c69a",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "documentName": "database.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "PostgreSQL connection evidence DLV-90210.",
+              "score": 0.0,
+              "scoreType": "COSINE_SIMILARITY",
+              "sourceMetadata": {
+                "textEnd": 41,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Database"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/file",
+              "fusionScore": null,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "VECTOR",
+          "strategy": "VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 5,
+          "fusionCandidates": 5,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-4c2dfa680e9b40ce8f2b5a7cf95e78eb"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/ingestion-jobs",
+      "status": 202,
+      "request": {
+        "requestId": "ingest-f76342014f7f4bbebfe7fefe8d4aa556"
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+          "requestId": "ingest-f76342014f7f4bbebfe7fefe8d4aa556",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 3,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:45.320054Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:17:45.33507Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-e7f5499267ba4e69830cad06caeaaf54"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/dc848097-a378-4d86-aff5-1dcaf4d0b148",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+          "requestId": "ingest-f76342014f7f4bbebfe7fefe8d4aa556",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 3,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "EMBED",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:45.320054Z",
+          "startedAt": "2026-10-25T05:17:45.370497Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-25T05:18:15.370497Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-8f2ed797f77840a89878c844968e7b8d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/dc848097-a378-4d86-aff5-1dcaf4d0b148",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+          "requestId": "ingest-f76342014f7f4bbebfe7fefe8d4aa556",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 3,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:45.320054Z",
+          "startedAt": "2026-10-25T05:17:45.370497Z",
+          "completedAt": "2026-10-25T05:17:45.45681Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-bb72156cee6644c9afe19561e629d5e8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "VECTOR",
+        "rerank": false
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "documentName": "database.md",
+              "chunkIndex": 0,
+              "generation": 3,
+              "content": "PostgreSQL connection evidence DLV-90210.",
+              "score": 0.0,
+              "scoreType": "COSINE_SIMILARITY",
+              "sourceMetadata": {
+                "textEnd": 41,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Database"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/file",
+              "fusionScore": null,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "VECTOR",
+          "strategy": "VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 5,
+          "fusionCandidates": 5,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-e1cb259e4e734cdc9c269f596f280441"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/ingestion-jobs",
+      "status": 200,
+      "request": {
+        "requestId": "ingest-f76342014f7f4bbebfe7fefe8d4aa556"
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+          "requestId": "ingest-f76342014f7f4bbebfe7fefe8d4aa556",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "documentConfigRevision": 1,
+          "targetGeneration": 3,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:17:45.320054Z",
+          "startedAt": "2026-10-25T05:17:45.370497Z",
+          "completedAt": "2026-10-25T05:17:45.45681Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "delivery-fault-4d5f544190ee4a2f9df211589717245b"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 6,
+          "syncedRevision": 3,
+          "status": "RUNNING",
+          "attempts": 1,
+          "nextRunAt": "2026-10-25T05:17:45.680638Z",
+          "leaseUntil": "2026-10-25T05:18:45.726387Z",
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:44.604049Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-ade49c9b79db4156a02267ca13cb46de"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 6,
+          "syncedRevision": 6,
+          "status": "SUCCEEDED",
+          "attempts": 1,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-9d4caf941eed43dfb91b8f5fd607eec8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "HYBRID",
+        "rerank": false
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "documentName": "database.md",
+              "chunkIndex": 0,
+              "generation": 3,
+              "content": "PostgreSQL connection evidence DLV-90210.",
+              "score": 0.01639344262295082,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 41,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Database"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/file",
+              "fusionScore": 0.01639344262295082,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "HYBRID",
+          "strategy": "VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            },
+            {
+              "channel": "KEYWORD",
+              "status": "FAILED",
+              "candidates": 0,
+              "errorCode": "KB_KEYWORD_UNAVAILABLE"
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-886ccb28ae52445d8f1f672877a3b5a0"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+          "name": "database.md",
+          "originalFilename": "database.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/733b7384-0af0-4546-8ee3-5aae7b55f551/a4b018ea-f1bb-426b-8185-bedcf9506923/original",
+          "mimeType": "text/plain",
+          "fileSize": 54,
+          "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 3,
+          "chunkCount": 1,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:17:43.310566Z",
+          "updatedAt": "2026-10-25T05:17:45.458277Z",
+          "sourceUrl": null,
+          "lastIngestedAt": "2026-10-25T05:17:45.458277Z"
+        },
+        "requestId": "delivery-fault-64b8b744f16b462089789f4f710b1096"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/chunks",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 1,
+          "records": [
+            {
+              "id": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "generation": 3,
+              "chunkIndex": 0,
+              "content": "PostgreSQL connection evidence DLV-90210.",
+              "embeddingText": "章节：Database\nPostgreSQL connection evidence DLV-90210.",
+              "contentHash": "f494245c82c81d3e0190ab015a3ac6ee36677d11a02a32c6a2bcd259d6c3d58d",
+              "charCount": 41,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 41,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Database"
+                ],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ],
+                "parserVersion": "commonmark-0.27.1-gfm-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-25T05:17:45.437003Z",
+              "updatedAt": "2026-10-25T05:17:45.437003Z"
+            }
+          ]
+        },
+        "requestId": "delivery-fault-85a4589ff1964f9c93c84d3d35aa0a29"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/chunks/77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+      "status": 200,
+      "request": {
+        "version": 1,
+        "content": "Database updated body DLV-90210, durable keyword retry."
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 2,
+          "manualRevision": 1,
+          "chunkCount": 1,
+          "chunks": [
+            {
+              "id": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "generation": 3,
+              "chunkIndex": 0,
+              "content": "Database updated body DLV-90210, durable keyword retry.",
+              "embeddingText": "Database updated body DLV-90210, durable keyword retry.",
+              "contentHash": "32655c1c70326a03d6372ec63ec01e3d89bd79fd3273168a97345737fbc9b7f0",
+              "charCount": 55,
+              "tokenCount": 14,
+              "tokenCountEstimated": true,
+              "enabled": true,
+              "edited": true,
+              "metadata": {
+                "blockType": "MANUAL",
+                "originalFileContainsContent": false,
+                "chapterPath": [],
+                "sourceBlocks": [],
+                "manual": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-25T05:17:45.437003Z",
+              "updatedAt": "2026-10-25T05:17:50.7953712Z"
+            }
+          ]
+        },
+        "requestId": "delivery-fault-81217b7bdb0a4128af243b0531b62528"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 6,
+          "status": "PENDING",
+          "attempts": 0,
+          "nextRunAt": "2026-10-25T05:17:50.801297Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-2eac1341caab45998ee72b6f15ba855b"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 6,
+          "status": "RUNNING",
+          "attempts": 1,
+          "nextRunAt": "2026-10-25T05:17:50.801297Z",
+          "leaseUntil": "2026-10-25T05:18:50.921719Z",
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-80a4cad3edd54998a3f0f5cbaf9465ee"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 6,
+          "status": "RUNNING",
+          "attempts": 1,
+          "nextRunAt": "2026-10-25T05:17:50.801297Z",
+          "leaseUntil": "2026-10-25T05:18:51.678145Z",
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-0f697d5dbaf94415bcf64694a25ca3f3"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 6,
+          "status": "RUNNING",
+          "attempts": 1,
+          "nextRunAt": "2026-10-25T05:17:50.801297Z",
+          "leaseUntil": "2026-10-25T05:18:53.694897Z",
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-faee34c1c7a3475887e4f1707ac1850e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 6,
+          "status": "PENDING",
+          "attempts": 1,
+          "nextRunAt": "2026-10-25T05:17:55.966862Z",
+          "leaseUntil": null,
+          "errorCode": "KB_KEYWORD_UNAVAILABLE",
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-1030c18d8e4947b9b9e012b50d7bc022"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 6,
+          "status": "RUNNING",
+          "attempts": 2,
+          "nextRunAt": "2026-10-25T05:17:55.966862Z",
+          "leaseUntil": "2026-10-25T05:18:55.988785Z",
+          "errorCode": "KB_KEYWORD_UNAVAILABLE",
+          "syncedAt": "2026-10-25T05:17:46.737506Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-a52db9a496254f80b3226c1b325c8e46"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/keyword-index",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "revision": 7,
+          "syncedRevision": 7,
+          "status": "SUCCEEDED",
+          "attempts": 2,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:17:57.08859Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "delivery-fault-a1068057218047608d79976ac0886f99"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "KEYWORD",
+        "rerank": false
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "documentName": "database.md",
+              "chunkIndex": 0,
+              "generation": 3,
+              "content": "Database updated body DLV-90210, durable keyword retry.",
+              "score": 0.01639344262295082,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "manual": true,
+                "blockType": "MANUAL",
+                "chapterPath": [],
+                "originalFileContainsContent": false,
+                "sourceBlocks": []
+              },
+              "fileUrl": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/file",
+              "fusionScore": 0.01639344262295082,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "KEYWORD",
+                  "rank": 1,
+                  "score": 3.8022056,
+                  "scoreType": "BM25"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "KEYWORD",
+          "strategy": "KEYWORD",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-ad6f9f08702b45f0b10769cca6a3fcd7"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "HYBRID",
+        "rerank": true
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+              "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "documentName": "database.md",
+              "chunkIndex": 0,
+              "generation": 3,
+              "content": "Database updated body DLV-90210, durable keyword retry.",
+              "score": 0.03278688524590164,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "manual": true,
+                "blockType": "MANUAL",
+                "chapterPath": [],
+                "originalFileContainsContent": false,
+                "sourceBlocks": []
+              },
+              "fileUrl": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923/file",
+              "fusionScore": 0.03278688524590164,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "KEYWORD",
+                  "rank": 1,
+                  "score": 3.8022056,
+                  "scoreType": "BM25"
+                },
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "HYBRID",
+          "strategy": "KEYWORD+VECTOR",
+          "rerankStatus": "FALLBACK_FUSION",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            },
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-f4097af19fa444c3bbc8af394c201b1a"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "HYBRID",
+        "rerank": true,
+        "minRerankScore": 0.5
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [],
+          "requestedStrategy": "HYBRID",
+          "strategy": "KEYWORD+VECTOR",
+          "rerankStatus": "THRESHOLD_UNAVAILABLE",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            },
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": 0.5
+        },
+        "requestId": "delivery-fault-d120dbd5f5e54aa0ac7ec839fa466c32"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "kbId": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+          "name": "database.md",
+          "originalFilename": "database.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/733b7384-0af0-4546-8ee3-5aae7b55f551/a4b018ea-f1bb-426b-8185-bedcf9506923/original",
+          "mimeType": "text/plain",
+          "fileSize": 54,
+          "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 3,
+          "chunkCount": 1,
+          "version": 2,
+          "manualRevision": 1,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-25T05:17:43.310566Z",
+          "updatedAt": "2026-10-25T05:17:50.808022Z",
+          "sourceUrl": null,
+          "lastIngestedAt": "2026-10-25T05:17:45.458277Z"
+        },
+        "requestId": "delivery-fault-63be274159044e30ba4335d1be134120"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/documents/a4b018ea-f1bb-426b-8185-bedcf9506923?version=2",
+      "status": 202,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5b34daf8-8af4-4d9d-bd06-b97924ab5c30",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "status": "PENDING",
+          "stage": "DATABASE",
+          "attempts": 0,
+          "maxAttempts": 5,
+          "nextRunAt": "2026-10-25T05:17:58.467228Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "createdAt": "2026-10-25T05:17:58.467228Z",
+          "completedAt": null
+        },
+        "requestId": "delivery-fault-339ca927ac2b4452bb24859904ff5d4e"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "status": 200,
+      "request": {
+        "query": "DLV-90210",
+        "kbIds": [
+          "733b7384-0af0-4546-8ee3-5aae7b55f551"
+        ],
+        "strategy": "VECTOR",
+        "rerank": false
+      },
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [],
+          "requestedStrategy": "VECTOR",
+          "strategy": "VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 0,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 5,
+          "fusionCandidates": 5,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "delivery-fault-7344ddeb81a7492482afb165bccede5f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/document-cleanups/5b34daf8-8af4-4d9d-bd06-b97924ab5c30",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "5b34daf8-8af4-4d9d-bd06-b97924ab5c30",
+          "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+          "status": "SUCCEEDED",
+          "stage": "OBJECT",
+          "attempts": 1,
+          "maxAttempts": 5,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "createdAt": "2026-10-25T05:17:58.467228Z",
+          "completedAt": "2026-10-25T05:17:58.755658Z"
+        },
+        "requestId": "delivery-fault-009f0593b829497cbff8fa0f95d68da8"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/kbs/733b7384-0af0-4546-8ee3-5aae7b55f551/keyword-sync",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 1,
+          "records": [
+            {
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "revision": 10,
+              "syncedRevision": 10,
+              "status": "SUCCEEDED",
+              "attempts": 1,
+              "nextRunAt": null,
+              "leaseUntil": null,
+              "errorCode": null,
+              "syncedAt": "2026-10-25T05:17:58.670757Z",
+              "cleanupStatus": "PENDING",
+              "cleanupErrorCode": null
+            }
+          ]
+        },
+        "requestId": "delivery-fault-f36db6a2a5f04de7bd1ad7dea8755e5e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/kbs/733b7384-0af0-4546-8ee3-5aae7b55f551/keyword-sync",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 1,
+          "records": [
+            {
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "revision": 10,
+              "syncedRevision": 10,
+              "status": "SUCCEEDED",
+              "attempts": 1,
+              "nextRunAt": null,
+              "leaseUntil": null,
+              "errorCode": null,
+              "syncedAt": "2026-10-25T05:17:58.670757Z",
+              "cleanupStatus": "SUCCEEDED",
+              "cleanupErrorCode": null
+            }
+          ]
+        },
+        "requestId": "delivery-fault-3449e13733544163acf2cf1d386ed502"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/actuator/metrics/kb.model.failures?tag=operation:embedding",
+      "status": 200,
+      "request": null,
+      "response": {
+        "name": "kb.model.failures",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 1.0
+          }
+        ],
+        "availableTags": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/actuator/metrics/kb.model.failures?tag=operation:rerank",
+      "status": 200,
+      "request": null,
+      "response": {
+        "name": "kb.model.failures",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 2.0
+          }
+        ],
+        "availableTags": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/kbs/733b7384-0af0-4546-8ee3-5aae7b55f551/audit?size=100",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 100,
+          "total": 31,
+          "records": [
+            {
+              "id": "79c8c401-0332-4cf9-97c5-d2f87d3f111e",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_METADATA",
+              "chunkIds": [],
+              "beforeSummary": {
+                "deleted": true,
+                "enabled": false,
+                "version": 3,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 0,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 3
+              },
+              "afterSummary": {
+                "deleted": true,
+                "enabled": false,
+                "version": 3,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 0,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": null
+              },
+              "createdAt": "2026-10-25T05:17:58.467228Z"
+            },
+            {
+              "id": "6ea25ecf-0c20-486e-9396-e84f019a4c4d",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_METADATA",
+              "chunkIds": [],
+              "beforeSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 2,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 1,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 3
+              },
+              "afterSummary": {
+                "deleted": true,
+                "enabled": false,
+                "version": 3,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 0,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 3
+              },
+              "createdAt": "2026-10-25T05:17:58.467228Z"
+            },
+            {
+              "id": "04f7b850-28e0-4c3c-8d61-603bed872031",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_DELETE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "enabled": true,
+                "version": 2,
+                "chunkCount": 1,
+                "manualRevision": 1
+              },
+              "afterSummary": {
+                "enabled": false,
+                "version": 3,
+                "chunkCount": 0,
+                "manualRevision": 1
+              },
+              "createdAt": "2026-10-25T05:17:58.467228Z"
+            },
+            {
+              "id": "aa78a9ec-46e9-4fbc-bca7-4686e4cb5204",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_METADATA",
+              "chunkIds": [],
+              "beforeSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 1,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 1,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 3
+              },
+              "afterSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 2,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 1,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 3
+              },
+              "createdAt": "2026-10-25T05:17:50.785946Z"
+            },
+            {
+              "id": "7a3729ef-915f-430c-a706-7e8166f38812",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "CHUNK_EDIT",
+              "chunkIds": [
+                "77cbf935-b932-3a2b-a9c6-cf1970384dcd"
+              ],
+              "beforeSummary": {
+                "chunk": {
+                  "id": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+                  "hash": "f494245c82c81d3e0190ab015a3ac6ee36677d11a02a32c6a2bcd259d6c3d58d",
+                  "edited": false,
+                  "enabled": true,
+                  "charCount": 41
+                },
+                "document": {
+                  "enabled": true,
+                  "version": 1,
+                  "chunkCount": 1,
+                  "manualRevision": 0
+                }
+              },
+              "afterSummary": {
+                "chunk": {
+                  "id": "77cbf935-b932-3a2b-a9c6-cf1970384dcd",
+                  "hash": "32655c1c70326a03d6372ec63ec01e3d89bd79fd3273168a97345737fbc9b7f0",
+                  "edited": true,
+                  "enabled": true,
+                  "charCount": 55
+                },
+                "document": {
+                  "enabled": true,
+                  "version": 2,
+                  "chunkCount": 1,
+                  "manualRevision": 1
+                }
+              },
+              "createdAt": "2026-10-25T05:17:50.785946Z"
+            },
+            {
+              "id": "dfcb766f-b430-4cdd-80d4-5b1aa251be64",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PERSIST",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PUBLISH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.437003Z"
+            },
+            {
+              "id": "d8397c49-5146-4d2d-943e-e2b0593adc72",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PUBLISH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PUBLISH",
+                "status": "SUCCEEDED",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.437003Z"
+            },
+            {
+              "id": "02a00eb2-ff1e-488f-b714-a78bdfbad23e",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_METADATA",
+              "chunkIds": [],
+              "beforeSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 1,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 1,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 1
+              },
+              "afterSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 1,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 1,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.437003Z"
+            },
+            {
+              "id": "de4f59d3-2fd7-4ecb-bc26-8b98c4a7d72d",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "EMBED",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PERSIST",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.431302Z"
+            },
+            {
+              "id": "4173b34e-eddb-4af5-a8af-a1aba4366bf0",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "SPLIT",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "EMBED",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.416744Z"
+            },
+            {
+              "id": "15cf77ff-89c0-41ed-9073-47892988727a",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PARSE",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "SPLIT",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.40809Z"
+            },
+            {
+              "id": "5e05927b-94b6-4cbb-875c-fdc03f5691cb",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "FETCH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "PARSE",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.400194Z"
+            },
+            {
+              "id": "d9c57c1a-5f5c-480e-8145-69ec6f5312d5",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "FETCH",
+                "status": "PENDING",
+                "attempts": 0,
+                "errorCode": null,
+                "generation": 3
+              },
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "FETCH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.363859Z"
+            },
+            {
+              "id": "8a995c98-7abc-4b8f-a8e2-efa67d3240e3",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {},
+              "afterSummary": {
+                "jobId": "dc848097-a378-4d86-aff5-1dcaf4d0b148",
+                "stage": "FETCH",
+                "status": "PENDING",
+                "attempts": 0,
+                "errorCode": null,
+                "generation": 3
+              },
+              "createdAt": "2026-10-25T05:17:45.320054Z"
+            },
+            {
+              "id": "22d62e31-1082-4f27-b5e2-7e8c2c48f8fb",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "EMBED",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "afterSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "EMBED",
+                "status": "FAILED",
+                "attempts": 1,
+                "errorCode": "KB_MODEL_INVALID_RESPONSE",
+                "generation": 2
+              },
+              "createdAt": "2026-10-25T05:17:44.574307Z"
+            },
+            {
+              "id": "6103482b-64c1-444e-9e14-7a63a8c11b26",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "SPLIT",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "afterSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "EMBED",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "createdAt": "2026-10-25T05:17:44.551728Z"
+            },
+            {
+              "id": "4d051cc5-a97a-48a5-9a0b-996d2dcb86b9",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "PARSE",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "afterSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "SPLIT",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "createdAt": "2026-10-25T05:17:44.541927Z"
+            },
+            {
+              "id": "00be0d6d-777c-485e-a8c4-a1125c7febe3",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "FETCH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "afterSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "PARSE",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "createdAt": "2026-10-25T05:17:44.532328Z"
+            },
+            {
+              "id": "b2a676ad-6a06-443a-907e-74361024c5eb",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "FETCH",
+                "status": "PENDING",
+                "attempts": 0,
+                "errorCode": null,
+                "generation": 2
+              },
+              "afterSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "FETCH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 2
+              },
+              "createdAt": "2026-10-25T05:17:44.482079Z"
+            },
+            {
+              "id": "bec3fb80-250f-4827-ae0b-ada6d1ab45a8",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {},
+              "afterSummary": {
+                "jobId": "89f3dae0-82cd-4b72-a633-8dee17a5c789",
+                "stage": "FETCH",
+                "status": "PENDING",
+                "attempts": 0,
+                "errorCode": null,
+                "generation": 2
+              },
+              "createdAt": "2026-10-25T05:17:44.389886Z"
+            },
+            {
+              "id": "c90e8138-4cb8-4a86-8a2f-142d44304dc2",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PERSIST",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PUBLISH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.632357Z"
+            },
+            {
+              "id": "798a191c-3c5f-4591-bf0b-26c0e18d454e",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_METADATA",
+              "chunkIds": [],
+              "beforeSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 1,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 0,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": null
+              },
+              "afterSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 1,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 1,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.632357Z"
+            },
+            {
+              "id": "04071830-2823-415e-8efb-d8bd01646aaf",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PUBLISH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PUBLISH",
+                "status": "SUCCEEDED",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.632357Z"
+            },
+            {
+              "id": "502a26b1-e41c-4dfc-ad14-0631c5be53b4",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "EMBED",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PERSIST",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.626896Z"
+            },
+            {
+              "id": "b70cd4df-abe9-4e59-ad60-8c4a6cf4eece",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "SPLIT",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "EMBED",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.588121Z"
+            },
+            {
+              "id": "cc0ac2f0-e5a2-4c81-a85d-970b58a4316d",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PARSE",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "SPLIT",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.573102Z"
+            },
+            {
+              "id": "ad5935d6-cd21-474e-8ef6-0e6abf1df933",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "FETCH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "PARSE",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.55716Z"
+            },
+            {
+              "id": "4d8a458d-0291-4f5b-951e-2708b0180012",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "FETCH",
+                "status": "PENDING",
+                "attempts": 0,
+                "errorCode": null,
+                "generation": 1
+              },
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "FETCH",
+                "status": "RUNNING",
+                "attempts": 1,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.493286Z"
+            },
+            {
+              "id": "70fd7a31-b0fb-4f6a-bbf9-12ffee6f65c9",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "INGESTION_STATE",
+              "chunkIds": [],
+              "beforeSummary": {},
+              "afterSummary": {
+                "jobId": "623c3310-fecd-40d7-ae08-b22cb751038a",
+                "stage": "FETCH",
+                "status": "PENDING",
+                "attempts": 0,
+                "errorCode": null,
+                "generation": 1
+              },
+              "createdAt": "2026-10-25T05:17:43.422801Z"
+            },
+            {
+              "id": "81379c15-d10e-461a-bf85-be50b6bd4984",
+              "documentId": "a4b018ea-f1bb-426b-8185-bedcf9506923",
+              "actorId": "user-alice",
+              "action": "DOCUMENT_METADATA",
+              "chunkIds": [],
+              "beforeSummary": {},
+              "afterSummary": {
+                "deleted": false,
+                "enabled": true,
+                "version": 1,
+                "nameHash": "1e080c892326e5bba749587eba8bcf9e",
+                "chunkCount": 0,
+                "contentHash": "24081f4a847b47d30b8e4931164471d03d82f37ad2a369e5f56a9a136ed01aab",
+                "configRevision": 1,
+                "activeGeneration": null
+              },
+              "createdAt": "2026-10-25T05:17:43.306067Z"
+            },
+            {
+              "id": "ae8eea21-20d1-4502-9b65-c5ca14724d35",
+              "documentId": null,
+              "actorId": "user-alice",
+              "action": "BASE_INSERT",
+              "chunkIds": [],
+              "beforeSummary": {},
+              "afterSummary": {
+                "deleted": false,
+                "modelId": "qwen-embed",
+                "version": 1,
+                "nameHash": "45e73034fbe4f7b159c245e4186ad55a",
+                "dimension": 1024,
+                "modelRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6"
+              },
+              "createdAt": "2026-10-25T05:17:43.108525Z"
+            }
+          ]
+        },
+        "requestId": "delivery-fault-d42df6d9213f40d382eaffc02f19ebdd"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/kbs/733b7384-0af0-4546-8ee3-5aae7b55f551",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "733b7384-0af0-4546-8ee3-5aae7b55f551",
+          "name": "delivery-fault-d4cb2ff2a2a74b1e950d0bedcf194253",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-25T05:17:43.103431Z",
+          "updatedAt": "2026-10-25T05:17:43.637756Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_733b7384_0af0_4546_8ee3_5aae7b55f551",
+          "embeddingAiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "documentCount": 0
+        },
+        "requestId": "delivery-fault-aed24f85f25b4cd2bb51bf991e12ffc7"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/kbs/733b7384-0af0-4546-8ee3-5aae7b55f551?version=1",
+      "status": 200,
+      "request": null,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": null,
+        "requestId": "delivery-fault-6794d29444ee42628274bdf36dff5ccb"
+      }
+    }
+  ],
+  "polls": {
+    "omittedIdentical": 68,
+    "note": "Only repeated identical GET data omitted; kept calls are actual HTTP responses."
+  }
+}

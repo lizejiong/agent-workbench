@@ -1,0 +1,53 @@
+{
+  "environment" : "Two actual Java processes; PostgreSQL/MinIO; local HTTP source and embedding fixture",
+  "run" : {
+    "current" : 1,
+    "size" : 20,
+    "total" : 1,
+    "records" : [ {
+      "id" : "f6b1eaf4-05a7-4807-a0f2-bb36521ef507",
+      "documentId" : "56923a87-6a99-4f18-aa77-7b26df661780",
+      "requestId" : "3b507d6d-2e7c-4328-8e64-2e78ea119dd4",
+      "triggerType" : "MANUAL",
+      "status" : "SUCCESS",
+      "jobId" : "8f3fc670-2e0c-462e-9a45-41ffeb9a414f",
+      "attempts" : 2,
+      "maxAttempts" : 3,
+      "httpStatus" : 200,
+      "reason" : "CONTENT_ACTIVATED",
+      "errorMessage" : null,
+      "nextRunAt" : null,
+      "startedAt" : "2026-10-24T14:43:57.103983Z",
+      "completedAt" : "2026-10-24T14:44:26.002611Z",
+      "durationMs" : 28899
+    } ]
+  },
+  "secondPid" : 2304,
+  "firstPid" : 22876,
+  "hits" : [ {
+    "chunkId" : "58617ccd-e892-3b81-a5d6-765fbcc4c386",
+    "kbId" : "d50da536-c730-4426-956e-ab2158348962",
+    "documentId" : "56923a87-6a99-4f18-aa77-7b26df661780",
+    "documentName" : "remote.md",
+    "chunkIndex" : 0,
+    "generation" : 3,
+    "content" : "Baking bread with flour.",
+    "score" : 1.0,
+    "scoreType" : "COSINE_SIMILARITY",
+    "sourceMetadata" : {
+      "textEnd" : 24,
+      "blockType" : "PARAGRAPH",
+      "textStart" : 0,
+      "offsetUnit" : "UTF16",
+      "chapterPath" : [ "Cooking" ],
+      "overlapChars" : 0,
+      "parserVersion" : "commonmark-0.27.1-gfm-v1",
+      "sourceBlocks" : [ {
+        "lineEnd" : 3,
+        "lineStart" : 3,
+        "blockIndex" : 1
+      } ]
+    },
+    "fileUrl" : "/api/documents/56923a87-6a99-4f18-aa77-7b26df661780/file"
+  } ]
+}

@@ -1,0 +1,1741 @@
+{
+  "note": "Actual HTTP calls. Fixtures created and deleted by this script; model determined by server configuration.",
+  "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+  "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+  "calls": [
+    {
+      "method": "POST",
+      "path": "/api/kbs",
+      "request": {
+        "name": "maintenance-acceptance-afa96761985946dab5d11fbdc08e5f45"
+      },
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "maintenance-acceptance-afa96761985946dab5d11fbdc08e5f45",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-24T11:50:45.768189Z",
+          "updatedAt": "2026-10-24T11:50:45.768189Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_cd48505d_38cf_4961_8b59_44cb19143dc8",
+          "embeddingAiConfigRevision": null
+        },
+        "requestId": "maintenance-check-c70755a538ba4efd81adbbcbbcc51c29"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/cd48505d-38cf-4961-8b59-44cb19143dc8/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:46.386673Z"
+        },
+        "requestId": "maintenance-check-1c8f638069db4caf9849b82ffdcf7cc5"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-ca204918e20d40dc948ec770f7c99a73"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "6130e2bd-cfec-4597-8765-32617cd9c34d",
+          "requestId": "ingest-ca204918e20d40dc948ec770f7c99a73",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T11:50:46.507271Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T11:50:46.585166Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "maintenance-check-4bf5951a176941fa9a3e12edab03fe7d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/6130e2bd-cfec-4597-8765-32617cd9c34d",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "6130e2bd-cfec-4597-8765-32617cd9c34d",
+          "requestId": "ingest-ca204918e20d40dc948ec770f7c99a73",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T11:50:46.507271Z",
+          "startedAt": "2026-10-24T11:50:46.703494Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T11:51:16.703493Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "maintenance-check-7c2427bfa7cf4f1783b80d133d3428d6"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/6130e2bd-cfec-4597-8765-32617cd9c34d",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "6130e2bd-cfec-4597-8765-32617cd9c34d",
+          "requestId": "ingest-ca204918e20d40dc948ec770f7c99a73",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T11:50:46.507271Z",
+          "startedAt": "2026-10-24T11:50:46.703494Z",
+          "completedAt": "2026-10-24T11:50:47.184889Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "maintenance-check-c76a2ed18ed74ac7b2a7ed845527e40f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 1,
+          "records": [
+            {
+              "id": "59df7329-9335-391d-8cb2-3f35cc66f2a9",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Database PostgreSQL connection evidence.",
+              "embeddingText": "Database PostgreSQL connection evidence.",
+              "contentHash": "ce7d637ddfbe482de95a1fef70a4a46bb5b6dfeda7d89e912e65a77ef116c4ef",
+              "charCount": 40,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 40,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 1,
+                    "lineStart": 1,
+                    "blockIndex": 0
+                  }
+                ],
+                "parserVersion": "utf8-paragraph-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.087275Z",
+              "updatedAt": "2026-10-24T11:50:47.087275Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-bd1d4e93ec2d45bdb0df1646676587a9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 1,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:47.188101Z"
+        },
+        "requestId": "maintenance-check-a50d24ce740944a89478114e6806cc8c"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks",
+      "request": {
+        "version": 1,
+        "content": "Baking bread, manual addition."
+      },
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 2,
+          "manualRevision": 1,
+          "chunkCount": 2,
+          "chunks": [
+            {
+              "id": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "Baking bread, manual addition.",
+              "embeddingText": "Baking bread, manual addition.",
+              "contentHash": "cb0ae77aa1cda1861da0edd096347f28bebd1a789806e4f4540c826d2c276f32",
+              "charCount": 30,
+              "tokenCount": 8,
+              "tokenCountEstimated": true,
+              "enabled": true,
+              "edited": true,
+              "metadata": {
+                "sourceBlocks": [],
+                "chapterPath": [],
+                "originalFileContainsContent": false,
+                "blockType": "MANUAL",
+                "manual": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.7369353Z",
+              "updatedAt": "2026-10-24T11:50:47.7369353Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-a768d4bf40a643289f6edcf87104f0f7"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks/59df7329-9335-391d-8cb2-3f35cc66f2a9",
+      "request": {
+        "version": 2,
+        "content": "Baking bread, edited by a knowledge curator."
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 3,
+          "manualRevision": 2,
+          "chunkCount": 2,
+          "chunks": [
+            {
+              "id": "59df7329-9335-391d-8cb2-3f35cc66f2a9",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Baking bread, edited by a knowledge curator.",
+              "embeddingText": "Baking bread, edited by a knowledge curator.",
+              "contentHash": "1e4540f653834866554fbe43a04b4e0603deeab5f8ed7329d6df98e9e1b8cb9c",
+              "charCount": 44,
+              "tokenCount": 11,
+              "tokenCountEstimated": true,
+              "enabled": true,
+              "edited": true,
+              "metadata": {
+                "sourceBlocks": [],
+                "chapterPath": [],
+                "originalFileContainsContent": false,
+                "blockType": "MANUAL",
+                "manual": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.087275Z",
+              "updatedAt": "2026-10-24T11:50:47.9134895Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-55261213403e409fbabcd4f8b68167ab"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [
+          {
+            "chunkId": "59df7329-9335-391d-8cb2-3f35cc66f2a9",
+            "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+            "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+            "documentName": "database.txt",
+            "chunkIndex": 0,
+            "generation": 1,
+            "content": "Baking bread, edited by a knowledge curator.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "manual": true,
+              "blockType": "MANUAL",
+              "chapterPath": [],
+              "originalFileContainsContent": false,
+              "sourceBlocks": []
+            },
+            "fileUrl": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file"
+          },
+          {
+            "chunkId": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+            "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+            "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+            "documentName": "database.txt",
+            "chunkIndex": 1,
+            "generation": 1,
+            "content": "Baking bread, manual addition.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "manual": true,
+              "blockType": "MANUAL",
+              "chapterPath": [],
+              "originalFileContainsContent": false,
+              "sourceBlocks": []
+            },
+            "fileUrl": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file"
+          }
+        ],
+        "requestId": "maintenance-check-ae3e18f0e50c462294c9a4ea1ccc96b6"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 3,
+          "manualRevision": 2,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:47.937737Z"
+        },
+        "requestId": "maintenance-check-b696f36b813047e4bed9ec7cc99f7342"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks/59df7329-9335-391d-8cb2-3f35cc66f2a9/enabled",
+      "request": {
+        "version": 3,
+        "enabled": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 4,
+          "manualRevision": 3,
+          "chunkCount": 2,
+          "chunks": [
+            {
+              "id": "59df7329-9335-391d-8cb2-3f35cc66f2a9",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Baking bread, edited by a knowledge curator.",
+              "embeddingText": "Baking bread, edited by a knowledge curator.",
+              "contentHash": "1e4540f653834866554fbe43a04b4e0603deeab5f8ed7329d6df98e9e1b8cb9c",
+              "charCount": 44,
+              "tokenCount": 11,
+              "tokenCountEstimated": true,
+              "enabled": false,
+              "edited": true,
+              "metadata": {
+                "manual": true,
+                "blockType": "MANUAL",
+                "chapterPath": [],
+                "sourceBlocks": [],
+                "originalFileContainsContent": false
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.087275Z",
+              "updatedAt": "2026-10-24T11:50:48.3151856Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-db5df04ff2334f148782ceac7b6ea565"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [
+          {
+            "chunkId": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+            "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+            "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+            "documentName": "database.txt",
+            "chunkIndex": 1,
+            "generation": 1,
+            "content": "Baking bread, manual addition.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "manual": true,
+              "blockType": "MANUAL",
+              "chapterPath": [],
+              "originalFileContainsContent": false,
+              "sourceBlocks": []
+            },
+            "fileUrl": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file"
+          }
+        ],
+        "requestId": "maintenance-check-57365476a13047c9bbbbec6414ff3c3a"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 4,
+          "manualRevision": 3,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:48.330243Z"
+        },
+        "requestId": "maintenance-check-bcb7b0269cc74ec99c055eead74f1981"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/enabled",
+      "request": {
+        "version": 4,
+        "enabled": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": false,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 5,
+          "manualRevision": 3,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:48.6515699Z"
+        },
+        "requestId": "maintenance-check-e8c6dfd9ce074ac39908c4856224a5b2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [],
+        "requestId": "maintenance-check-e1fca80651cb4fb3991d6219e74f38b9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": false,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 5,
+          "manualRevision": 3,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:48.65157Z"
+        },
+        "requestId": "maintenance-check-b15bb3b52f7b4639972ef5ac6a30ac94"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/enabled",
+      "request": {
+        "version": 5,
+        "enabled": true
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 6,
+          "manualRevision": 3,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:48.9863591Z"
+        },
+        "requestId": "maintenance-check-865c0d6988124b73a9c0f2d6a2025ef4"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [
+          {
+            "chunkId": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+            "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+            "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+            "documentName": "database.txt",
+            "chunkIndex": 1,
+            "generation": 1,
+            "content": "Baking bread, manual addition.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "manual": true,
+              "blockType": "MANUAL",
+              "chapterPath": [],
+              "originalFileContainsContent": false,
+              "sourceBlocks": []
+            },
+            "fileUrl": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file"
+          }
+        ],
+        "requestId": "maintenance-check-1376d97086394996a1a7b17e366e6693"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 6,
+          "manualRevision": 3,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:48.986359Z"
+        },
+        "requestId": "maintenance-check-77d2f1a7201f43e8b5ee34af8caeb189"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks/batch-enabled",
+      "request": {
+        "version": 6,
+        "enabled": false,
+        "chunkIds": []
+      },
+      "status": 400,
+      "response": {
+        "code": "KB_INVALID_INPUT",
+        "message": "Choose nonempty unique chunkIds within the limit, or applyAll=true with chunkIds omitted",
+        "data": null,
+        "requestId": "maintenance-check-ecdd6bc8fb5a4f15b9e657993ed8bafd"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 6,
+          "manualRevision": 3,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:48.986359Z"
+        },
+        "requestId": "maintenance-check-da12a98a920c44538c8e533fc6de25ae"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks/batch-enabled",
+      "request": {
+        "version": 6,
+        "enabled": false,
+        "chunkIds": [
+          "a56da03e-56b1-4497-8aad-ed8a523dad02"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 7,
+          "manualRevision": 4,
+          "chunkCount": 2,
+          "chunks": [
+            {
+              "id": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "Baking bread, manual addition.",
+              "embeddingText": "Baking bread, manual addition.",
+              "contentHash": "cb0ae77aa1cda1861da0edd096347f28bebd1a789806e4f4540c826d2c276f32",
+              "charCount": 30,
+              "tokenCount": 8,
+              "tokenCountEstimated": true,
+              "enabled": false,
+              "edited": true,
+              "metadata": {
+                "manual": true,
+                "blockType": "MANUAL",
+                "chapterPath": [],
+                "sourceBlocks": [],
+                "originalFileContainsContent": false
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.736935Z",
+              "updatedAt": "2026-10-24T11:50:49.5127127Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-62e1cae8667241f3b9f8496a84ec7e91"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [],
+        "requestId": "maintenance-check-7d091de92c1d4a14a0998bd5ac0c82a8"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 7,
+          "manualRevision": 4,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:49.518712Z"
+        },
+        "requestId": "maintenance-check-6d6081cd190947588f051861e6a05007"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks/batch-enabled",
+      "request": {
+        "version": 7,
+        "enabled": true,
+        "applyAll": true
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 8,
+          "manualRevision": 5,
+          "chunkCount": 2,
+          "chunks": [
+            {
+              "id": "59df7329-9335-391d-8cb2-3f35cc66f2a9",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 0,
+              "content": "Baking bread, edited by a knowledge curator.",
+              "embeddingText": "Baking bread, edited by a knowledge curator.",
+              "contentHash": "1e4540f653834866554fbe43a04b4e0603deeab5f8ed7329d6df98e9e1b8cb9c",
+              "charCount": 44,
+              "tokenCount": 11,
+              "tokenCountEstimated": true,
+              "enabled": true,
+              "edited": true,
+              "metadata": {
+                "manual": true,
+                "blockType": "MANUAL",
+                "chapterPath": [],
+                "sourceBlocks": [],
+                "originalFileContainsContent": false
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.087275Z",
+              "updatedAt": "2026-10-24T11:50:49.8393238Z"
+            },
+            {
+              "id": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 1,
+              "chunkIndex": 1,
+              "content": "Baking bread, manual addition.",
+              "embeddingText": "Baking bread, manual addition.",
+              "contentHash": "cb0ae77aa1cda1861da0edd096347f28bebd1a789806e4f4540c826d2c276f32",
+              "charCount": 30,
+              "tokenCount": 8,
+              "tokenCountEstimated": true,
+              "enabled": true,
+              "edited": true,
+              "metadata": {
+                "manual": true,
+                "blockType": "MANUAL",
+                "chapterPath": [],
+                "sourceBlocks": [],
+                "originalFileContainsContent": false
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:47.736935Z",
+              "updatedAt": "2026-10-24T11:50:49.8425139Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-1fd4d05e9f234521b8dd476206debd09"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [
+          {
+            "chunkId": "59df7329-9335-391d-8cb2-3f35cc66f2a9",
+            "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+            "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+            "documentName": "database.txt",
+            "chunkIndex": 0,
+            "generation": 1,
+            "content": "Baking bread, edited by a knowledge curator.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "manual": true,
+              "blockType": "MANUAL",
+              "chapterPath": [],
+              "originalFileContainsContent": false,
+              "sourceBlocks": []
+            },
+            "fileUrl": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file"
+          },
+          {
+            "chunkId": "a56da03e-56b1-4497-8aad-ed8a523dad02",
+            "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+            "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+            "documentName": "database.txt",
+            "chunkIndex": 1,
+            "generation": 1,
+            "content": "Baking bread, manual addition.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "manual": true,
+              "blockType": "MANUAL",
+              "chapterPath": [],
+              "originalFileContainsContent": false,
+              "sourceBlocks": []
+            },
+            "fileUrl": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file"
+          }
+        ],
+        "requestId": "maintenance-check-78987e66d65b4554990d008cf530c853"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/ingestion-jobs",
+      "request": {
+        "requestId": "replace-bdeb08bcf92f425c85ee557c891cc004"
+      },
+      "status": 409,
+      "response": {
+        "code": "KB_MANUAL_OVERWRITE_REQUIRED",
+        "message": "Re-ingestion replaces manual content, additions, deletions and chunk enabled settings; send confirmOverwriteEdited=true and expectedDocumentVersion after review",
+        "data": null,
+        "requestId": "maintenance-check-130b220adbb242e1a7ebcfee39ce6ac1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 2,
+          "version": 8,
+          "manualRevision": 5,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:49.849843Z"
+        },
+        "requestId": "maintenance-check-ec0116b68f7e4138bb8521a578951bbc"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/ingestion-jobs",
+      "request": {
+        "requestId": "replace-bdeb08bcf92f425c85ee557c891cc004",
+        "confirmOverwriteEdited": true,
+        "expectedDocumentVersion": 8
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ebc493-b594-4acb-bf15-275b54c4ed6d",
+          "requestId": "replace-bdeb08bcf92f425c85ee557c891cc004",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "documentConfigRevision": 1,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T11:50:50.256535Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T11:50:50.285948Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "maintenance-check-325b5b1029c347b5baba0286ebb25ca3"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/ingestion-jobs",
+      "request": {
+        "requestId": "replace-bdeb08bcf92f425c85ee557c891cc004",
+        "confirmOverwriteEdited": true,
+        "expectedDocumentVersion": 8
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ebc493-b594-4acb-bf15-275b54c4ed6d",
+          "requestId": "replace-bdeb08bcf92f425c85ee557c891cc004",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "documentConfigRevision": 1,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T11:50:50.256535Z",
+          "startedAt": "2026-10-24T11:50:50.357344Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T11:51:20.357344Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "maintenance-check-bf4239e7d3984bbb91cf10eac104b352"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/80ebc493-b594-4acb-bf15-275b54c4ed6d",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ebc493-b594-4acb-bf15-275b54c4ed6d",
+          "requestId": "replace-bdeb08bcf92f425c85ee557c891cc004",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "documentConfigRevision": 1,
+          "targetGeneration": 2,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T11:50:50.256535Z",
+          "startedAt": "2026-10-24T11:50:50.357344Z",
+          "completedAt": "2026-10-24T11:50:50.472331Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "maintenance-check-e2f0f3dbb4df4f54aee56bde55ad1848"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 2,
+          "chunkCount": 1,
+          "version": 8,
+          "manualRevision": 5,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:50.473735Z"
+        },
+        "requestId": "maintenance-check-13c1f8d2310845ff8715b25608e3d6e9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 1,
+          "records": [
+            {
+              "id": "3f21bb78-56a5-315c-bd5c-74f7fbe45234",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 2,
+              "chunkIndex": 0,
+              "content": "Database PostgreSQL connection evidence.",
+              "embeddingText": "Database PostgreSQL connection evidence.",
+              "contentHash": "ce7d637ddfbe482de95a1fef70a4a46bb5b6dfeda7d89e912e65a77ef116c4ef",
+              "charCount": 40,
+              "tokenCount": null,
+              "tokenCountEstimated": false,
+              "enabled": true,
+              "edited": false,
+              "metadata": {
+                "textEnd": 40,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [],
+                "overlapChars": 0,
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 1,
+                    "lineStart": 1,
+                    "blockIndex": 0
+                  }
+                ],
+                "parserVersion": "utf8-paragraph-v1"
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:50.445662Z",
+              "updatedAt": "2026-10-24T11:50:50.445662Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-f84c1139fbe0458285a237ce1d4f09d1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 2,
+          "chunkCount": 1,
+          "version": 8,
+          "manualRevision": 5,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:50.473735Z"
+        },
+        "requestId": "maintenance-check-ac0381ade3eb489c96e4165fe4f5c752"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks",
+      "request": {
+        "version": 8,
+        "content": "Baking bread, temporary manual chunk."
+      },
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 9,
+          "manualRevision": 6,
+          "chunkCount": 2,
+          "chunks": [
+            {
+              "id": "d0a783f1-670a-46a6-bd9e-9635059960aa",
+              "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+              "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+              "generation": 2,
+              "chunkIndex": 1,
+              "content": "Baking bread, temporary manual chunk.",
+              "embeddingText": "Baking bread, temporary manual chunk.",
+              "contentHash": "100b2acd18c031144e47a9e131713f82d4107f1244517f32135bd2e3f846eda0",
+              "charCount": 37,
+              "tokenCount": 10,
+              "tokenCountEstimated": true,
+              "enabled": true,
+              "edited": true,
+              "metadata": {
+                "sourceBlocks": [],
+                "chapterPath": [],
+                "originalFileContainsContent": false,
+                "blockType": "MANUAL",
+                "manual": true
+              },
+              "createdBy": "user-alice",
+              "updatedBy": "user-alice",
+              "createdAt": "2026-10-24T11:50:50.8957347Z",
+              "updatedAt": "2026-10-24T11:50:50.8957347Z"
+            }
+          ]
+        },
+        "requestId": "maintenance-check-e0352b07a864492aa4a205562a998ce2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 2,
+          "chunkCount": 2,
+          "version": 9,
+          "manualRevision": 6,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:50.912963Z"
+        },
+        "requestId": "maintenance-check-c922b93652b7446da6eec3b455013fb8"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/chunks/d0a783f1-670a-46a6-bd9e-9635059960aa?version=9",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentVersion": 10,
+          "manualRevision": 7,
+          "chunkCount": 1,
+          "chunks": []
+        },
+        "requestId": "maintenance-check-0a707345cec34e32bea28f8a712543fa"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "kbId": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "database.txt",
+          "originalFilename": "database.txt",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/cd48505d-38cf-4961-8b59-44cb19143dc8/1d3234a5-a471-491f-9f1a-0ae0313d8f00/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "76e1b2968fbfdcd1891801fef201f6bdac36428c598a75294cfdf51f9e221cf4",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            }
+          },
+          "configRevision": 1,
+          "activeGeneration": 2,
+          "chunkCount": 1,
+          "version": 10,
+          "manualRevision": 7,
+          "hasManualChanges": true,
+          "createdAt": "2026-10-24T11:50:46.386673Z",
+          "updatedAt": "2026-10-24T11:50:51.153411Z"
+        },
+        "requestId": "maintenance-check-b00671f838f5422684aefb50ea690d56"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00?version=10",
+      "request": null,
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "154c5bc1-3e5d-4e87-8718-0aad327f596d",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "status": "PENDING",
+          "stage": "DATABASE",
+          "attempts": 0,
+          "maxAttempts": 5,
+          "nextRunAt": "2026-10-24T11:50:51.346764Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "createdAt": "2026-10-24T11:50:51.346764Z",
+          "completedAt": null
+        },
+        "requestId": "maintenance-check-1c3088b60f874865920a42aeaf4eb56a"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00?version=1",
+      "request": null,
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "154c5bc1-3e5d-4e87-8718-0aad327f596d",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "status": "RUNNING",
+          "stage": "OBJECT",
+          "attempts": 1,
+          "maxAttempts": 5,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-24T11:54:51.413088Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "createdAt": "2026-10-24T11:50:51.346764Z",
+          "completedAt": null
+        },
+        "requestId": "maintenance-check-dd5508207d1f490f99f107ffe42bfb90"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+      "request": null,
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "maintenance-check-afdcc1ecb5c0407a918691216ffbc492"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/1d3234a5-a471-491f-9f1a-0ae0313d8f00/file",
+      "request": null,
+      "status": 404,
+      "response": {
+        "code": "KB_DOCUMENT_NOT_FOUND",
+        "message": "Document not found",
+        "data": null,
+        "requestId": "maintenance-check-40ca17ffe97442cfb3e2067c6105bb86"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "Baking bread, edited by a knowledge curator.",
+        "kbIds": [
+          "cd48505d-38cf-4961-8b59-44cb19143dc8"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [],
+        "requestId": "maintenance-check-755e7f8f3e594acc98c22ed77ea05fd9"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/document-cleanups/154c5bc1-3e5d-4e87-8718-0aad327f596d",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "154c5bc1-3e5d-4e87-8718-0aad327f596d",
+          "documentId": "1d3234a5-a471-491f-9f1a-0ae0313d8f00",
+          "status": "SUCCEEDED",
+          "stage": "OBJECT",
+          "attempts": 1,
+          "maxAttempts": 5,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "createdAt": "2026-10-24T11:50:51.346764Z",
+          "completedAt": "2026-10-24T11:50:51.507243Z"
+        },
+        "requestId": "maintenance-check-b217b0223a48480fbb8c13465ef5c9e7"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/document-cleanups/154c5bc1-3e5d-4e87-8718-0aad327f596d",
+      "request": null,
+      "status": 401,
+      "response": {
+        "code": "KB_UNAUTHENTICATED",
+        "message": "Authentication required",
+        "data": null,
+        "requestId": "maintenance-check-c59d92a430a2465e92dd2807a7b9830d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/kbs/cd48505d-38cf-4961-8b59-44cb19143dc8",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "cd48505d-38cf-4961-8b59-44cb19143dc8",
+          "name": "maintenance-acceptance-afa96761985946dab5d11fbdc08e5f45",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-24T11:50:45.768189Z",
+          "updatedAt": "2026-10-24T11:50:47.105167Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_cd48505d_38cf_4961_8b59_44cb19143dc8",
+          "embeddingAiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "requestId": "maintenance-check-b44a0b027dfd450b9db3d15d00bb1746"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/kbs/cd48505d-38cf-4961-8b59-44cb19143dc8?version=1",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": null,
+        "requestId": "maintenance-check-0776dda4f58a48238101df064517879e"
+      }
+    }
+  ]
+}

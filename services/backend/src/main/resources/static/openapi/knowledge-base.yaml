@@ -1,0 +1,4189 @@
+openapi: 3.0.3
+"info":
+  "title": "RAG Knowledge Base API"
+  "version": "1.0.0"
+  "description": "Knowledge management, uploads, reliable ingestion, structured evidence, manual content maintenance and durable document deletion. Same-PostgreSQL atomic content/vector changes; bounded persistent cleanup. Multi-format fast/fidelity parsing; explicit external capabilities, no silent OCR/profile downgrade. Controlled URL import and durable timezone-aware refresh; source metadata, active generation and conditional validators publish atomically. Optional real BM25 with transactional outbox, authoritative revision filtering, bounded parallel channels, RRF and pinned native AI reranking. Structured evidence only. API management delivery, scoped committed summary audit, operator-only Micrometer metrics. No frontend or user administration is present in this repository."
+"servers":
+  -
+    "url": "http://localhost:8080"
+"security":
+  -
+    "basicAuth": []
+"paths":
+  "/api/kb-models":
+    "get":
+      "operationId": "listAllowedModels"
+      "summary": "listAllowedModels"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ProfilesResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/kbs":
+    "get":
+      "operationId": "listKnowledgeBases"
+      "summary": "listKnowledgeBases"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeBasePageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+        -
+          "name": "name"
+          "in": "query"
+          "schema":
+            "type": "string"
+            "maxLength": 128
+            "description": "Case-insensitive literal substring"
+          "required": false
+    "post":
+      "operationId": "createKnowledgeBase"
+      "summary": "createKnowledgeBase"
+      "responses":
+        "201":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeBaseResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/CreateRequest"
+  "/api/kbs/{id}":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getKnowledgeBase"
+      "summary": "getKnowledgeBase"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeBaseResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+    "patch":
+      "operationId": "patchKnowledgeBase"
+      "summary": "patchKnowledgeBase"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeBaseResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/PatchBase"
+    "put":
+      "operationId": "replaceKnowledgeBase"
+      "summary": "replaceKnowledgeBase"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeBaseResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ReplaceBase"
+    "delete":
+      "operationId": "deleteEmptyKnowledgeBase"
+      "summary": "Soft delete only an empty knowledge base; active uploads also block deletion"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "version"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+          "required": true
+  "/api/kbs/{id}/embedding-binding":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "put":
+      "operationId": "bindLegacyKnowledgeBase"
+      "summary": "bindLegacyKnowledgeBase"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeBaseResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/BindRequest"
+  "/api/kbs/{kbId}/documents":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listDocuments"
+      "summary": "listDocuments"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+        -
+          "name": "name"
+          "in": "query"
+          "schema":
+            "type": "string"
+            "maxLength": 255
+          "required": false
+        -
+          "name": "status"
+          "in": "query"
+          "schema":
+            "type": "string"
+            "enum":
+              - "PENDING"
+              - "PROCESSING"
+              - "READY"
+              - "FAILED"
+          "required": false
+    "post":
+      "operationId": "uploadLocalDocument"
+      "summary": "Upload UTF-8 TXT/Markdown; persist PENDING without vectorization"
+      "responses":
+        "201":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "200":
+          "description": "Idempotent replay; same document current view"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "413":
+          "description": "Upload type, size, structure or profile rejected before object persistence"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "415":
+          "description": "Upload type, size, structure or profile rejected before object persistence"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "422":
+          "description": "Upload type, size, structure or profile rejected before object persistence"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "parameters":
+        -
+          "name": "Idempotency-Key"
+          "in": "header"
+          "schema":
+            "type": "string"
+            "minLength": 16
+            "maxLength": 128
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          "required": true
+      "requestBody":
+        "required": true
+        "content":
+          "multipart/form-data":
+            "schema":
+              "type": "object"
+              "additionalProperties": false
+              "properties":
+                "file":
+                  "type": "string"
+                  "format": "binary"
+                "metadata":
+                  "$ref": "#/components/schemas/UploadMetadata"
+              "required":
+                - "file"
+            "encoding":
+              "metadata":
+                "contentType": "application/json"
+      "description": "Streamed bounded upload with actual Tika container MIME + matching extension. TXT/Markdown/CSV strict UTF-8; PDF/DOC/DOCX/PPT/PPTX/XLS/XLSX/PNG/JPEG according to authenticated format capabilities. SVG/macros/archives rejected. Saves only PENDING, no automatic model call. ingestionSpec.parseProfile defaults fast. ZIP expansion limits apply before MIME inspection. External disabled/permanent parse errors appear in durable job stages, no silent fallback."
+  "/api/documents/{id}":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getDocument"
+      "summary": "getDocument"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+    "patch":
+      "operationId": "patchDocument"
+      "summary": "patchDocument"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/PatchDocument"
+    "delete":
+      "operationId": "deleteDocument"
+      "summary": "deleteDocument"
+      "responses":
+        "202":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentCleanupResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "version"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+          "required": true
+      "description": "Tombstone, disable and cancel/fence running ingestion atomically; immediate exclusion from search/files. Returns durable cleanup receipt. Repeated owned deletion returns same receipt even after parent deletion. Cleanup removes all generations then object outside transaction; failures persist and retry finitely. Unversioned S3 bucket and GetBucketVersioning/DeleteObject permissions required."
+  "/api/documents/{id}/file":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "downloadOriginalFile"
+      "summary": "downloadOriginalFile"
+      "responses":
+        "200":
+          "description": "Original bytes after authorization. attachment, no-store, nosniff. MIME is content-detected; Markdown can be text/plain."
+          "content":
+            "text/plain":
+              "schema":
+                "type": "string"
+                "format": "binary"
+            "text/markdown":
+              "schema":
+                "type": "string"
+                "format": "binary"
+          "headers":
+            "Content-Disposition":
+              "schema":
+                "type": "string"
+            "Content-Length":
+              "schema":
+                "type": "integer"
+                "format": "int64"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/kbs/{kbId}/storage-operations":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listStorageOperations"
+      "summary": "listStorageOperations"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/StorageOperationPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+  "/api/kbs/{kbId}/storage-operations/{id}/retry-cleanup":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "retryStorageCleanup"
+      "summary": "Clean only an unreferenced object; active lease and committed document are protected"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/StorageOperationResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/actuator/health":
+    "get":
+      "operationId": "health"
+      "security": []
+      "responses":
+        "200":
+          "description": "Native Actuator process/database health"
+        "503":
+          "description": "Unhealthy"
+  "/api/documents/{documentId}/ingestion-jobs":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listIngestionJobs"
+      "summary": "listIngestionJobs"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+        -
+          "name": "status"
+          "in": "query"
+          "schema":
+            "type": "string"
+            "enum":
+              - "PENDING"
+              - "RUNNING"
+              - "SUCCEEDED"
+              - "FAILED"
+              - "CANCELLED"
+          "required": false
+    "post":
+      "operationId": "submitIngestionJob"
+      "summary": "submitIngestionJob"
+      "responses":
+        "202":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "200":
+          "description": "Same requestId replay returns the existing job, including terminal jobs"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/SubmitIngestionRequest"
+      "description": "requestId unique per trusted tenant/owner. Different document or retry source with the same requestId: 409. Different requestId while document has PENDING/RUNNING work: 409 KB_JOB_ACTIVE. Capture current document inputs in a short transaction; no model calls in HTTP request. Manual additions/edits/deletions/toggles require confirmOverwriteEdited=true AND the reviewed current expectedDocumentVersion, otherwise 409 KB_MANUAL_OVERWRITE_REQUIRED or KB_VERSION_CONFLICT. Rebuild replaces all manual changes and independent chunk enabled settings. Confirmation/version are part of requestId idempotency identity."
+  "/api/documents/{documentId}/ingestion-jobs/{jobId}":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+      -
+        "name": "jobId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getDocumentIngestionJob"
+      "summary": "getIngestionJob"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/documents/{documentId}/ingestion-jobs/{jobId}/stages":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+      -
+        "name": "jobId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listDocumentIngestionStages"
+      "summary": "listIngestionStages"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionStagePageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+  "/api/ingestion-jobs/{jobId}":
+    "parameters":
+      -
+        "name": "jobId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getIngestionJob"
+      "summary": "getIngestionJob"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/ingestion-jobs/{jobId}/stages":
+    "parameters":
+      -
+        "name": "jobId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listIngestionStages"
+      "summary": "listIngestionStages"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionStagePageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+  "/api/ingestion-jobs/{jobId}/retry":
+    "parameters":
+      -
+        "name": "jobId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "retryIngestionJob"
+      "summary": "retryIngestionJob"
+      "responses":
+        "202":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "200":
+          "description": "Same requestId replay returns the existing job, including terminal jobs"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/SubmitIngestionRequest"
+      "description": "requestId unique per trusted tenant/owner. Different document or retry source with the same requestId: 409. Different requestId while document has PENDING/RUNNING work: 409 KB_JOB_ACTIVE. Capture current document inputs in a short transaction; no model calls in HTTP request. Only FAILED/CANCELLED jobs; creates a NEW job/generation using current inputs, retryOf identifies the old job. Manual additions/edits/deletions/toggles require confirmOverwriteEdited=true AND the reviewed current expectedDocumentVersion, otherwise 409 KB_MANUAL_OVERWRITE_REQUIRED or KB_VERSION_CONFLICT. Rebuild replaces all manual changes and independent chunk enabled settings. Confirmation/version are part of requestId idempotency identity."
+  "/api/ingestion-jobs/{jobId}/cancel":
+    "parameters":
+      -
+        "name": "jobId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "cancelIngestionJob"
+      "summary": "cancelIngestionJob"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/IngestionJobResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "description": "PENDING/RUNNING -> CANCELLED atomically invalidates the claim. Terminal jobs return unchanged (idempotent). Old generation remains active."
+  "/api/knowledge/search":
+    "post":
+      "operationId": "searchKnowledge"
+      "summary": "Return structured evidence from active enabled document generations"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KnowledgeSearchResponse"
+          "headers":
+            "X-KB-Search-Strategy":
+              "schema":
+                "type": "string"
+            "X-KB-Rerank-Status":
+              "schema":
+                "type": "string"
+            "X-KB-Channel-Status":
+              "schema":
+                "type": "string"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Invalid embedding or provider request rejected"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "422":
+          "description": "Query exceeds encoded model input byte budget"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Query model timeout"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/KnowledgeSearchRequest"
+      "description": "Compatibility array endpoint over the same retrieval pipeline. Optional services off preserves cosine scores and vector error semantics. Actual strategy and rerank/channel states are returned in headers, including empty results. Use /api/knowledge/retrieve for full metadata. Authorize all resource scope before external calls. Bounded parallel vector/BM25 channels with independent deadlines; one failure preserves the other; all failed returns 503. Default 50/channel -> 20 fused -> optional rerank -> topK5. RRF uses ranks, keeps raw scores; generation/ownership/body/revision are rechecked before and after reranking. Keyword dirty documents are omitted until their current revision is acknowledged. No generated answer."
+  "/api/documents/{documentId}/chunks":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listCurrentDocumentChunks"
+      "summary": "listCurrentDocumentChunks"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ChunkPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+        -
+          "name": "enabled"
+          "in": "query"
+          "schema":
+            "type": "boolean"
+          "required": false
+    "post":
+      "operationId": "createManualChunk"
+      "summary": "createManualChunk"
+      "responses":
+        "201":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ChunksChangedResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ChunkContentRequest"
+      "description": "Owned live document and expected document version required. Chunk maintenance rejects PENDING/RUNNING ingestion. Create/edit/enable chunk require enabled document and a previously published active generation. Model HTTP is outside transactions; version/generation are rechecked under locks before atomically updating rows/vector/audit. Errors leave prior content/vector intact. Document toggle cancels active ingestion; reenabling preserves per-chunk flags. "
+  "/api/documents/{documentId}/chunks/{chunkId}":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+      -
+        "name": "chunkId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "patch":
+      "operationId": "editManualChunk"
+      "summary": "editManualChunk"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ChunksChangedResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ChunkContentRequest"
+      "description": "Owned live document and expected document version required. Chunk maintenance rejects PENDING/RUNNING ingestion. Create/edit/enable chunk require enabled document and a previously published active generation. Model HTTP is outside transactions; version/generation are rechecked under locks before atomically updating rows/vector/audit. Errors leave prior content/vector intact. Document toggle cancels active ingestion; reenabling preserves per-chunk flags. "
+    "delete":
+      "operationId": "deleteChunk"
+      "summary": "deleteChunk"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ChunksChangedResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "parameters":
+        -
+          "name": "version"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+          "required": true
+      "description": "Owned live document and expected document version required. Chunk maintenance rejects PENDING/RUNNING ingestion. Create/edit/enable chunk require enabled document and a previously published active generation. Model HTTP is outside transactions; version/generation are rechecked under locks before atomically updating rows/vector/audit. Errors leave prior content/vector intact. Document toggle cancels active ingestion; reenabling preserves per-chunk flags. "
+  "/api/documents/{documentId}/chunks/{chunkId}/enabled":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+      -
+        "name": "chunkId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "patch":
+      "operationId": "setChunkEnabled"
+      "summary": "setChunkEnabled"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ChunksChangedResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/EnabledRequest"
+      "description": "Owned live document and expected document version required. Chunk maintenance rejects PENDING/RUNNING ingestion. Create/edit/enable chunk require enabled document and a previously published active generation. Model HTTP is outside transactions; version/generation are rechecked under locks before atomically updating rows/vector/audit. Errors leave prior content/vector intact. Document toggle cancels active ingestion; reenabling preserves per-chunk flags. "
+  "/api/documents/{documentId}/chunks/batch-enabled":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "setChunksEnabled"
+      "summary": "setChunksEnabled"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ChunksChangedResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/BatchEnabledRequest"
+      "description": "Owned live document and expected document version required. Chunk maintenance rejects PENDING/RUNNING ingestion. Create/edit/enable chunk require enabled document and a previously published active generation. Model HTTP is outside transactions; version/generation are rechecked under locks before atomically updating rows/vector/audit. Errors leave prior content/vector intact. Document toggle cancels active ingestion; reenabling preserves per-chunk flags. "
+  "/api/documents/{documentId}/enabled":
+    "parameters":
+      -
+        "name": "documentId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "patch":
+      "operationId": "setDocumentEnabled"
+      "summary": "setDocumentEnabled"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model invalid response or timeout; no partial change"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/EnabledRequest"
+      "description": "Owned live document and expected document version required. Chunk maintenance rejects PENDING/RUNNING ingestion. Create/edit/enable chunk require enabled document and a previously published active generation. Model HTTP is outside transactions; version/generation are rechecked under locks before atomically updating rows/vector/audit. Errors leave prior content/vector intact. Document toggle cancels active ingestion; reenabling preserves per-chunk flags. "
+  "/api/document-cleanups/{id}":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getDocumentCleanup"
+      "summary": "getDocumentCleanup"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentCleanupResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/document-cleanups/{id}/retry":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "retryDocumentCleanup"
+      "summary": "retryDocumentCleanup"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/DocumentCleanupResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/knowledge/formats":
+    "get":
+      "operationId": "getFormatCapabilities"
+      "summary": "Configured format/profile matrix; requires authentication, does not assert live external service verification"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/FormatCapabilitiesResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/kbs/{kbId}/documents/import-url":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "importUrlDocument"
+      "summary": "importUrlDocument"
+      "responses":
+        "201":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UrlImportResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "202":
+          "description": "Saved and durable ingestion submitted; no model work in HTTP transaction"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UrlImportResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "200":
+          "description": "Idempotent replay, without downloading again"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/UrlImportResponse"
+          "headers":
+            "Location":
+              "schema":
+                "type": "string"
+            "Idempotency-Replayed":
+              "schema":
+                "type": "boolean"
+        "413":
+          "description": "Explicit remote policy, format, size, capacity or transport error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "415":
+          "description": "Explicit remote policy, format, size, capacity or transport error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "422":
+          "description": "Explicit remote policy, format, size, capacity or transport error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "429":
+          "description": "Explicit remote policy, format, size, capacity or transport error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "502":
+          "description": "Explicit remote policy, format, size, capacity or transport error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Explicit remote policy, format, size, capacity or transport error"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "parameters":
+        -
+          "name": "Idempotency-Key"
+          "in": "header"
+          "schema":
+            "type": "string"
+            "minLength": 16
+            "maxLength": 128
+          "required": true
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/ImportUrlRequest"
+      "description": "Bounded synchronous download and shared upload compensation. Requires server allowlist; no credentials/cookies/proxy or implicit redirects. Same key is scoped to owner/KB and immutable payload. Failed/expired import requires new key after storage recovery. ingest defaults false; true persists the same ingestion job atomically with document/import completion. First baseline only after activation."
+  "/api/documents/{id}/refresh-schedule":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getRefreshSchedule"
+      "summary": "getRefreshSchedule"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RefreshScheduleResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+    "put":
+      "operationId": "setRefreshSchedule"
+      "summary": "setRefreshSchedule"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RefreshScheduleResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/RefreshScheduleRequest"
+      "description": "Optimistic schedule version, separate from document version. Explicit IANA timezone and Spring six-field cron. Disabled document cannot enable schedule. Changing enabled schedule conflicts with active refresh; enabled=false cancels/fences it. Re-enabling a document never re-enables its schedule."
+  "/api/documents/{id}/refresh":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "refreshRemoteDocument"
+      "summary": "refreshRemoteDocument"
+      "responses":
+        "202":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RefreshRunResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "200":
+          "description": "Idempotent replay"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RefreshRunResponse"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/RefreshRequest"
+      "description": "Quick durable command. requestId scoped to trusted tenant/owner, confirmation/version part of identity. Active ingestion/another refresh conflicts. Manual changes require confirmOverwriteEdited and reviewed expectedDocumentVersion. Run statuses PENDING/RUNNING/WAITING_INGESTION then SUCCESS/FAILED/SKIPPED; unchanged never parses or embeds. Expired claims recover finitely; old credentials cannot activate. Failed refresh ingestion must retry via a new refresh request, not ingestion-job retry."
+  "/api/documents/{id}/refresh-runs":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listRefreshRuns"
+      "summary": "Owned runs newest first; jobId links to existing job/stages endpoints"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RefreshRunPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+  "/api/knowledge/retrieve":
+    "post":
+      "operationId": "retrieveKnowledge"
+      "summary": "Structured evidence with actual channel/fusion/rerank strategy"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RetrievalResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/KnowledgeSearchRequest"
+      "description": "Authorize all resource scope before external calls. Bounded parallel vector/BM25 channels with independent deadlines; one failure preserves the other; all failed returns 503. Default 50/channel -> 20 fused -> optional rerank -> topK5. RRF uses ranks, keeps raw scores; generation/ownership/body/revision are rechecked before and after reranking. Keyword dirty documents are omitted until their current revision is acknowledged. No generated answer."
+  "/api/knowledge/search-capabilities":
+    "get":
+      "operationId": "getSearchCapabilities"
+      "summary": "Authenticated configuration, not a live external quality/liveness claim"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/SearchCapabilitiesResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/documents/{id}/keyword-index":
+    "parameters":
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "getKeywordSync"
+      "summary": "getKeywordSync"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KeywordSyncResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/kbs/{kbId}/keyword-sync":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listKeywordSync"
+      "summary": "listKeywordSync"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KeywordSyncPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+  "/api/kbs/{kbId}/keyword-sync/{id}/retry":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+      -
+        "name": "id"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "post":
+      "operationId": "retryKeywordSync"
+      "summary": "Owned rebuild/retry, also permits tombstoned documents; active RUNNING conflicts"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/KeywordSyncResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/knowledge/management":
+    "get":
+      "operationId": "knowledgeManagementEntry"
+      "summary": "Authenticated API management navigation and safe defaults"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/ManagementEntryResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+  "/api/kbs/{kbId}/audit":
+    "parameters":
+      -
+        "name": "kbId"
+        "in": "path"
+        "schema":
+          "type": "string"
+          "format": "uuid"
+        "required": true
+    "get":
+      "operationId": "listCommittedKnowledgeAudit"
+      "summary": "Owner-scoped same-transaction summaries, never full source text"
+      "responses":
+        "200":
+          "description": "Success"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/AuditPageResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+      "parameters":
+        -
+          "name": "current"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 1000000
+            "default": 1
+          "required": false
+        -
+          "name": "size"
+          "in": "query"
+          "schema":
+            "type": "integer"
+            "format": "int64"
+            "minimum": 1
+            "maximum": 100
+            "default": 20
+          "required": false
+        -
+          "name": "action"
+          "in": "query"
+          "schema":
+            "type": "string"
+            "pattern": "^[A-Z_]{0,64}$"
+          "required": false
+  "/openapi/knowledge-base.yaml":
+    "get":
+      "operationId": "downloadKnowledgeOpenApi"
+      "responses":
+        "200":
+          "description": "OpenAPI 3.0.3 YAML"
+          "content":
+            "text/plain":
+              "schema":
+                "type": "string"
+        "401":
+          "$ref": "#/components/responses/Error401"
+  "/openapi/knowledge-base.postman_collection.json":
+    "get":
+      "operationId": "downloadManagementCollection"
+      "responses":
+        "200":
+          "description": "Postman v2.1; credentials empty; interactively select operations"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "additionalProperties": true
+        "401":
+          "$ref": "#/components/responses/Error401"
+  "/actuator/metrics":
+    "get":
+      "operationId": "listOperatorMetrics"
+      "description": "Requires ROLE_KB_OPERATOR configured only on server accounts. Native Actuator JSON, not the business envelope. Global gauges use cached repeatable-read PG state; model counters reset on process restart. No env/config/loggers/heapdump endpoints are exposed."
+      "responses":
+        "200":
+          "description": "Native Actuator metrics"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "additionalProperties": true
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "403":
+          "description": "Configured account is not an operator"
+        "404":
+          "$ref": "#/components/responses/Error404"
+  "/actuator/metrics/{name}":
+    "get":
+      "operationId": "getOperatorMetric"
+      "description": "Requires ROLE_KB_OPERATOR configured only on server accounts. Native Actuator JSON, not the business envelope. Global gauges use cached repeatable-read PG state; model counters reset on process restart. No env/config/loggers/heapdump endpoints are exposed."
+      "responses":
+        "200":
+          "description": "Native Actuator metrics"
+          "content":
+            "application/json":
+              "schema":
+                "type": "object"
+                "additionalProperties": true
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "403":
+          "description": "Configured account is not an operator"
+        "404":
+          "$ref": "#/components/responses/Error404"
+      "parameters":
+        -
+          "name": "name"
+          "in": "path"
+          "schema":
+            "type": "string"
+          "required": true
+        -
+          "name": "tag"
+          "in": "query"
+          "schema":
+            "type": "array"
+            "items":
+              "type": "string"
+          "required": false
+"components":
+  "securitySchemes":
+    "basicAuth":
+      "type": "http"
+      "scheme": "basic"
+  "schemas":
+    "Splitter":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "kind":
+          "type": "string"
+          "enum":
+            - "STRUCTURAL"
+            - "WHOLE_DOCUMENT"
+          "default": "STRUCTURAL"
+        "maxChars":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 128
+          "maximum": 4000
+          "default": 1024
+        "overlapChars":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+          "maximum": 1000
+          "default": 128
+          "description": "Must be less than maxChars"
+        "tableRows":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "maximum": 1000
+          "default": 50
+        "toleranceChars":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+          "maximum": 4096
+          "default": 512
+      "required": []
+    "IngestionSpec":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "schemaVersion":
+          "type": "integer"
+          "format": "int64"
+          "enum":
+            - 1
+          "default": 1
+        "parser":
+          "type": "string"
+          "enum":
+            - "AUTO"
+            - "TEXT"
+            - "MARKDOWN"
+          "default": "AUTO"
+        "splitter":
+          "$ref": "#/components/schemas/Splitter"
+        "parseProfile":
+          "type": "string"
+          "enum":
+            - "fast"
+            - "fidelity"
+          "default": "fast"
+          "description": "PDF fidelity requires explicit MinerU2.7.6. TXT/MD/CSV/Excel fidelity aliases local; images both use configured VLM; Office fidelity unavailable."
+      "required": []
+    "UploadMetadata":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "name":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 255
+        "ingestionSpec":
+          "$ref": "#/components/schemas/IngestionSpec"
+      "required": []
+    "CreateRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "name":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 128
+        "description":
+          "type": "string"
+          "maxLength": 2000
+          "nullable": true
+        "embeddingProfileId":
+          "type": "string"
+          "maxLength": 128
+          "description": "Allowed server catalog id; default server profile when omitted"
+      "required":
+        - "name"
+    "PatchBase":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "name":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 128
+        "description":
+          "type": "string"
+          "maxLength": 2000
+        "embeddingProfileId":
+          "type": "string"
+          "maxLength": 128
+          "description": "Immutable after binding; different value returns 409"
+      "required":
+        - "version"
+    "ReplaceBase":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "name":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 128
+        "description":
+          "type": "string"
+          "maxLength": 2000
+          "nullable": true
+      "required":
+        - "version"
+        - "name"
+    "BindRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "embeddingProfileId":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 128
+      "required":
+        - "version"
+        - "embeddingProfileId"
+    "PatchDocument":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "name":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 255
+        "ingestionSpec":
+          "$ref": "#/components/schemas/IngestionSpec"
+      "required":
+        - "version"
+    "KnowledgeBase":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "name":
+          "type": "string"
+        "description":
+          "type": "string"
+        "version":
+          "type": "integer"
+          "format": "int64"
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "updatedAt":
+          "type": "string"
+          "format": "date-time"
+        "bindingStatus":
+          "type": "string"
+          "enum":
+            - "BOUND"
+            - "UNBOUND"
+        "embeddingProfileId":
+          "type": "string"
+          "nullable": true
+        "embeddingModelId":
+          "type": "string"
+          "nullable": true
+        "embeddingProvider":
+          "type": "string"
+          "nullable": true
+        "embeddingDimension":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+          "enum":
+            - 1024
+            - null
+        "embeddingConfigRevision":
+          "type": "string"
+          "nullable": true
+        "vectorNamespace":
+          "type": "string"
+          "nullable": true
+        "embeddingAiConfigRevision":
+          "type": "string"
+          "nullable": true
+          "description": "Pinned atomically on first successful generation; later revisions require a new knowledge base"
+        "documentCount":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+          "description": "Live owned documents, including disabled documents. Paginated list counts are fetched as one grouped query."
+      "required":
+        - "id"
+        - "name"
+        - "description"
+        - "version"
+        - "createdAt"
+        - "updatedAt"
+        - "bindingStatus"
+        - "embeddingProfileId"
+        - "embeddingModelId"
+        - "embeddingProvider"
+        - "embeddingDimension"
+        - "embeddingConfigRevision"
+        - "vectorNamespace"
+        - "embeddingAiConfigRevision"
+        - "documentCount"
+    "Document":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "kbId":
+          "type": "string"
+          "format": "uuid"
+        "name":
+          "type": "string"
+        "originalFilename":
+          "type": "string"
+        "sourceType":
+          "type": "string"
+          "enum":
+            - "UPLOAD"
+            - "URL"
+        "objectKey":
+          "type": "string"
+        "mimeType":
+          "type": "string"
+        "fileSize":
+          "type": "integer"
+          "format": "int64"
+        "contentHash":
+          "type": "string"
+        "enabled":
+          "type": "boolean"
+        "processStatus":
+          "type": "string"
+          "enum":
+            - "PENDING"
+            - "PROCESSING"
+            - "READY"
+            - "FAILED"
+        "ingestionSpec":
+          "$ref": "#/components/schemas/IngestionSpec"
+        "configRevision":
+          "type": "integer"
+          "format": "int64"
+        "activeGeneration":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+        "chunkCount":
+          "type": "integer"
+          "format": "int64"
+        "version":
+          "type": "integer"
+          "format": "int64"
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "updatedAt":
+          "type": "string"
+          "format": "date-time"
+        "manualRevision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "hasManualChanges":
+          "type": "boolean"
+        "sourceUrl":
+          "type": "string"
+          "nullable": true
+          "maxLength": 2048
+          "description": "Owned source URL, never forwarded to evidence metadata; UPLOAD has null."
+        "lastIngestedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+          "description": "UTC timestamp of last successful generation publication, not document editing time."
+      "required":
+        - "id"
+        - "kbId"
+        - "name"
+        - "originalFilename"
+        - "sourceType"
+        - "objectKey"
+        - "mimeType"
+        - "fileSize"
+        - "contentHash"
+        - "enabled"
+        - "processStatus"
+        - "ingestionSpec"
+        - "configRevision"
+        - "activeGeneration"
+        - "chunkCount"
+        - "version"
+        - "createdAt"
+        - "updatedAt"
+        - "manualRevision"
+        - "hasManualChanges"
+        - "sourceUrl"
+        - "lastIngestedAt"
+    "EmbeddingProfile":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+        "modelId":
+          "type": "string"
+        "provider":
+          "type": "string"
+        "modelName":
+          "type": "string"
+        "dimension":
+          "type": "integer"
+          "format": "int64"
+          "enum":
+            - 1024
+        "embeddingSpace":
+          "type": "string"
+        "configVersion":
+          "type": "string"
+        "configRevision":
+          "type": "string"
+      "required":
+        - "id"
+        - "modelId"
+        - "provider"
+        - "modelName"
+        - "dimension"
+        - "embeddingSpace"
+        - "configVersion"
+        - "configRevision"
+    "StorageOperation":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "idempotencyKey":
+          "type": "string"
+          "minLength": 16
+          "maxLength": 128
+        "status":
+          "type": "string"
+          "enum":
+            - "UPLOADING"
+            - "COMPLETED"
+            - "CLEANUP_PENDING"
+            - "CLEANED"
+        "attempts":
+          "type": "integer"
+          "format": "int64"
+        "nextRunAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "leaseUntil":
+          "type": "string"
+          "format": "date-time"
+        "errorCode":
+          "type": "string"
+          "nullable": true
+        "updatedAt":
+          "type": "string"
+          "format": "date-time"
+      "required":
+        - "id"
+        - "idempotencyKey"
+        - "status"
+        - "attempts"
+        - "nextRunAt"
+        - "leaseUntil"
+        - "errorCode"
+        - "updatedAt"
+    "Envelope":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "code":
+          "type": "string"
+          "example": "0"
+        "message":
+          "type": "string"
+        "data":
+          "nullable": true
+        "requestId":
+          "type": "string"
+      "required":
+        - "code"
+        - "message"
+        - "data"
+        - "requestId"
+    "KnowledgeBaseResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/KnowledgeBase"
+    "KnowledgeBasePage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/KnowledgeBase"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "KnowledgeBasePageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/KnowledgeBasePage"
+    "DocumentResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/Document"
+    "DocumentPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/Document"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "DocumentPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/DocumentPage"
+    "StorageOperationResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/StorageOperation"
+    "StorageOperationPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/StorageOperation"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "StorageOperationPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/StorageOperationPage"
+    "ProfilesResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "type": "array"
+              "items":
+                "$ref": "#/components/schemas/EmbeddingProfile"
+    "IngestionJob":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "requestId":
+          "type": "string"
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "documentConfigRevision":
+          "type": "integer"
+          "format": "int64"
+        "targetGeneration":
+          "type": "integer"
+          "format": "int64"
+        "jobType":
+          "type": "string"
+          "enum":
+            - "INGEST"
+        "status":
+          "type": "string"
+          "enum":
+            - "PENDING"
+            - "RUNNING"
+            - "SUCCEEDED"
+            - "FAILED"
+            - "CANCELLED"
+        "stage":
+          "type": "string"
+          "enum":
+            - "FETCH"
+            - "PARSE"
+            - "SPLIT"
+            - "EMBED"
+            - "PERSIST"
+            - "PUBLISH"
+        "attempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+          "maximum": 10
+        "maxAttempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "maximum": 10
+        "startedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "completedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "leaseUntil":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "errorCode":
+          "type": "string"
+          "nullable": true
+        "errorMessage":
+          "type": "string"
+          "nullable": true
+          "maxLength": 512
+        "aiConfigRevision":
+          "type": "string"
+          "nullable": true
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "nextRunAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "retryOf":
+          "type": "string"
+          "format": "uuid"
+          "nullable": true
+      "required":
+        - "id"
+        - "requestId"
+        - "documentId"
+        - "documentConfigRevision"
+        - "targetGeneration"
+        - "jobType"
+        - "status"
+        - "stage"
+        - "attempts"
+        - "maxAttempts"
+        - "startedAt"
+        - "completedAt"
+        - "leaseUntil"
+        - "errorCode"
+        - "errorMessage"
+        - "aiConfigRevision"
+        - "createdAt"
+        - "nextRunAt"
+        - "retryOf"
+    "IngestionJobResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/IngestionJob"
+    "IngestionJobPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/IngestionJob"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "IngestionJobPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/IngestionJobPage"
+    "IngestionStage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "stage":
+          "type": "string"
+          "enum":
+            - "FETCH"
+            - "PARSE"
+            - "SPLIT"
+            - "EMBED"
+            - "PERSIST"
+            - "PUBLISH"
+        "attempt":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "maximum": 10
+        "status":
+          "type": "string"
+          "enum":
+            - "RUNNING"
+            - "SUCCEEDED"
+            - "FAILED"
+            - "CANCELLED"
+        "startedAt":
+          "type": "string"
+          "format": "date-time"
+        "endedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "durationMs":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+        "inputCount":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+        "inputUnit":
+          "type": "string"
+          "nullable": true
+        "outputCount":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+        "outputUnit":
+          "type": "string"
+          "nullable": true
+        "errorCode":
+          "type": "string"
+          "nullable": true
+        "errorMessage":
+          "type": "string"
+          "nullable": true
+          "maxLength": 512
+      "required":
+        - "stage"
+        - "attempt"
+        - "status"
+        - "startedAt"
+        - "endedAt"
+        - "durationMs"
+        - "inputCount"
+        - "inputUnit"
+        - "outputCount"
+        - "outputUnit"
+        - "errorCode"
+        - "errorMessage"
+    "IngestionStageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/IngestionStage"
+    "IngestionStagePage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/IngestionStage"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "IngestionStagePageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/IngestionStagePage"
+    "SubmitIngestionRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "requestId":
+          "type": "string"
+          "minLength": 8
+          "maxLength": 128
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
+        "confirmOverwriteEdited":
+          "type": "boolean"
+          "default": false
+        "expectedDocumentVersion":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "nullable": true
+      "required":
+        - "requestId"
+    "KnowledgeSearchRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "query":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 16000
+          "description": "Nonblank; trimmed. Default configured limit 4000 Unicode code points, hard cap 16000; also bounded by model request byte budget."
+        "kbIds":
+          "type": "array"
+          "minItems": 1
+          "maxItems": 64
+          "uniqueItems": true
+          "items":
+            "type": "string"
+            "format": "uuid"
+          "description": "Required; default configured maximum 16. Every KB must be owned and live."
+        "documentIds":
+          "type": "array"
+          "nullable": true
+          "minItems": 1
+          "maxItems": 500
+          "uniqueItems": true
+          "items":
+            "type": "string"
+            "format": "uuid"
+          "description": "Optional; default configured maximum 100. Every document must be owned/live and in the selected KBs; omit to search all documents."
+        "topK":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "maximum": 200
+          "default": 5
+          "nullable": true
+          "description": "Default configured maximum 50. Applied globally after database filtering."
+        "minScore":
+          "type": "number"
+          "format": "double"
+          "nullable": true
+          "minimum": -1
+          "maximum": 1
+          "description": "Finite cosine threshold, only valid for VECTOR strategy. Hybrid/BM25 reject this ambiguous threshold."
+        "strategy":
+          "type": "string"
+          "enum":
+            - "AUTO"
+            - "VECTOR"
+            - "HYBRID"
+            - "KEYWORD"
+          "nullable": true
+          "description": "Omit to use server default AUTO. AUTO selects HYBRID only when keyword configured; otherwise VECTOR."
+        "rerank":
+          "type": "boolean"
+          "nullable": true
+          "description": "Omit to use server default. true requires configured reranker."
+        "minRerankScore":
+          "type": "number"
+          "format": "double"
+          "nullable": true
+          "description": "Finite model-specific threshold. Defaults to configured server threshold; missing rerank scores fail closed."
+      "required":
+        - "query"
+        - "kbIds"
+    "KnowledgeSource":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "pageNumber":
+          "type": "integer"
+          "format": "int64"
+        "pageStart":
+          "type": "integer"
+          "format": "int64"
+        "pageEnd":
+          "type": "integer"
+          "format": "int64"
+        "lineStart":
+          "type": "integer"
+          "format": "int64"
+        "lineEnd":
+          "type": "integer"
+          "format": "int64"
+        "rowStart":
+          "type": "integer"
+          "format": "int64"
+        "rowEnd":
+          "type": "integer"
+          "format": "int64"
+        "columnStart":
+          "type": "integer"
+          "format": "int64"
+        "columnEnd":
+          "type": "integer"
+          "format": "int64"
+        "fragmentLineStart":
+          "type": "integer"
+          "format": "int64"
+        "fragmentLineEnd":
+          "type": "integer"
+          "format": "int64"
+        "textStart":
+          "type": "integer"
+          "format": "int64"
+        "textEnd":
+          "type": "integer"
+          "format": "int64"
+        "overlapChars":
+          "type": "integer"
+          "format": "int64"
+        "chapterPath":
+          "type": "array"
+          "items":
+            "type": "string"
+        "parserVersion":
+          "type": "string"
+        "blockType":
+          "type": "string"
+        "offsetUnit":
+          "type": "string"
+        "headerRepeated":
+          "type": "boolean"
+        "wholeDocument":
+          "type": "boolean"
+        "sourceBlocks":
+          "type": "array"
+          "items":
+            "type": "object"
+            "additionalProperties": false
+            "properties":
+              "blockIndex":
+                "type": "integer"
+                "format": "int64"
+              "lineStart":
+                "type": "integer"
+                "format": "int64"
+              "lineEnd":
+                "type": "integer"
+                "format": "int64"
+              "pageNumber":
+                "type": "integer"
+                "format": "int64"
+              "pageStart":
+                "type": "integer"
+                "format": "int64"
+              "pageEnd":
+                "type": "integer"
+                "format": "int64"
+              "rowStart":
+                "type": "integer"
+                "format": "int64"
+              "rowEnd":
+                "type": "integer"
+                "format": "int64"
+              "columnStart":
+                "type": "integer"
+                "format": "int64"
+              "columnEnd":
+                "type": "integer"
+                "format": "int64"
+              "language":
+                "type": "string"
+              "sheetName":
+                "type": "string"
+              "slideNumber":
+                "type": "integer"
+                "format": "int64"
+                "minimum": 1
+              "imageNumber":
+                "type": "integer"
+                "format": "int64"
+                "minimum": 1
+              "imageWidth":
+                "type": "integer"
+                "format": "int64"
+              "imageHeight":
+                "type": "integer"
+                "format": "int64"
+              "generated":
+                "type": "boolean"
+              "vlmModel":
+                "type": "string"
+              "provenance":
+                "type": "string"
+              "bbox":
+                "type": "array"
+                "minItems": 4
+                "maxItems": 4
+                "items":
+                  "type": "number"
+              "tableName":
+                "type": "string"
+              "headerPolicy":
+                "type": "string"
+              "headerRow":
+                "type": "integer"
+                "format": "int64"
+              "formulaPolicy":
+                "type": "string"
+              "rowNumberUnit":
+                "type": "string"
+            "required": []
+        "manual":
+          "type": "boolean"
+        "originalFileContainsContent":
+          "type": "boolean"
+        "sheetName":
+          "type": "string"
+        "tableName":
+          "type": "string"
+        "headerRow":
+          "type": "integer"
+          "format": "int64"
+        "rowNumbers":
+          "type": "array"
+          "items":
+            "type": "integer"
+            "format": "int64"
+        "rowNumberUnit":
+          "type": "string"
+        "formulaPolicy":
+          "type": "string"
+      "required": []
+      "description": "Only parser-provided source fields. TXT/Markdown do not supply page numbers. Object keys, credentials and provider URLs are omitted. Manual bodies have blockType=MANUAL, manual=true, originalFileContainsContent=false and empty original coordinates."
+    "KnowledgeEvidence":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "chunkId":
+          "type": "string"
+          "format": "uuid"
+        "kbId":
+          "type": "string"
+          "format": "uuid"
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "documentName":
+          "type": "string"
+        "chunkIndex":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "generation":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "content":
+          "type": "string"
+        "score":
+          "type": "number"
+          "format": "double"
+          "description": "Cosine in legacy vector-only mode; RRF in the fusion pipeline. Final rerank ordering may differ from score ordering."
+        "scoreType":
+          "type": "string"
+          "enum":
+            - "COSINE_SIMILARITY"
+            - "RRF"
+        "sourceMetadata":
+          "$ref": "#/components/schemas/KnowledgeSource"
+        "fileUrl":
+          "type": "string"
+          "description": "Relative authorized GET /api/documents/{documentId}/file; reauthenticate. No credentials or permanent public storage URL."
+        "fusionScore":
+          "type": "number"
+          "format": "double"
+          "nullable": true
+        "rerankScore":
+          "type": "number"
+          "format": "double"
+          "nullable": true
+        "channelScores":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ChannelScore"
+      "required":
+        - "chunkId"
+        - "kbId"
+        - "documentId"
+        - "documentName"
+        - "chunkIndex"
+        - "generation"
+        - "content"
+        - "score"
+        - "scoreType"
+        - "sourceMetadata"
+        - "fileUrl"
+        - "fusionScore"
+        - "rerankScore"
+        - "channelScores"
+    "KnowledgeSearchResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "type": "array"
+              "items":
+                "$ref": "#/components/schemas/KnowledgeEvidence"
+    "ChunkContentRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "content":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 131072
+          "description": "Plain manual body, normalized LF; configured hard code-point budget default 8192. Also embeddingText; no chapter prefix."
+      "required":
+        - "version"
+        - "content"
+    "EnabledRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "enabled":
+          "type": "boolean"
+      "required":
+        - "version"
+        - "enabled"
+    "BatchEnabledRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "enabled":
+          "type": "boolean"
+        "chunkIds":
+          "type": "array"
+          "minItems": 1
+          "maxItems": 1000
+          "uniqueItems": true
+          "items":
+            "type": "string"
+            "format": "uuid"
+        "applyAll":
+          "type": "boolean"
+          "default": false
+      "required":
+        - "version"
+        - "enabled"
+      "description": "Exactly one scope: nonempty unique chunkIds (configured default maximum 200) OR applyAll=true with chunkIds omitted. [] never means all. Every selected id must belong to current active generation; all-or-nothing."
+    "ChunkView":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "kbId":
+          "type": "string"
+          "format": "uuid"
+        "generation":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "chunkIndex":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "content":
+          "type": "string"
+        "embeddingText":
+          "type": "string"
+        "contentHash":
+          "type": "string"
+        "charCount":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "tokenCount":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+        "tokenCountEstimated":
+          "type": "boolean"
+        "enabled":
+          "type": "boolean"
+        "edited":
+          "type": "boolean"
+        "metadata":
+          "$ref": "#/components/schemas/KnowledgeSource"
+        "createdBy":
+          "type": "string"
+        "updatedBy":
+          "type": "string"
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "updatedAt":
+          "type": "string"
+          "format": "date-time"
+      "required":
+        - "id"
+        - "documentId"
+        - "kbId"
+        - "generation"
+        - "chunkIndex"
+        - "content"
+        - "embeddingText"
+        - "contentHash"
+        - "charCount"
+        - "tokenCount"
+        - "tokenCountEstimated"
+        - "enabled"
+        - "edited"
+        - "metadata"
+        - "createdBy"
+        - "updatedBy"
+        - "createdAt"
+        - "updatedAt"
+    "ChunkPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ChunkView"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "ChunksChanged":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "documentVersion":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "manualRevision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "chunkCount":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "chunks":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ChunkView"
+      "required":
+        - "documentVersion"
+        - "manualRevision"
+        - "chunkCount"
+        - "chunks"
+    "ChunkPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/ChunkPage"
+    "ChunksChangedResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/ChunksChanged"
+    "DocumentCleanup":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "status":
+          "type": "string"
+          "enum":
+            - "PENDING"
+            - "RUNNING"
+            - "SUCCEEDED"
+            - "FAILED"
+        "stage":
+          "type": "string"
+          "enum":
+            - "DATABASE"
+            - "OBJECT"
+        "attempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "maxAttempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "maximum": 10
+        "nextRunAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "leaseUntil":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "errorCode":
+          "type": "string"
+          "nullable": true
+        "errorMessage":
+          "type": "string"
+          "maxLength": 512
+          "nullable": true
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+        "completedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+      "required":
+        - "id"
+        - "documentId"
+        - "status"
+        - "stage"
+        - "attempts"
+        - "maxAttempts"
+        - "nextRunAt"
+        - "leaseUntil"
+        - "errorCode"
+        - "errorMessage"
+        - "createdAt"
+        - "completedAt"
+    "DocumentCleanupResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/DocumentCleanup"
+    "FormatCapability":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "extensions":
+          "type": "array"
+          "items":
+            "type": "string"
+        "fast":
+          "type": "string"
+        "fidelity":
+          "type": "string"
+        "notes":
+          "type": "string"
+      "required":
+        - "extensions"
+        - "fast"
+        - "fidelity"
+        - "notes"
+    "FormatCapabilitiesResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "type": "array"
+              "items":
+                "$ref": "#/components/schemas/FormatCapability"
+    "ImportUrlRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "url":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 2048
+        "filename":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 255
+          "description": "Explicit safe filename with supported extension; response Content-Type/disposition are not trusted."
+        "name":
+          "type": "string"
+          "maxLength": 255
+        "ingestionSpec":
+          "$ref": "#/components/schemas/IngestionSpec"
+        "ingest":
+          "type": "boolean"
+          "default": false
+      "required":
+        - "url"
+        - "filename"
+    "UrlImport":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "document":
+          "$ref": "#/components/schemas/Document"
+        "jobId":
+          "type": "string"
+          "format": "uuid"
+          "nullable": true
+        "replayed":
+          "type": "boolean"
+      "required":
+        - "document"
+        - "jobId"
+        - "replayed"
+    "UrlImportResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/UrlImport"
+    "RefreshScheduleRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "enabled":
+          "type": "boolean"
+        "cron":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 128
+        "timezone":
+          "type": "string"
+          "minLength": 1
+          "maxLength": 64
+      "required":
+        - "version"
+        - "enabled"
+        - "cron"
+        - "timezone"
+    "RefreshSchedule":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "enabled":
+          "type": "boolean"
+        "cron":
+          "type": "string"
+          "nullable": true
+        "timezone":
+          "type": "string"
+        "version":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "nextRunAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "lastStatus":
+          "type": "string"
+          "nullable": true
+        "lastReason":
+          "type": "string"
+          "nullable": true
+        "lastRunId":
+          "type": "string"
+          "format": "uuid"
+          "nullable": true
+        "lastContentHash":
+          "type": "string"
+          "nullable": true
+        "consecutiveFailures":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+      "required":
+        - "documentId"
+        - "enabled"
+        - "cron"
+        - "timezone"
+        - "version"
+        - "nextRunAt"
+        - "lastStatus"
+        - "lastReason"
+        - "lastRunId"
+        - "lastContentHash"
+        - "consecutiveFailures"
+    "RefreshScheduleResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/RefreshSchedule"
+    "RefreshRequest":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "requestId":
+          "type": "string"
+          "minLength": 8
+          "maxLength": 128
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
+        "confirmOverwriteEdited":
+          "type": "boolean"
+          "default": false
+        "expectedDocumentVersion":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "nullable": true
+      "required":
+        - "requestId"
+    "RefreshRun":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "requestId":
+          "type": "string"
+        "triggerType":
+          "type": "string"
+          "enum":
+            - "MANUAL"
+            - "SCHEDULED"
+        "status":
+          "type": "string"
+          "enum":
+            - "PENDING"
+            - "RUNNING"
+            - "WAITING_INGESTION"
+            - "SUCCESS"
+            - "FAILED"
+            - "SKIPPED"
+        "jobId":
+          "type": "string"
+          "format": "uuid"
+          "nullable": true
+        "attempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "maxAttempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+          "maximum": 5
+        "httpStatus":
+          "type": "integer"
+          "format": "int64"
+          "nullable": true
+        "reason":
+          "type": "string"
+          "nullable": true
+        "errorMessage":
+          "type": "string"
+          "nullable": true
+          "maxLength": 256
+        "nextRunAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "startedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "completedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "durationMs":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+          "nullable": true
+      "required":
+        - "id"
+        - "documentId"
+        - "requestId"
+        - "triggerType"
+        - "status"
+        - "jobId"
+        - "attempts"
+        - "maxAttempts"
+        - "httpStatus"
+        - "reason"
+        - "errorMessage"
+        - "nextRunAt"
+        - "startedAt"
+        - "completedAt"
+        - "durationMs"
+    "RefreshRunResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/RefreshRun"
+    "RefreshRunPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/RefreshRun"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "RefreshRunPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/RefreshRunPage"
+    "ChannelScore":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "channel":
+          "type": "string"
+          "enum":
+            - "VECTOR"
+            - "KEYWORD"
+        "rank":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "score":
+          "type": "number"
+          "format": "double"
+        "scoreType":
+          "type": "string"
+          "enum":
+            - "COSINE_SIMILARITY"
+            - "BM25"
+      "required":
+        - "channel"
+        - "rank"
+        - "score"
+        - "scoreType"
+    "ChannelState":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "channel":
+          "type": "string"
+          "enum":
+            - "VECTOR"
+            - "KEYWORD"
+        "status":
+          "type": "string"
+          "enum":
+            - "SUCCEEDED"
+            - "FAILED"
+            - "TIMEOUT"
+        "candidates":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "errorCode":
+          "type": "string"
+          "nullable": true
+      "required":
+        - "channel"
+        - "status"
+        - "candidates"
+        - "errorCode"
+    "Retrieval":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "evidence":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/KnowledgeEvidence"
+        "requestedStrategy":
+          "type": "string"
+        "strategy":
+          "type": "string"
+          "description": "Actual successful channels, e.g. VECTOR, KEYWORD or KEYWORD+VECTOR; successful empty channel is still reported."
+        "rerankStatus":
+          "type": "string"
+          "enum":
+            - "DISABLED"
+            - "SKIPPED_EMPTY"
+            - "APPLIED"
+            - "FALLBACK_FUSION"
+            - "THRESHOLD_UNAVAILABLE"
+        "channels":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/ChannelState"
+        "channelCandidates":
+          "type": "integer"
+          "format": "int64"
+        "fusionCandidates":
+          "type": "integer"
+          "format": "int64"
+        "topK":
+          "type": "integer"
+          "format": "int64"
+        "refillLimitReached":
+          "type": "boolean"
+        "minRerankScore":
+          "type": "number"
+          "nullable": true
+      "required":
+        - "evidence"
+        - "requestedStrategy"
+        - "strategy"
+        - "rerankStatus"
+        - "channels"
+        - "channelCandidates"
+        - "fusionCandidates"
+        - "topK"
+        - "refillLimitReached"
+        - "minRerankScore"
+    "RetrievalResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/Retrieval"
+    "SearchCapabilities":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "defaultStrategy":
+          "type": "string"
+        "keywordConfigured":
+          "type": "boolean"
+        "keywordAnalyzer":
+          "type": "string"
+        "keywordScoreType":
+          "type": "string"
+          "enum":
+            - "BM25"
+        "rerankConfigured":
+          "type": "boolean"
+        "rerankModel":
+          "type": "string"
+        "channelCandidates":
+          "type": "integer"
+          "format": "int64"
+        "fusionCandidates":
+          "type": "integer"
+          "format": "int64"
+        "answerEnabled":
+          "type": "boolean"
+          "enum":
+            - false
+      "required":
+        - "defaultStrategy"
+        - "keywordConfigured"
+        - "keywordAnalyzer"
+        - "keywordScoreType"
+        - "rerankConfigured"
+        - "rerankModel"
+        - "channelCandidates"
+        - "fusionCandidates"
+        - "answerEnabled"
+    "SearchCapabilitiesResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/SearchCapabilities"
+    "KeywordSync":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+        "revision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 1
+        "syncedRevision":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "status":
+          "type": "string"
+          "enum":
+            - "PENDING"
+            - "RUNNING"
+            - "SUCCEEDED"
+            - "FAILED"
+        "attempts":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "nextRunAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "leaseUntil":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "errorCode":
+          "type": "string"
+          "nullable": true
+        "syncedAt":
+          "type": "string"
+          "format": "date-time"
+          "nullable": true
+        "cleanupStatus":
+          "type": "string"
+          "nullable": true
+        "cleanupErrorCode":
+          "type": "string"
+          "nullable": true
+      "required":
+        - "documentId"
+        - "revision"
+        - "syncedRevision"
+        - "status"
+        - "attempts"
+        - "nextRunAt"
+        - "leaseUntil"
+        - "errorCode"
+        - "syncedAt"
+        - "cleanupStatus"
+        - "cleanupErrorCode"
+    "KeywordSyncResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/KeywordSync"
+    "KeywordSyncPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/KeywordSync"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "KeywordSyncPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/KeywordSyncPage"
+    "ManagementEntry":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "delivery":
+          "type": "string"
+          "enum":
+            - "API_ONLY"
+        "openapi":
+          "type": "string"
+        "collection":
+          "type": "string"
+        "capabilities":
+          "type": "string"
+        "knowledgeBases":
+          "type": "string"
+        "ingestionDefaults":
+          "$ref": "#/components/schemas/IngestionSpec"
+        "workflow":
+          "type": "array"
+          "items":
+            "type": "string"
+        "polling":
+          "type": "object"
+          "additionalProperties": true
+        "conflicts":
+          "type": "object"
+          "additionalProperties": true
+      "required":
+        - "delivery"
+        - "openapi"
+        - "collection"
+        - "capabilities"
+        - "knowledgeBases"
+        - "ingestionDefaults"
+        - "workflow"
+        - "polling"
+        - "conflicts"
+    "ManagementEntryResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/ManagementEntry"
+    "Audit":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "id":
+          "type": "string"
+          "format": "uuid"
+        "documentId":
+          "type": "string"
+          "format": "uuid"
+          "nullable": true
+        "actorId":
+          "type": "string"
+        "action":
+          "type": "string"
+        "chunkIds":
+          "type": "array"
+          "items":
+            "type": "string"
+            "format": "uuid"
+        "beforeSummary":
+          "type": "object"
+          "additionalProperties": true
+        "afterSummary":
+          "type": "object"
+          "additionalProperties": true
+        "createdAt":
+          "type": "string"
+          "format": "date-time"
+      "required":
+        - "id"
+        - "documentId"
+        - "actorId"
+        - "action"
+        - "chunkIds"
+        - "beforeSummary"
+        - "afterSummary"
+        - "createdAt"
+    "AuditPage":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "current":
+          "type": "integer"
+          "format": "int64"
+        "size":
+          "type": "integer"
+          "format": "int64"
+        "total":
+          "type": "integer"
+          "format": "int64"
+        "records":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/Audit"
+      "required":
+        - "current"
+        - "size"
+        - "total"
+        - "records"
+    "AuditPageResponse":
+      "allOf":
+        -
+          "$ref": "#/components/schemas/Envelope"
+        -
+          "type": "object"
+          "properties":
+            "data":
+              "$ref": "#/components/schemas/AuditPage"
+  "responses":
+    "Error400":
+      "description": "Invalid input, empty file, or profile not allowed"
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "#/components/schemas/Envelope"
+    "Error401":
+      "description": "Missing or invalid credentials"
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "#/components/schemas/Envelope"
+      "headers":
+        "WWW-Authenticate":
+          "schema":
+            "type": "string"
+    "Error404":
+      "description": "Missing, deleted or not owned"
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "#/components/schemas/Envelope"
+    "Error409":
+      "description": "Duplicate name, version conflict, nonempty KB, immutable model, idempotency conflict, active lease or referenced object"
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "#/components/schemas/Envelope"
+    "Error503":
+      "description": "Database/storage unavailable, cleanup pending, or storage disabled"
+      "content":
+        "application/json":
+          "schema":
+            "$ref": "#/components/schemas/Envelope"

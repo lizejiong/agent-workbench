@@ -25,6 +25,7 @@ java -jar services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT.jar --ai.enab
 | `BAILIAN_CHAT_MODEL`、`DEEPSEEK_CHAT_MODEL`、`SILICONFLOW_CHAT_MODEL` | 聊天供应商模型名 |
 | `BAILIAN_VISION_MODEL` | 视觉模型名，示例 `qwen3-vl-plus` |
 | `BAILIAN_EMBED_MODEL`、`SILICONFLOW_EMBED_MODEL` | 向量模型名 |
+| `BAILIAN_EMBED_CONFIG_VERSION` | 默认bailian-text-embedding-v4-1024-v1；嵌入空间语义改变时更新，并用新知识库重建 |
 | `BAILIAN_RERANK_MODEL`、`SILICONFLOW_RERANK_MODEL` | 重排模型名 |
 | `AI_EMBEDDING_MODEL`、`AI_RERANK_MODEL` | 默认逻辑别名，必须在 `ai.models` 中定义 |
 | `AI_ENABLED`、`AI_PORT` | 启用状态和监听端口 |
@@ -112,7 +113,9 @@ data: {"requestId":"demo","model":"qwen-chat","payload":{"finishReason":"stop","
 {"texts":["文档一","文档二"],"model":"qwen-embed","dimensions":1024}
 ```
 
-返回 `embeddings:[{index,values}]`（输入原始顺序）、dimensions、实际 model、usage、metrics。默认模型是配置锚点，不会静默选择另一向量空间。可选降级仅限显式 `ai.embedding.fallbacks` 中 `embedding-space` 与解析后维度都相同的模型；仅维度相同不能认定向量兼容，配置者须确认空间身份。`allowed-dimensions` 非空表示支持向上游发送自定义维度，空表示固定维度，只接受与默认一致的值且不发送 dimensions。按模型 batch-size 顺序拆批；任何一批失败则整组失败或在兼容候选上从头重跑，绝不返回部分成功或混合模型向量。验证索引、数量、维度和有限数值；任一批缺少实际 usage 时聚合 usage 保持未知。输入默认最多 128 条、合计 100 万字符，空白文本无效。
+返回 `embeddings:[{index,values}]`（输入原始顺序）、dimensions、实际 model、usage、metrics，以及provider/embeddingSpace/configRevision。显式model或expectedConfigRevision会固定锚点，失败或不可用时明确报错，禁止fallback。仅未指定上述两项的旧调用保留兼容降级，候选须在配置的ai.embedding.fallbacks中且embedding-space与实际维度都相同。`allowed-dimensions`非空才向供应商发送dimensions，否则只接受固定维度。按batch-size拆批，验证index/数量/维度/有限非零向量，绝不返回部分成功或混合向量；未知usage仍为null。默认最多128条、合计100万字符，空白文本无效。
+
+`GET /ai/embedding-models/{alias}?dimensions=1024`返回modelId/provider/providerKind/modelName/dimensions/embeddingSpace/configVersion/configRevision/batchSize/active/protocolVersion，不返回密钥或内部URL，不做付费探测。随后可在embed请求附加expectedConfigRevision；不一致409/MODEL_CONFIG_CHANGED，调用供应商前拒绝。`ai.models.<alias>.config-version`标识部署方固定的嵌入语义版本，默认qwen-embed与backend配置一致；知识库首次发布还会钉住AI修订。元数据active只代表配置可用，真实供应商账户/固定模型版本仍需联调。服务继续依赖受控内网/网关保护。
 
 `POST /ai/rerank`：
 

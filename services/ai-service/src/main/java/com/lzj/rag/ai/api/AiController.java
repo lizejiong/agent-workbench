@@ -2,6 +2,7 @@ package com.lzj.rag.ai.api;
 
 import com.lzj.rag.ai.api.ApiTypes.*;
 import com.lzj.rag.ai.service.AiService;
+import com.lzj.rag.ai.config.ModelRegistry;
 import com.lzj.rag.ai.util.TextUtilities;
 import com.lzj.rag.framework.convention.result.Result;
 import org.springframework.http.MediaType;
@@ -14,7 +15,13 @@ import reactor.core.publisher.*;
 @RequestMapping("/ai")
 public class AiController {
     private final AiService service;
-    public AiController(AiService service) { this.service = service; }
+    private final ModelRegistry registry;
+    public AiController(AiService service, ModelRegistry registry) { this.service = service; this.registry = registry; }
+    @GetMapping("/embedding-models/{alias}")
+    public Result<ModelRegistry.EmbeddingDescriptor> embeddingModel(@PathVariable String alias,
+            @RequestParam(required = false) Integer dimensions, ServerWebExchange exchange) {
+        return result(registry.embeddingDescriptor(alias, dimensions), exchange);
+    }
     @PostMapping("/chat")
     public Mono<Result<ChatResult>> chat(@RequestBody ChatRequest request, ServerWebExchange exchange) {
         return service.chat(request, false, id(exchange)).map(data -> result(data, exchange));

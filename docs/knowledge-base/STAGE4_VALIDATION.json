@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-22",
+  "stage": 4,
+  "build": {
+    "result": "SUCCESS",
+    "modules": 10,
+    "totals": {
+      "tests": 168,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "passed": 156,
+    "sourceFilesVerified": 163,
+    "directory": ".cache/stage4-build",
+    "reason": "Existing AI JAR files are in use by pre-existing Windows processes; build independently without stopping them."
+  },
+  "processRestart": {
+    "jobId": "04947ea1-9ad7-456d-bb1f-07d4e389b301",
+    "secondPid": 44708,
+    "attempts": 2,
+    "status": "SUCCEEDED",
+    "hits": 8,
+    "vectorSource": "Local HTTP stub; real PostgreSQL/MinIO and two Java processes",
+    "firstPid": 34304,
+    "generation": 1
+  },
+  "httpSmoke": {
+    "scripts": [
+      "acceptance.py",
+      "upload_acceptance.py",
+      "ingestion_acceptance.py"
+    ],
+    "generationRows": 1,
+    "vectorRows": 1,
+    "jobs": [
+      {
+        "status": "SUCCEEDED",
+        "count": 2
+      }
+    ],
+    "stages": 12,
+    "modelRequests": 2
+  },
+  "openapi": {
+    "paths": 17,
+    "operations": 24,
+    "resolvedReferences": 186
+  },
+  "artifacts": [
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar",
+      "sha256": "aee3e2df423648314ed7a76c3f83873c2b0768102a50a149bc3090b7c503bb56"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT-stage4.jar",
+      "sha256": "e9d4170d0f6efbb3b6ef9719cb85caa71a82c0a193827e30ce0e326933c39040"
+    }
+  ],
+  "limits": [
+    "Embedding provider is a local HTTP protocol fixture; live model/provider semantics are unverified.",
+    "PostgreSQL/pgvector and MinIO use real disposable containers.",
+    "Optional LocalPostgresTest is not configured; container integration tests ran.",
+    "Deployment of the application Docker image and production services is not verified."
+  ]
+}

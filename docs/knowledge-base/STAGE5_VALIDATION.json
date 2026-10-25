@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-24",
+  "stage": 5,
+  "build": {
+    "result": "SUCCESS",
+    "modules": 10,
+    "fullVerifyCompletedAt": "2026-10-22T22:59:57+08:00",
+    "totals": {
+      "tests": 179,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "passed": 167,
+    "sourceFilesVerified": 171,
+    "directory": ".cache/stage5-build",
+    "finalPackageCompletedAt": "2026-10-24T16:45:41+08:00",
+    "finalPackageNote": "Business source unchanged after full verify; final OpenAPI nullable/422 declarations independently validated and repackaged.",
+    "reason": "Preserve existing Windows AI JARs in use by earlier processes; build in a separate directory."
+  },
+  "httpSmoke": {
+    "scripts": [
+      "acceptance.py",
+      "search_acceptance.py"
+    ],
+    "generationRows": 3,
+    "vectorRows": 3,
+    "jobs": [
+      {
+        "status": "SUCCEEDED",
+        "count": 3
+      }
+    ],
+    "stages": 18,
+    "modelRequests": 7
+  },
+  "example": "SAMPLE_SEARCH.json",
+  "exampleHits": [
+    {
+      "documentName": "database.md",
+      "score": 1.0,
+      "scoreType": "COSINE_SIMILARITY"
+    },
+    {
+      "documentName": "backup.md",
+      "score": 0.800000011920929,
+      "scoreType": "COSINE_SIMILARITY"
+    }
+  ],
+  "openapi": {
+    "paths": 18,
+    "operations": 25,
+    "resolvedReferences": 199
+  },
+  "artifacts": [
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar",
+      "sha256": "cb04a8582ec386ad27d7f4e269c24ab714ef5da346199bc4d62e807a9bd587af"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT-stage5.jar",
+      "sha256": "6967dabea2fb9d77d319d41cc9f318113e325220804b6b0046bb3e6ec07f030c"
+    }
+  ],
+  "acceptanceScriptSha256": "9835f740f9446ffc540fa8bd5f0e21d56a7f53bd8b7e8b6bc07e7bed6f92ee10",
+  "limits": [
+    "Embedding vectors are from an explicit local HTTP topic fixture; live provider semantic quality remains unverified.",
+    "PostgreSQL/pgvector and MinIO are real disposable containers.",
+    "Search is exact cosine with one compatible embedding space per request; no cross-space rank fusion.",
+    "Optional LocalPostgresTest was not configured. Application Docker image and production integrations are unverified."
+  ]
+}

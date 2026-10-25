@@ -1,0 +1,5 @@
+**
+!services/
+!services/backend/
+!services/backend/target/
+!services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar

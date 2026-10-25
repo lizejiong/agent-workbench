@@ -26,9 +26,12 @@ public final class ApiTypes {
         }
         private static boolean nonempty(String value) { return value != null && !value.isEmpty(); }
     }
-    public record EmbedRequest(String text, List<String> texts, String model, Integer dimensions) { }
+    public record EmbedRequest(String text, List<String> texts, String model, Integer dimensions, String expectedConfigRevision) {
+        public EmbedRequest(String text, List<String> texts, String model, Integer dimensions) { this(text, texts, model, dimensions, null); }
+    }
     public record Vector(int index, List<Double> values) { }
-    public record EmbedResult(List<Vector> embeddings, int dimensions, String model, Usage usage, Metrics metrics) { }
+    public record EmbedResult(List<Vector> embeddings, int dimensions, String model, Usage usage, Metrics metrics,
+                              String provider, String embeddingSpace, String configRevision) { }
     public record Document(String id, String text) { }
     public record RerankRequest(String query, List<Document> documents, Integer topN, String model) { }
     public record Ranked(String chunkId, int index, double score) { }

@@ -55,6 +55,7 @@ ai:
       dimensions: 1024
       allowed-dimensions: [64, 128, 256, 512, 768, 1024, 1536, 2048]
       embedding-space: bailian-text-embedding-v4
+      config-version: ${BAILIAN_EMBED_CONFIG_VERSION:bailian-text-embedding-v4-1024-v1}
       batch-size: 10
     silicon-embed:
       provider: siliconflow

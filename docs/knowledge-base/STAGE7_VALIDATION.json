@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-24",
+  "stage": 7,
+  "build": {
+    "result": "SUCCESS",
+    "modules": 10,
+    "fullVerifyCompletedAt": "2026-10-24T20:25:01+08:00",
+    "totals": {
+      "tests": 206,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "passed": 194,
+    "sourceFilesVerified": 209,
+    "directory": ".cache/stage7-build"
+  },
+  "httpSmoke": {
+    "scripts": [
+      "acceptance.py",
+      "formats_acceptance.py",
+      "maintenance_acceptance.py",
+      "search_acceptance.py"
+    ],
+    "externalServices": "Local HTTP protocol fixtures",
+    "embeddingCalls": 34,
+    "mineruCalled": true,
+    "visionCalls": 2,
+    "pid": 10788
+  },
+  "openapi": {
+    "paths": 26,
+    "operations": 36,
+    "resolvedReferences": 296
+  },
+  "artifacts": [
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar",
+      "sha256": "9c0571278900f5de7864a6e52120d8f375e38c8ebc5d7a010b113737a1e91571"
+    },
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT-stage7.jar",
+      "sha256": "9c0571278900f5de7864a6e52120d8f375e38c8ebc5d7a010b113737a1e91571"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT-stage7.jar",
+      "sha256": "61ee407492f17b1edf1db939e566c001878eb1943bb0ac9f8a62de19c66e208e"
+    }
+  ],
+  "example": "SAMPLE_FORMATS.json",
+  "limits": [
+    "Live model provider, VLM and MinerU not configured; HTTP fixtures only.",
+    "PostgreSQL/pgvector, MinIO and local parsers are real.",
+    "DOC adapter implemented; no representative legacy DOC fixture validated.",
+    "Optional LocalPostgresTest skipped; production deployment and Docker application image not validated."
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "date": "2026-10-25",
+  "stage": 10,
+  "result": "APPLICATION_AND_API_VALIDATED",
+  "build": {
+    "result": "SUCCESS",
+    "modules": 10,
+    "fullVerifyCompletedAt": "2026-10-25T13:12:20+08:00",
+    "totals": {
+      "tests": 250,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "passed": 238,
+    "sourceFilesVerified": 247,
+    "directory": ".cache/stage10-build"
+  },
+  "httpSmoke": {
+    "scripts": [
+      "management-entry/collection/audit/metrics",
+      "acceptance.py",
+      "upload_acceptance.py",
+      "ingestion_acceptance.py",
+      "search_acceptance.py",
+      "maintenance_acceptance.py",
+      "formats_acceptance.py",
+      "hybrid_acceptance.py",
+      "refresh_acceptance.py"
+    ],
+    "pid": 14652,
+    "visionCalls": 2,
+    "rerankCalls": 8,
+    "mineruCalled": true,
+    "externalServices": "Local HTTP protocol fixtures; real PG/MinIO/ES",
+    "embeddingCalls": 56
+  },
+  "openapi": {
+    "version": "1.0.0",
+    "paths": 41,
+    "operations": 52,
+    "resolvedReferences": 416
+  },
+  "postman": {
+    "requests": 52,
+    "routesAndNumericVersions": "PASS",
+    "embeddedCredentials": false
+  },
+  "frontend": {
+    "present": false,
+    "delivery": "API_ONLY",
+    "checkAndBuild": "NOT_APPLICABLE"
+  },
+  "integration": {
+    "infrastructure": [
+      "PostgreSQL17.11/pgvector0.8.7",
+      "MinIO RELEASE.2025-09-07T16-13-09Z",
+      "Elasticsearch8.19.17/cjk actual BM25"
+    ],
+    "fixtures": [
+      "Embedding/Rerank/VLM/MinerU explicit local HTTP protocols, not live provider semantics"
+    ],
+    "testContainersSkipped": false,
+    "hybridCases": 19,
+    "managementCases": 6,
+    "faultHttpCases": [
+      "failed rebuild preserves generation 1",
+      "successful rebuild serves only generation 3",
+      "completed requestId replay",
+      "real ES pause vector fallback",
+      "failed keyword synchronization retries after unpause",
+      "malformed rerank fallback",
+      "rerank threshold fail closed",
+      "immediate deletion and eventual S3/ES cleanup",
+      "model failure metrics and safe owner audit"
+    ],
+    "scopeHttpActors": [
+      "bob same tenant/different owner/operator=true",
+      "carol different tenant/same owner/operator=false"
+    ],
+    "realProcessRestarts": {
+      "ingestion": {
+        "firstPid": 12296,
+        "secondPid": 25244
+      },
+      "cleanup": {
+        "firstPid": 12300,
+        "secondPid": 25868
+      },
+      "refresh": {
+        "firstPid": 12068,
+        "secondPid": 25280
+      }
+    }
+  },
+  "compose": {
+    "defaultConfig": "PASS",
+    "keywordProfileConfig": "PASS"
+  },
+  "applicationImage": {
+    "status": "NOT_BUILT_OR_STARTED_NETWORK_DEPENDENCY",
+    "baseImage": "eclipse-temurin:17-jre-jammy",
+    "firstPullExitCode": 1,
+    "firstPullFailure": "short read: expected 47519993 bytes but got 44334499: unexpected EOF",
+    "retry": "Stopped only the task-owned docker pull process after the bounded 362-second retry remained incomplete.",
+    "retryElapsedSeconds": 362,
+    "imageBuildAttempted": false,
+    "runtimeImageAcceptance": false,
+    "jarAcceptance": "PASS",
+    "recovery": "Restore registry connectivity, pull base image, compose build/up backend, run delivery_acceptance.py."
+  },
+  "artifacts": [
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar",
+      "sha256": "919a27d2147729b685ed369e8ca651292f9c5383116257286f1c115de59dff4a"
+    },
+    {
+      "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT-stage10.jar",
+      "sha256": "919a27d2147729b685ed369e8ca651292f9c5383116257286f1c115de59dff4a"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT.jar",
+      "sha256": "d242bbaaa65a5daf75214ba0b151921b09d473b660d260a5594b18ce74dd6ebf"
+    },
+    {
+      "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT-stage10.jar",
+      "sha256": "d242bbaaa65a5daf75214ba0b151921b09d473b660d260a5594b18ce74dd6ebf"
+    }
+  ],
+  "examples": [
+    "SAMPLE_HYBRID.json",
+    "DELIVERY_HTTP_REPORT.json",
+    "SAMPLE_DELIVERY_FAULTS.json",
+    "SAMPLE_DELIVERY_SCOPES.json",
+    "SAMPLE_DELIVERY_RESTARTS.json"
+  ],
+  "limits": [
+    "No frontend exists; API/OpenAPI/Postman/executable scripts delivered without a new UI framework.",
+    "No user administration/IAM added; existing private owner scope and optional server operator flag only.",
+    "Live provider quality/OCR, production source egress/DNS, production S3/ES, production application deployment remain unvalidated.",
+    "Optional LocalPostgresTest12 skipped; all Docker integration cases executed.",
+    "Single vector backend pgvector vector(1024), exact cosine; incompatible embedding spaces restricted; ES max scope/bounded candidate quotas apply.",
+    "Temporary acceptance infrastructure is stopped; example UUIDs are evidence, not persistent live resources."
+  ],
+  "cleanupFollowup": {
+    "date": "2026-10-25",
+    "scope": "Remove six unused imports across four Java files and prepare the authorized local Git commit.",
+    "behaviorChanged": false,
+    "sourceEquivalence": "All 247 build inputs equal the tested stage10 snapshot after ignoring Java import declarations.",
+    "verification": {
+      "command": "mvn -B -DskipTests verify",
+      "result": "SUCCESS",
+      "completedAt": "2026-10-25T13:33:27+08:00",
+      "testsRerun": false,
+      "previousFullTestResult": {
+        "tests": 250,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 12
+      }
+    },
+    "currentArtifacts": [
+      {
+        "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT.jar",
+        "sha256": "2961bbe15ef8e35a4d090134ec86c7208f2f494194aa8d6af08a5d4c7770c362"
+      },
+      {
+        "path": "services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT.jar",
+        "sha256": "d242bbaaa65a5daf75214ba0b151921b09d473b660d260a5594b18ce74dd6ebf"
+      }
+    ],
+    "excludedFromCommit": [
+      ".cache",
+      "target/JARs",
+      "IDE files",
+      "local credentials"
+    ],
+    "pushed": false
+  }
+}

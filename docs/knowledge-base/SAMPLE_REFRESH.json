@@ -1,0 +1,3157 @@
+{
+  "environment": "Actual packaged Java JAR, PostgreSQL/pgvector, MinIO and controlled local HTTP file origin. Embedding is an explicit local HTTP fixture; production sources and live provider semantics have NOT been validated.",
+  "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+  "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+  "activatedRun": {
+    "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+    "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+    "requestId": "refresh-42b6581424c74576a897621475abb1db",
+    "triggerType": "MANUAL",
+    "status": "SUCCESS",
+    "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+    "attempts": 1,
+    "maxAttempts": 3,
+    "httpStatus": 200,
+    "reason": "CONTENT_ACTIVATED",
+    "errorMessage": null,
+    "nextRunAt": null,
+    "startedAt": "2026-10-24T14:46:26.098828Z",
+    "completedAt": "2026-10-24T14:46:26.378894Z",
+    "durationMs": 280
+  },
+  "evidence": [
+    {
+      "chunkId": "6132a392-ad56-3a15-9884-ac6aed8eb4d1",
+      "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+      "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+      "documentName": "remote.md",
+      "chunkIndex": 0,
+      "generation": 2,
+      "content": "Baking bread with flour.",
+      "score": 1.0,
+      "scoreType": "COSINE_SIMILARITY",
+      "sourceMetadata": {
+        "textEnd": 24,
+        "blockType": "PARAGRAPH",
+        "textStart": 0,
+        "offsetUnit": "UTF16",
+        "chapterPath": [
+          "Cooking"
+        ],
+        "overlapChars": 0,
+        "parserVersion": "commonmark-0.27.1-gfm-v1",
+        "sourceBlocks": [
+          {
+            "lineEnd": 3,
+            "lineStart": 3,
+            "blockIndex": 1
+          }
+        ]
+      },
+      "fileUrl": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/file"
+    }
+  ],
+  "calls": [
+    {
+      "method": "POST",
+      "path": "/api/kbs",
+      "request": {
+        "name": "refresh-acceptance-dc697d194dbb4c008f46272680c478a2"
+      },
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+          "name": "refresh-acceptance-dc697d194dbb4c008f46272680c478a2",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-24T14:46:22.750891Z",
+          "updatedAt": "2026-10-24T14:46:22.750891Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_d7e17436_7e13_4c3f_8bd6_f4b9d2483d6e",
+          "embeddingAiConfigRevision": null
+        },
+        "requestId": "refresh-check-9147171963bf4cff816c2814d86d48bf"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/documents/import-url",
+      "request": {
+        "url": "http://127.0.0.1:18081/document.md",
+        "filename": "remote.md",
+        "ingest": true
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "document": {
+            "id": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+            "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+            "name": "remote.md",
+            "originalFilename": "remote.md",
+            "sourceType": "URL",
+            "objectKey": "knowledge-base/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/80ecbdce-6b4b-488e-aecf-810cd72ab176/original",
+            "mimeType": "text/plain",
+            "fileSize": 41,
+            "contentHash": "49ac2ac2204484e4da4d1b3ccf21cf908ee2680da2a6ddce0e12e65266e70463",
+            "enabled": true,
+            "processStatus": "PROCESSING",
+            "ingestionSpec": {
+              "schemaVersion": 1,
+              "parser": "AUTO",
+              "splitter": {
+                "kind": "STRUCTURAL",
+                "maxChars": 1024,
+                "overlapChars": 128,
+                "tableRows": 50,
+                "toleranceChars": 512
+              },
+              "parseProfile": "fast"
+            },
+            "configRevision": 1,
+            "activeGeneration": null,
+            "chunkCount": 0,
+            "version": 1,
+            "manualRevision": 0,
+            "hasManualChanges": false,
+            "createdAt": "2026-10-24T14:46:24.439139Z",
+            "updatedAt": "2026-10-24T14:46:24.503886Z",
+            "sourceUrl": "http://127.0.0.1:18081/document.md"
+          },
+          "jobId": "165b07ef-8b72-497e-b7ad-80ef966efe50",
+          "replayed": false
+        },
+        "requestId": "refresh-check-10bb56ba7309411082f836eb3c364d8a"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/165b07ef-8b72-497e-b7ad-80ef966efe50",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "165b07ef-8b72-497e-b7ad-80ef966efe50",
+          "requestId": "import-53e6ecaf-0fdc-4155-b58e-3210d2c4b044",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:46:24.43431Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-24T14:46:24.501123Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "refresh-check-ef5b726eaf2a4725b1b5488296c3ca7c"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/165b07ef-8b72-497e-b7ad-80ef966efe50",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "165b07ef-8b72-497e-b7ad-80ef966efe50",
+          "requestId": "import-53e6ecaf-0fdc-4155-b58e-3210d2c4b044",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:46:24.43431Z",
+          "startedAt": "2026-10-24T14:46:24.625247Z",
+          "completedAt": "2026-10-24T14:46:24.96047Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "refresh-check-df6570158e5f4645b8ffaa7aec5c3f51"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/165b07ef-8b72-497e-b7ad-80ef966efe50",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "165b07ef-8b72-497e-b7ad-80ef966efe50",
+          "requestId": "import-53e6ecaf-0fdc-4155-b58e-3210d2c4b044",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-24T14:46:24.43431Z",
+          "startedAt": "2026-10-24T14:46:24.625247Z",
+          "completedAt": "2026-10-24T14:46:24.96047Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "refresh-check-7d25882263864727a05acff5755edff5"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+          "name": "remote.md",
+          "originalFilename": "remote.md",
+          "sourceType": "URL",
+          "objectKey": "knowledge-base/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/80ecbdce-6b4b-488e-aecf-810cd72ab176/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "49ac2ac2204484e4da4d1b3ccf21cf908ee2680da2a6ddce0e12e65266e70463",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 1,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:46:24.439139Z",
+          "updatedAt": "2026-10-24T14:46:24.961593Z",
+          "sourceUrl": "http://127.0.0.1:18081/document.md"
+        },
+        "requestId": "refresh-check-454068c3c0e445209f1bc7b621a1d2cd"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/documents/import-url",
+      "request": {
+        "url": "http://127.0.0.1:18081/document.md",
+        "filename": "remote.md",
+        "ingest": true
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "document": {
+            "id": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+            "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+            "name": "remote.md",
+            "originalFilename": "remote.md",
+            "sourceType": "URL",
+            "objectKey": "knowledge-base/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/80ecbdce-6b4b-488e-aecf-810cd72ab176/original",
+            "mimeType": "text/plain",
+            "fileSize": 41,
+            "contentHash": "49ac2ac2204484e4da4d1b3ccf21cf908ee2680da2a6ddce0e12e65266e70463",
+            "enabled": true,
+            "processStatus": "READY",
+            "ingestionSpec": {
+              "schemaVersion": 1,
+              "parser": "AUTO",
+              "splitter": {
+                "kind": "STRUCTURAL",
+                "maxChars": 1024,
+                "overlapChars": 128,
+                "tableRows": 50,
+                "toleranceChars": 512
+              },
+              "parseProfile": "fast"
+            },
+            "configRevision": 1,
+            "activeGeneration": 1,
+            "chunkCount": 1,
+            "version": 1,
+            "manualRevision": 0,
+            "hasManualChanges": false,
+            "createdAt": "2026-10-24T14:46:24.439139Z",
+            "updatedAt": "2026-10-24T14:46:24.961593Z",
+            "sourceUrl": "http://127.0.0.1:18081/document.md"
+          },
+          "jobId": "165b07ef-8b72-497e-b7ad-80ef966efe50",
+          "replayed": true
+        },
+        "requestId": "refresh-check-6fc4bf517fc742619869ffcf990403a0"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+          "triggerType": "MANUAL",
+          "status": "PENDING",
+          "jobId": null,
+          "attempts": 0,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": "2026-10-24T14:46:25.315126Z",
+          "startedAt": null,
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-27e752dd78fd40528690e7e966d4f0c6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0"
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+          "triggerType": "MANUAL",
+          "status": "RUNNING",
+          "jobId": null,
+          "attempts": 1,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": null,
+          "startedAt": "2026-10-24T14:46:25.38754Z",
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-599a02d207364e1c845fadd2058c2861"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 1,
+          "records": [
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-cf493a0f58894aa0a0ae515fdfe1f1c1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+          "triggerType": "MANUAL",
+          "status": "PENDING",
+          "jobId": null,
+          "attempts": 0,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": "2026-10-24T14:46:25.626936Z",
+          "startedAt": null,
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-7a6ac5c693264963863d7cc79d8d7287"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7"
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+          "triggerType": "MANUAL",
+          "status": "RUNNING",
+          "jobId": null,
+          "attempts": 1,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": null,
+          "startedAt": "2026-10-24T14:46:25.73303Z",
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-edf2d6c343684fae91f4980420b5edd0"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 2,
+          "records": [
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-11355a9c1e50408cba80c11dd777af2d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+          "name": "remote.md",
+          "originalFilename": "remote.md",
+          "sourceType": "URL",
+          "objectKey": "knowledge-base/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/80ecbdce-6b4b-488e-aecf-810cd72ab176/original",
+          "mimeType": "text/plain",
+          "fileSize": 41,
+          "contentHash": "49ac2ac2204484e4da4d1b3ccf21cf908ee2680da2a6ddce0e12e65266e70463",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 1,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:46:24.439139Z",
+          "updatedAt": "2026-10-24T14:46:24.961593Z",
+          "sourceUrl": "http://127.0.0.1:18081/document.md"
+        },
+        "requestId": "refresh-check-ff0a5e6e6e3e4b329bca989e56a4807e"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-42b6581424c74576a897621475abb1db"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-42b6581424c74576a897621475abb1db",
+          "triggerType": "MANUAL",
+          "status": "PENDING",
+          "jobId": null,
+          "attempts": 0,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": "2026-10-24T14:46:25.993572Z",
+          "startedAt": null,
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-6ff6dca8ce774b26b554fec3d07379bf"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-42b6581424c74576a897621475abb1db"
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-42b6581424c74576a897621475abb1db",
+          "triggerType": "MANUAL",
+          "status": "RUNNING",
+          "jobId": null,
+          "attempts": 1,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": null,
+          "startedAt": "2026-10-24T14:46:26.098828Z",
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-58353c2fb16241878c2fad4ca88309fa"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 3,
+          "records": [
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "WAITING_INGESTION",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": null,
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-6e2f2c892b2e43738c2a43d0fe8c32bc"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 3,
+          "records": [
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-1e3feeb050344909a03c6376c3957533"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+          "name": "remote.md",
+          "originalFilename": "remote.md",
+          "sourceType": "URL",
+          "objectKey": "kb/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/remote/f532c814-5f79-4089-8c64-532f9fb0a3a0/original",
+          "mimeType": "text/plain",
+          "fileSize": 35,
+          "contentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 2,
+          "chunkCount": 1,
+          "version": 2,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:46:24.439139Z",
+          "updatedAt": "2026-10-24T14:46:26.370375Z",
+          "sourceUrl": "http://127.0.0.1:18081/document.md"
+        },
+        "requestId": "refresh-check-f533d98f15ce43c186912ac580fb4fe6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/search",
+      "request": {
+        "query": "bread",
+        "kbIds": [
+          "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e"
+        ],
+        "documentIds": [
+          "80ecbdce-6b4b-488e-aecf-810cd72ab176"
+        ]
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": [
+          {
+            "chunkId": "6132a392-ad56-3a15-9884-ac6aed8eb4d1",
+            "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+            "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+            "documentName": "remote.md",
+            "chunkIndex": 0,
+            "generation": 2,
+            "content": "Baking bread with flour.",
+            "score": 1.0,
+            "scoreType": "COSINE_SIMILARITY",
+            "sourceMetadata": {
+              "textEnd": 24,
+              "blockType": "PARAGRAPH",
+              "textStart": 0,
+              "offsetUnit": "UTF16",
+              "chapterPath": [
+                "Cooking"
+              ],
+              "overlapChars": 0,
+              "parserVersion": "commonmark-0.27.1-gfm-v1",
+              "sourceBlocks": [
+                {
+                  "lineEnd": 3,
+                  "lineStart": 3,
+                  "blockIndex": 1
+                }
+              ]
+            },
+            "fileUrl": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/file"
+          }
+        ],
+        "requestId": "refresh-check-f7371e4e05f04fec9304f99ea1999944"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-schedule",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "enabled": false,
+          "cron": null,
+          "timezone": "UTC",
+          "version": 1,
+          "nextRunAt": null,
+          "lastStatus": "SUCCESS",
+          "lastReason": "CONTENT_ACTIVATED",
+          "lastRunId": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+          "lastContentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "consecutiveFailures": 0
+        },
+        "requestId": "refresh-check-5dae46bd26dd4d5282abb3688d628e1a"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-schedule",
+      "request": {
+        "version": 1,
+        "enabled": true,
+        "cron": "*/2 * * * * *",
+        "timezone": "Asia/Shanghai"
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "enabled": true,
+          "cron": "*/2 * * * * *",
+          "timezone": "Asia/Shanghai",
+          "version": 2,
+          "nextRunAt": "2026-10-24T14:46:28Z",
+          "lastStatus": "SUCCESS",
+          "lastReason": "CONTENT_ACTIVATED",
+          "lastRunId": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+          "lastContentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "consecutiveFailures": 0
+        },
+        "requestId": "refresh-check-6f4f2f7934844f629b9beddd37ec6697"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 3,
+          "records": [
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-3fb4cd5242e24e82bdf9ee1d08e33320"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 3,
+          "records": [
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-dac0ed10bb1948778fc49948b5f46f0c"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 3,
+          "records": [
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-08c749a688064b358ddc356683bde60f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 4,
+          "records": [
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-f8a03690aba04295bc6afd6c1af5538e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-schedule",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "enabled": true,
+          "cron": "*/2 * * * * *",
+          "timezone": "Asia/Shanghai",
+          "version": 2,
+          "nextRunAt": "2026-10-24T14:46:30Z",
+          "lastStatus": "SKIPPED",
+          "lastReason": "HTTP_NOT_MODIFIED",
+          "lastRunId": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+          "lastContentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "consecutiveFailures": 0
+        },
+        "requestId": "refresh-check-658159fa3a4f4fc68fe3463c2c13c6e1"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-schedule",
+      "request": {
+        "version": 2,
+        "enabled": false,
+        "cron": "*/2 * * * * *",
+        "timezone": "Asia/Shanghai"
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "enabled": false,
+          "cron": "*/2 * * * * *",
+          "timezone": "Asia/Shanghai",
+          "version": 3,
+          "nextRunAt": null,
+          "lastStatus": "SKIPPED",
+          "lastReason": "HTTP_NOT_MODIFIED",
+          "lastRunId": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+          "lastContentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "consecutiveFailures": 0
+        },
+        "requestId": "refresh-check-efd3274deb8d4b20a22a71dedcbd27e3"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-28f4d65c64dc41099a8062451d329702"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+          "triggerType": "MANUAL",
+          "status": "PENDING",
+          "jobId": null,
+          "attempts": 0,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": "2026-10-24T14:46:28.517979Z",
+          "startedAt": null,
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-31bee8828eaa40e792096352bf429774"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh",
+      "request": {
+        "requestId": "refresh-28f4d65c64dc41099a8062451d329702"
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+          "triggerType": "MANUAL",
+          "status": "PENDING",
+          "jobId": null,
+          "attempts": 0,
+          "maxAttempts": 3,
+          "httpStatus": null,
+          "reason": null,
+          "errorMessage": null,
+          "nextRunAt": "2026-10-24T14:46:28.517979Z",
+          "startedAt": null,
+          "completedAt": null,
+          "durationMs": null
+        },
+        "requestId": "refresh-check-30797645146c43c69dfd84449cd431af"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:30.666995Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-6e612705206746fd8c9aa22cc30d829d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:30.666995Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-7273f481fcad47e38c535518dfd8c647"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:30.666995Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-b1ee698cf7954f82aa63eb84f637b2eb"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:30.666995Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-af060ed7bc634e72865b0ea65270cd4a"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:30.666995Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-1d6a48bb9b014a5dadced5678879fd8d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:30.666995Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-02b16f25c67d4edda802f9b22537aacd"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-cf1110ad840e48b0b67300115858257c"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-d3f9559ece4e4350a307fedbc11f2abc"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-844e1ee0913747a98020fe95edfb7313"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-35c0aa3ea0cf4231b974be8dd7da9eeb"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-a368f7e1870a42eda4765d259ba63844"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-808f5a4f0f57437a9d0f40d18e899c98"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-ff0f023795204363aa4c158750e63f5e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-dc0ecb366505479d8ca4089fd75736c6"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-5c84928d22c84e0d890413d2687502d2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "PENDING",
+              "jobId": null,
+              "attempts": 2,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": null,
+              "nextRunAt": "2026-10-24T14:46:34.796086Z",
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": null,
+              "durationMs": null
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-85dad494a6d04efe8c5e36d2f2e72093"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-runs",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "current": 1,
+          "size": 20,
+          "total": 5,
+          "records": [
+            {
+              "id": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-28f4d65c64dc41099a8062451d329702",
+              "triggerType": "MANUAL",
+              "status": "FAILED",
+              "jobId": null,
+              "attempts": 3,
+              "maxAttempts": 3,
+              "httpStatus": null,
+              "reason": "KB_REMOTE_HTTP_ERROR",
+              "errorMessage": "Refresh failed; inspect reason and ingestion stages. Source and credentials omitted.",
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.650809Z",
+              "completedAt": "2026-10-24T14:46:34.82356Z",
+              "durationMs": 6173
+            },
+            {
+              "id": "b80d1bf0-02b4-4dc6-8f05-cefe3760095e",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "scheduled-79d709df-c223-46da-9a54-98a4741010e5",
+              "triggerType": "SCHEDULED",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:28.101324Z",
+              "completedAt": "2026-10-24T14:46:28.115734Z",
+              "durationMs": 14
+            },
+            {
+              "id": "a5f56411-459f-4bbf-99a6-553ba3d28113",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-42b6581424c74576a897621475abb1db",
+              "triggerType": "MANUAL",
+              "status": "SUCCESS",
+              "jobId": "01552025-51b9-4c62-a3b6-39c5effb9d75",
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_ACTIVATED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:26.098828Z",
+              "completedAt": "2026-10-24T14:46:26.378894Z",
+              "durationMs": 280
+            },
+            {
+              "id": "0b37f1a4-d63c-433d-8b69-d790a48eac98",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-2d251c69a24c44388a6fb5a8497748a7",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 200,
+              "reason": "CONTENT_HASH_UNCHANGED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.73303Z",
+              "completedAt": "2026-10-24T14:46:25.766835Z",
+              "durationMs": 34
+            },
+            {
+              "id": "83b63ece-11bd-43c7-add9-eb3bb9bdaabc",
+              "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+              "requestId": "refresh-feb7e681d9fb4a2da7f7bd921c8c2bc0",
+              "triggerType": "MANUAL",
+              "status": "SKIPPED",
+              "jobId": null,
+              "attempts": 1,
+              "maxAttempts": 3,
+              "httpStatus": 304,
+              "reason": "HTTP_NOT_MODIFIED",
+              "errorMessage": null,
+              "nextRunAt": null,
+              "startedAt": "2026-10-24T14:46:25.38754Z",
+              "completedAt": "2026-10-24T14:46:25.421708Z",
+              "durationMs": 34
+            }
+          ]
+        },
+        "requestId": "refresh-check-44853e33c24146d7bd34eaba7d705493"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "kbId": "d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e",
+          "name": "remote.md",
+          "originalFilename": "remote.md",
+          "sourceType": "URL",
+          "objectKey": "kb/d7e17436-7e13-4c3f-8bd6-f4b9d2483d6e/remote/f532c814-5f79-4089-8c64-532f9fb0a3a0/original",
+          "mimeType": "text/plain",
+          "fileSize": 35,
+          "contentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 2,
+          "chunkCount": 1,
+          "version": 2,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-24T14:46:24.439139Z",
+          "updatedAt": "2026-10-24T14:46:26.370375Z",
+          "sourceUrl": "http://127.0.0.1:18081/document.md"
+        },
+        "requestId": "refresh-check-f325905222fb4426bc94ace0f8e5beeb"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/80ecbdce-6b4b-488e-aecf-810cd72ab176/refresh-schedule",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "80ecbdce-6b4b-488e-aecf-810cd72ab176",
+          "enabled": false,
+          "cron": "*/2 * * * * *",
+          "timezone": "Asia/Shanghai",
+          "version": 3,
+          "nextRunAt": null,
+          "lastStatus": "FAILED",
+          "lastReason": "KB_REMOTE_HTTP_ERROR",
+          "lastRunId": "c7161914-c5b5-421e-a5d1-357cacecb6db",
+          "lastContentHash": "5238e3810a184703c54f63c738c45c9b26b5c0831e992893352ebdd41e0ab61f",
+          "consecutiveFailures": 1
+        },
+        "requestId": "refresh-check-06b822839049469abfd5e417c5cc5123"
+      }
+    }
+  ]
+}

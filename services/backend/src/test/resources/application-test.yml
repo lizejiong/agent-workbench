@@ -1,0 +1,22 @@
+kb:
+  worker:
+    enabled: false
+  security:
+    accounts:
+      - username: alice
+        password: alice-local-test-password
+        tenant-id: tenant-a
+        user-id: user-alice
+      - username: bob
+        password: bob-local-test-password
+        tenant-id: tenant-a
+        user-id: user-bob
+      - username: carol
+        password: carol-local-test-password
+        tenant-id: tenant-b
+        user-id: user-alice
+      - username: operator
+        password: operator-local-test-password
+        tenant-id: tenant-ops
+        user-id: user-operator
+        operator: true

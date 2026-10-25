@@ -1,0 +1,55 @@
+{
+  "result": "PASS",
+  "checks": [
+    {
+      "script": "management-entry/collection/audit/metrics",
+      "status": "PASS"
+    },
+    {
+      "script": "acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 1.532
+    },
+    {
+      "script": "upload_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 3.828
+    },
+    {
+      "script": "ingestion_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 4.64
+    },
+    {
+      "script": "search_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 5.516
+    },
+    {
+      "script": "maintenance_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 46.5
+    },
+    {
+      "script": "formats_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 49.516
+    },
+    {
+      "script": "hybrid_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 5.468
+    },
+    {
+      "script": "refresh_acceptance.py",
+      "status": "PASS",
+      "durationSeconds": 10.657
+    }
+  ],
+  "environment": "Actual packaged JAR, PostgreSQL/pgvector, MinIO, Elasticsearch8.19.17/cjk. Explicit local Embedding/Rerank/VLM/MinerU protocol fixtures; no real provider quality claim.",
+  "limitations": [
+    "Some fixture KBs are retained and their IDs are printed by the individual scripts.",
+    "Run Maven verify for fault injection, lease fencing, process restart and cross-user/cross-tenant cases.",
+    "Live model quality, production networking and optional OCR require separate real-service validation."
+  ]
+}

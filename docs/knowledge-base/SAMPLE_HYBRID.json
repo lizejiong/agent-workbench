@@ -1,0 +1,1316 @@
+{
+  "capabilities": {
+    "defaultStrategy": "AUTO",
+    "rerankModel": "qwen-rerank",
+    "rerankConfigured": true,
+    "keywordScoreType": "BM25",
+    "fusionCandidates": 20,
+    "keywordConfigured": true,
+    "keywordAnalyzer": "cjk",
+    "channelCandidates": 50,
+    "answerEnabled": false
+  },
+  "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/api/knowledge/search-capabilities",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "defaultStrategy": "AUTO",
+          "rerankModel": "qwen-rerank",
+          "rerankConfigured": true,
+          "keywordScoreType": "BM25",
+          "fusionCandidates": 20,
+          "keywordConfigured": true,
+          "keywordAnalyzer": "cjk",
+          "channelCandidates": 50,
+          "answerEnabled": false
+        },
+        "requestId": "hybrid-check-77afe8fe33374ce2bee72d926a0de3b6"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs",
+      "request": {
+        "name": "hybrid-acceptance-91396bb6d046497986f63a1f84fdab84"
+      },
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "8255ad78-3962-4212-a424-0188a1fa253b",
+          "name": "hybrid-acceptance-91396bb6d046497986f63a1f84fdab84",
+          "description": "",
+          "version": 1,
+          "createdAt": "2026-10-25T05:16:11.878525Z",
+          "updatedAt": "2026-10-25T05:16:11.878525Z",
+          "bindingStatus": "BOUND",
+          "embeddingProfileId": "qwen-embed-1024",
+          "embeddingModelId": "qwen-embed",
+          "embeddingProvider": "bailian",
+          "embeddingDimension": 1024,
+          "embeddingConfigRevision": "9cefc208e93572fc52cec609850a20aef9147c9ff23b562da27e8adf962fd9b6",
+          "vectorNamespace": "kb_8255ad78_3962_4212_a424_0188a1fa253b",
+          "embeddingAiConfigRevision": null,
+          "documentCount": 0
+        },
+        "requestId": "hybrid-check-6b9fd8b41a5a416788a7f9928c9d004a"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/8255ad78-3962-4212-a424-0188a1fa253b/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+          "name": "manual.md",
+          "originalFilename": "manual.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/8255ad78-3962-4212-a424-0188a1fa253b/611870de-9fe6-46c7-8ebc-3df92b8a0e73/original",
+          "mimeType": "text/plain",
+          "fileSize": 97,
+          "contentHash": "49de10c0e76a9be82e7a9ab6736c82a1700b395f7c3c29106056903fcd0da6fd",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:16:12.0271315Z",
+          "updatedAt": "2026-10-25T05:16:12.0271315Z",
+          "sourceUrl": null,
+          "lastIngestedAt": null
+        },
+        "requestId": "hybrid-check-7cd0326837d5478c987a37eb4291ea5a"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-202d36ae4c984d7ebea4259988f69d8a"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "d434b056-c05a-4686-a404-f069a413fcde",
+          "requestId": "ingest-202d36ae4c984d7ebea4259988f69d8a",
+          "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:12.10261Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:16:12.127042Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-40f0054a453b4a0d9630adddec64d531"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/d434b056-c05a-4686-a404-f069a413fcde",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "d434b056-c05a-4686-a404-f069a413fcde",
+          "requestId": "ingest-202d36ae4c984d7ebea4259988f69d8a",
+          "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "EMBED",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:12.10261Z",
+          "startedAt": "2026-10-25T05:16:12.165092Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-25T05:16:42.165091Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-437a4361f9f94b4ca9bac1d3f2d68641"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/d434b056-c05a-4686-a404-f069a413fcde",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "d434b056-c05a-4686-a404-f069a413fcde",
+          "requestId": "ingest-202d36ae4c984d7ebea4259988f69d8a",
+          "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:12.10261Z",
+          "startedAt": "2026-10-25T05:16:12.165092Z",
+          "completedAt": "2026-10-25T05:16:12.273279Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-a4cd0227cd6545ea8663dfe9b1dad8ed"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/keyword-index",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "revision": 3,
+          "syncedRevision": 0,
+          "status": "RUNNING",
+          "attempts": 1,
+          "nextRunAt": "2026-10-25T05:16:12.282122Z",
+          "leaseUntil": "2026-10-25T05:17:12.349828Z",
+          "errorCode": null,
+          "syncedAt": null,
+          "cleanupStatus": null,
+          "cleanupErrorCode": null
+        },
+        "requestId": "hybrid-check-303b9626ef7b4a07b9b8f334e4d3fb17"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/keyword-index",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "revision": 3,
+          "syncedRevision": 3,
+          "status": "SUCCEEDED",
+          "attempts": 1,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:16:13.239748Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "hybrid-check-ac065d1180f54caaaf205a6bd93636a0"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/8255ad78-3962-4212-a424-0188a1fa253b/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+          "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+          "name": "recovery.md",
+          "originalFilename": "recovery.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/8255ad78-3962-4212-a424-0188a1fa253b/c05fde60-7494-4f9d-b399-b7e3bcd1100b/original",
+          "mimeType": "text/plain",
+          "fileSize": 64,
+          "contentHash": "ef2e47a20de43ad34142570460d9d4795bda27e3276091a11c8c744f027f97e7",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:16:13.6215969Z",
+          "updatedAt": "2026-10-25T05:16:13.6215969Z",
+          "sourceUrl": null,
+          "lastIngestedAt": null
+        },
+        "requestId": "hybrid-check-2a69beaab3c74c299da0ff3fe9b1993f"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/c05fde60-7494-4f9d-b399-b7e3bcd1100b/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-1168334bfe3343e9bb916550ef03cf40"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0279c9bd-e774-46a5-a07f-fa16746d0db2",
+          "requestId": "ingest-1168334bfe3343e9bb916550ef03cf40",
+          "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:13.715389Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:16:13.730997Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-2e8a6714773048fbbb1aac443f891283"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/0279c9bd-e774-46a5-a07f-fa16746d0db2",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0279c9bd-e774-46a5-a07f-fa16746d0db2",
+          "requestId": "ingest-1168334bfe3343e9bb916550ef03cf40",
+          "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "RUNNING",
+          "stage": "FETCH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:13.715389Z",
+          "startedAt": "2026-10-25T05:16:13.807548Z",
+          "completedAt": null,
+          "nextRunAt": null,
+          "leaseUntil": "2026-10-25T05:16:43.807547Z",
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-eb949ad7e475429195e9e76aa732c45c"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/0279c9bd-e774-46a5-a07f-fa16746d0db2",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "0279c9bd-e774-46a5-a07f-fa16746d0db2",
+          "requestId": "ingest-1168334bfe3343e9bb916550ef03cf40",
+          "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:13.715389Z",
+          "startedAt": "2026-10-25T05:16:13.807548Z",
+          "completedAt": "2026-10-25T05:16:13.877756Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-f4f47f4323e84ba7965d9efe2b0ce790"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/c05fde60-7494-4f9d-b399-b7e3bcd1100b/keyword-index",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+          "revision": 3,
+          "syncedRevision": 3,
+          "status": "SUCCEEDED",
+          "attempts": 1,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:16:14.287646Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "hybrid-check-1d9a4e0c5c2a4954b00867071a376518"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/kbs/8255ad78-3962-4212-a424-0188a1fa253b/documents",
+      "request": "multipart fixture",
+      "status": 201,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+          "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+          "name": "cooking.md",
+          "originalFilename": "cooking.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/8255ad78-3962-4212-a424-0188a1fa253b/9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6/original",
+          "mimeType": "text/plain",
+          "fileSize": 36,
+          "contentHash": "9d22654008b58714e57679f749854e75637e9237cf59e32fd935a2b52dc8d951",
+          "enabled": true,
+          "processStatus": "PENDING",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": null,
+          "chunkCount": 0,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:16:14.613978Z",
+          "updatedAt": "2026-10-25T05:16:14.613978Z",
+          "sourceUrl": null,
+          "lastIngestedAt": null
+        },
+        "requestId": "hybrid-check-bfc0b701c72c485b974ec6f4770f7e5b"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6/ingestion-jobs",
+      "request": {
+        "requestId": "ingest-39dbb23f76444d3ea21dc4b3b7beff6f"
+      },
+      "status": 202,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "431d7727-1a8e-471c-bded-d85da8c92c13",
+          "requestId": "ingest-39dbb23f76444d3ea21dc4b3b7beff6f",
+          "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:14.688402Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:16:14.702078Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-a233cc806ee14591aaf76c433326acf1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/431d7727-1a8e-471c-bded-d85da8c92c13",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "431d7727-1a8e-471c-bded-d85da8c92c13",
+          "requestId": "ingest-39dbb23f76444d3ea21dc4b3b7beff6f",
+          "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "PENDING",
+          "stage": "FETCH",
+          "attempts": 0,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:14.688402Z",
+          "startedAt": null,
+          "completedAt": null,
+          "nextRunAt": "2026-10-25T05:16:14.702078Z",
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": null,
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-ec6b8a5d743d40cca2cff9acf4520fa6"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/ingestion-jobs/431d7727-1a8e-471c-bded-d85da8c92c13",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "431d7727-1a8e-471c-bded-d85da8c92c13",
+          "requestId": "ingest-39dbb23f76444d3ea21dc4b3b7beff6f",
+          "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+          "documentConfigRevision": 1,
+          "targetGeneration": 1,
+          "jobType": "INGEST",
+          "status": "SUCCEEDED",
+          "stage": "PUBLISH",
+          "attempts": 1,
+          "maxAttempts": 3,
+          "createdAt": "2026-10-25T05:16:14.688402Z",
+          "startedAt": "2026-10-25T05:16:14.799593Z",
+          "completedAt": "2026-10-25T05:16:14.862924Z",
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "errorMessage": null,
+          "aiConfigRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "retryOf": null
+        },
+        "requestId": "hybrid-check-97cb5aa404ea4ad9afc9e5943b77d00f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6/keyword-index",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+          "revision": 3,
+          "syncedRevision": 3,
+          "status": "SUCCEEDED",
+          "attempts": 1,
+          "nextRunAt": null,
+          "leaseUntil": null,
+          "errorCode": null,
+          "syncedAt": "2026-10-25T05:16:15.353261Z",
+          "cleanupStatus": "PENDING",
+          "cleanupErrorCode": null
+        },
+        "requestId": "hybrid-check-89a110717cba4593b32f12886b0b947d"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "database backup",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "HYBRID",
+        "rerank": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "ddb578e6-5aac-3770-9022-35b8adce0c84",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+              "documentName": "recovery.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "Database backup uses pg_dump and durable snapshots.",
+              "score": 0.03278688524590164,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 51,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Recovery"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/c05fde60-7494-4f9d-b399-b7e3bcd1100b/file",
+              "fusionScore": 0.03278688524590164,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "KEYWORD",
+                  "rank": 1,
+                  "score": 4.057471,
+                  "scoreType": "BM25"
+                },
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 1.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            },
+            {
+              "chunkId": "3c019846-2c2a-3759-b1d9-2b2b218af236",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+              "documentName": "manual.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "专有产品麒麟数据库，错误编号 ZX-1472，执行 PostgreSQL 备份。",
+              "score": 0.016129032258064516,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 40,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "项目运维"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/file",
+              "fusionScore": 0.016129032258064516,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 2,
+                  "score": 0.800000011920929,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            },
+            {
+              "chunkId": "d61a5094-09b7-3ece-87a7-2639c1e2d42b",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+              "documentName": "cooking.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "Baking bread with flour.",
+              "score": 0.015873015873015872,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 24,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Kitchen"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6/file",
+              "fusionScore": 0.015873015873015872,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 3,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "HYBRID",
+          "strategy": "KEYWORD+VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 3,
+              "errorCode": null
+            },
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "hybrid-check-223346505d894766bfece4529b9efea0"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "ZX-1472",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "KEYWORD",
+        "rerank": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "3c019846-2c2a-3759-b1d9-2b2b218af236",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+              "documentName": "manual.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "专有产品麒麟数据库，错误编号 ZX-1472，执行 PostgreSQL 备份。",
+              "score": 0.01639344262295082,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 40,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "项目运维"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/file",
+              "fusionScore": 0.01639344262295082,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "KEYWORD",
+                  "rank": 1,
+                  "score": 4.1870937,
+                  "scoreType": "BM25"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "KEYWORD",
+          "strategy": "KEYWORD",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "hybrid-check-9a6faa4a34c84f3d82c736d538b01fc2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "ABSENT_987654321",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "KEYWORD",
+        "rerank": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [],
+          "requestedStrategy": "KEYWORD",
+          "strategy": "KEYWORD",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 0,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "hybrid-check-0ebd7ffda2d34be887b34dd4a4a46a87"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "database backup",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "HYBRID",
+        "rerank": true
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "d61a5094-09b7-3ece-87a7-2639c1e2d42b",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+              "documentName": "cooking.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "Baking bread with flour.",
+              "score": 0.015873015873015872,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 24,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Kitchen"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6/file",
+              "fusionScore": 0.015873015873015872,
+              "rerankScore": 0.75,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 3,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            },
+            {
+              "chunkId": "3c019846-2c2a-3759-b1d9-2b2b218af236",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+              "documentName": "manual.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "专有产品麒麟数据库，错误编号 ZX-1472，执行 PostgreSQL 备份。",
+              "score": 0.016129032258064516,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 40,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "项目运维"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/file",
+              "fusionScore": 0.016129032258064516,
+              "rerankScore": 0.5,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 2,
+                  "score": 0.800000011920929,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            },
+            {
+              "chunkId": "ddb578e6-5aac-3770-9022-35b8adce0c84",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+              "documentName": "recovery.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "Database backup uses pg_dump and durable snapshots.",
+              "score": 0.03278688524590164,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 51,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Recovery"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/c05fde60-7494-4f9d-b399-b7e3bcd1100b/file",
+              "fusionScore": 0.03278688524590164,
+              "rerankScore": 0.25,
+              "channelScores": [
+                {
+                  "channel": "KEYWORD",
+                  "rank": 1,
+                  "score": 4.057471,
+                  "scoreType": "BM25"
+                },
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 1.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "HYBRID",
+          "strategy": "KEYWORD+VECTOR",
+          "rerankStatus": "APPLIED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 3,
+              "errorCode": null
+            },
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "hybrid-check-d98e4a3b738f48cba01886afccc4c024"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+      "request": null,
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+          "name": "manual.md",
+          "originalFilename": "manual.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/8255ad78-3962-4212-a424-0188a1fa253b/611870de-9fe6-46c7-8ebc-3df92b8a0e73/original",
+          "mimeType": "text/plain",
+          "fileSize": 97,
+          "contentHash": "49de10c0e76a9be82e7a9ab6736c82a1700b395f7c3c29106056903fcd0da6fd",
+          "enabled": true,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 1,
+          "version": 1,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:16:12.027132Z",
+          "updatedAt": "2026-10-25T05:16:12.278261Z",
+          "sourceUrl": null,
+          "lastIngestedAt": "2026-10-25T05:16:12.278261Z"
+        },
+        "requestId": "hybrid-check-27638b86a6444e979bb2554739e598a1"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/611870de-9fe6-46c7-8ebc-3df92b8a0e73/enabled",
+      "request": {
+        "version": 1,
+        "enabled": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "id": "611870de-9fe6-46c7-8ebc-3df92b8a0e73",
+          "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+          "name": "manual.md",
+          "originalFilename": "manual.md",
+          "sourceType": "UPLOAD",
+          "objectKey": "knowledge-base/8255ad78-3962-4212-a424-0188a1fa253b/611870de-9fe6-46c7-8ebc-3df92b8a0e73/original",
+          "mimeType": "text/plain",
+          "fileSize": 97,
+          "contentHash": "49de10c0e76a9be82e7a9ab6736c82a1700b395f7c3c29106056903fcd0da6fd",
+          "enabled": false,
+          "processStatus": "READY",
+          "ingestionSpec": {
+            "schemaVersion": 1,
+            "parser": "AUTO",
+            "splitter": {
+              "kind": "STRUCTURAL",
+              "maxChars": 1024,
+              "overlapChars": 128,
+              "tableRows": 50,
+              "toleranceChars": 512
+            },
+            "parseProfile": "fast"
+          },
+          "configRevision": 1,
+          "activeGeneration": 1,
+          "chunkCount": 1,
+          "version": 2,
+          "manualRevision": 0,
+          "hasManualChanges": false,
+          "createdAt": "2026-10-25T05:16:12.027132Z",
+          "updatedAt": "2026-10-25T05:16:16.7224256Z",
+          "sourceUrl": null,
+          "lastIngestedAt": "2026-10-25T05:16:12.278261Z"
+        },
+        "requestId": "hybrid-check-46dbb21630a6463cbbbc116dc0d58ddb"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "database backup",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "HYBRID",
+        "rerank": false
+      },
+      "status": 200,
+      "response": {
+        "code": "0",
+        "message": "success",
+        "data": {
+          "evidence": [
+            {
+              "chunkId": "ddb578e6-5aac-3770-9022-35b8adce0c84",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "c05fde60-7494-4f9d-b399-b7e3bcd1100b",
+              "documentName": "recovery.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "Database backup uses pg_dump and durable snapshots.",
+              "score": 0.03278688524590164,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 51,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Recovery"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/c05fde60-7494-4f9d-b399-b7e3bcd1100b/file",
+              "fusionScore": 0.03278688524590164,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "KEYWORD",
+                  "rank": 1,
+                  "score": 4.057471,
+                  "scoreType": "BM25"
+                },
+                {
+                  "channel": "VECTOR",
+                  "rank": 1,
+                  "score": 1.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            },
+            {
+              "chunkId": "d61a5094-09b7-3ece-87a7-2639c1e2d42b",
+              "kbId": "8255ad78-3962-4212-a424-0188a1fa253b",
+              "documentId": "9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6",
+              "documentName": "cooking.md",
+              "chunkIndex": 0,
+              "generation": 1,
+              "content": "Baking bread with flour.",
+              "score": 0.016129032258064516,
+              "scoreType": "RRF",
+              "sourceMetadata": {
+                "textEnd": 24,
+                "blockType": "PARAGRAPH",
+                "textStart": 0,
+                "offsetUnit": "UTF16",
+                "chapterPath": [
+                  "Kitchen"
+                ],
+                "overlapChars": 0,
+                "parserVersion": "commonmark-0.27.1-gfm-v1",
+                "sourceBlocks": [
+                  {
+                    "lineEnd": 3,
+                    "lineStart": 3,
+                    "blockIndex": 1
+                  }
+                ]
+              },
+              "fileUrl": "/api/documents/9d64fd4e-f4dd-4ce4-abfe-7cd4c9c77ab6/file",
+              "fusionScore": 0.016129032258064516,
+              "rerankScore": null,
+              "channelScores": [
+                {
+                  "channel": "VECTOR",
+                  "rank": 2,
+                  "score": 0.0,
+                  "scoreType": "COSINE_SIMILARITY"
+                }
+              ]
+            }
+          ],
+          "requestedStrategy": "HYBRID",
+          "strategy": "KEYWORD+VECTOR",
+          "rerankStatus": "DISABLED",
+          "channels": [
+            {
+              "channel": "VECTOR",
+              "status": "SUCCEEDED",
+              "candidates": 2,
+              "errorCode": null
+            },
+            {
+              "channel": "KEYWORD",
+              "status": "SUCCEEDED",
+              "candidates": 1,
+              "errorCode": null
+            }
+          ],
+          "channelCandidates": 50,
+          "fusionCandidates": 20,
+          "topK": 5,
+          "refillLimitReached": false,
+          "minRerankScore": null
+        },
+        "requestId": "hybrid-check-d235b7ff094d4304867dbeb86de5172a"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "database backup",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "HYBRID",
+        "rerank": false
+      },
+      "status": 401,
+      "response": {
+        "code": "KB_UNAUTHENTICATED",
+        "message": "Authentication required",
+        "data": null,
+        "requestId": "hybrid-check-7f2aad7608364dd89bfb60762cd0b240"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/retrieve",
+      "request": {
+        "query": "database backup",
+        "kbIds": [
+          "8255ad78-3962-4212-a424-0188a1fa253b"
+        ],
+        "strategy": "HYBRID",
+        "rerank": false,
+        "topK": 201
+      },
+      "status": 400,
+      "response": {
+        "code": "KB_INVALID_INPUT",
+        "message": "Check query, topK and score limits",
+        "data": null,
+        "requestId": "hybrid-check-25390ef935fa448eba88e0c83e7eeadd"
+      }
+    }
+  ],
+  "environment": "Actual packaged JAR, PostgreSQL/pgvector, MinIO, Elasticsearch8.19.17/cjk. Explicit local Embedding/Rerank/VLM/MinerU protocol fixtures; no real provider quality claim."
+}

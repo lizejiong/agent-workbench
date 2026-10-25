@@ -22,7 +22,7 @@ public record AiProperties(@DefaultValue("true") boolean enabled,
     public record Model(String provider, String model, @DefaultValue("true") boolean enabled,
                         Set<Capability> capabilities, @DefaultValue("8192") int maxOutputTokens,
                         Integer dimensions, List<Integer> allowedDimensions, String embeddingSpace,
-                        @DefaultValue("32") int batchSize, Duration timeout) {
+                        @DefaultValue("32") int batchSize, Duration timeout, @DefaultValue("v1") String configVersion) {
         public Model {
             capabilities = capabilities == null ? Set.of() : capabilities;
             allowedDimensions = allowedDimensions == null ? List.of() : allowedDimensions;

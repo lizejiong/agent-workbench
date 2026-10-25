@@ -15,6 +15,7 @@
     <modules>
         <module>packages/java-starters</module>
         <module>services/ai-service</module>
+        <module>services/backend</module>
     </modules>
 
     <properties>
