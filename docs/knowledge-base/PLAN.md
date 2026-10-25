@@ -1,6 +1,30 @@
 # 知识库建设方案
 
-## 当前实施状态：第 10 阶段 / P9 API 管理入口与交付（2026-10-25）
+## 当前交付：图形管理台补齐（2026-10-25，已完成）
+
+用户明确采用 React + Ant Design + Vite，在原 web 占位目录内实现可运行管理台。复用既有 REST/Basic/tenant+owner 权限与状态机；不增加 IAM、用户 CRUD、新业务表或第二套任务状态。此前无前端的 API 交付记录作为历史保留，当前图形入口以本节及 web/README.md 为准。
+
+| 职责 | 实际路径 |
+|---|---|
+| 路由、已有账号登录、应用布局 | web/src/App.tsx、main.tsx、state.tsx、styles.css |
+| 同源认证请求、超时/取消、授权下载 | web/src/api.ts |
+| 知识库与文档、上传/导入 | web/src/pages/KnowledgeBases.tsx、Documents.tsx |
+| 文档配置、启停、删除与索引状态 | web/src/pages/DocumentDetail.tsx |
+| Chunk 展示/向量化文本/来源与人工维护 | web/src/pages/Chunks.tsx |
+| 任务阶段、耗时、重试/取消 | web/src/pages/Jobs.tsx |
+| Cron/时区/手动刷新与历史 | web/src/pages/Refresh.tsx |
+| 检索范围、证据/分数/真实策略 | web/src/pages/Search.tsx |
+| 复用表单、来源白名单、覆盖确认 | web/src/components.tsx |
+| 构建与静态部署 | web/package.json、package-lock.json、vite.config.ts、Dockerfile、nginx.conf；deploy/knowledge-base/compose.yml 的 web profile |
+| 验收 | web/src/api.test.ts；真实浏览器 CLI 联调证据另记 PROGRESS |
+
+选择 React 19、Ant Design 6、Vite 8、TypeScript 7，Vitest 4 保持 Node 20.19 主机兼容；依赖按锁文件安装。Hash 路由无需后端新增 MVC 页面。开发 5173、构建预览 4173、可选 Compose Web 8088，均同源代理 /api 与 /openapi。KB_BACKEND_ORIGIN 仅由 Vite 服务端读取；生产 Nginx 转发到已有 backend。Basic 凭据只存内存，不落浏览器存储；生产入口使用 HTTPS，不显示存储地址或原始异常。
+
+任务状态来自持久化接口，活动轮询 2 秒、隐藏页面 30 秒，终态停止，导航取消。写操作携带原版本，冲突要求重新读取审阅。人工覆盖需明确确认与当前文档版本；批量 ID 与 applyAll 是分开的显式操作。原文件授权下载；检索展示可用来源，不伪造页码，不生成问答。可选关键词/精排根据能力接口展示，实际失败按响应显示降级。
+
+本轮管理台、必要部署与文档已完成，不更改后端事务、迁移、索引、认证或模型供应商协议。标准 npm ci、类型检查、生产构建与19项请求边界测试通过；35项浏览器/HTTP场景（34真实、1前端网络模拟）通过，详见 PROGRESS 与 WEB_VALIDATION.json。上述前端交付验收使用模型协议桩；后续本机已接通真实百炼 text-embedding-v4 / 1024 维，成功处理用户原失败文档（22 个 Chunk）并验证向量检索，详见 PROGRESS。本机功能连通不代表供应商质量评估或负载验收，Nginx/应用镜像及其他外部模型能力仍未计作已通过。
+
+## 第 10 阶段原交付：P9 API 管理入口（2026-10-25，历史记录）
 
 实际复核：web只有.gitkeep，没有前端框架、路由、组件库或构建配置。本轮采用约定的无前端交付：完整OpenAPI、Postman调用集合、API管理导航和可执行HTTP验收，不引入新的前端服务。用户进一步明确不建设复杂用户管理；继续沿用服务端账号映射与tenant/owner私有归属，不增加用户/角色/租户CRUD。operator仅为现有账号的可选服务端布尔配置，默认false，用于保护全局指标；不改变业务资源权限。
 

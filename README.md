@@ -10,7 +10,7 @@ services/
   ai-service/          WebFlux AI 服务（对话、视觉、向量、重排与流式响应）
   backend/             Spring MVC 业务后端（知识库、S3上传、可靠入库、检索、人工维护与持久化删除、pgvector/Flyway）
   agent-service/       FastAPI + LangGraph 服务目录
-web/                   前端占位目录（当前交付API管理入口、OpenAPI和调用集合）
+web/                   React + Ant Design + Vite 知识库管理台
 ```
 
 ## Java 构建
@@ -44,4 +44,4 @@ Python 3.12+，从仓库根目录运行 `pip install -e "./packages/python-commo
 
 AI 服务的启动、模型配置、HTTP/SSE 和 Python 调用示例见 [AI 服务说明](services/ai-service/README.md)。无需供应商密钥时，可用 `AI_ENABLED=false` 启动健康检查与工具接口。
 
-知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，当前阶段与验证结果见 [进度](docs/knowledge-base/PROGRESS.md)。认证后的管理入口为`GET /api/knowledge/management`，一键验收为`python scripts/knowledge-base/delivery_acceptance.py`；`agent-service`和`web`仍为目录占位，不引入独立用户管理。
+知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，当前阶段与验证结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 管理台启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173，使用已有账号登录，不新增用户管理。原 API 导航为`GET /api/knowledge/management`，HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`；`agent-service`仍为目录占位。

@@ -1,5 +1,16 @@
 name: rag-knowledge-base
 services:
+  web:
+    profiles: ['web']
+    build:
+      context: ../../web
+      dockerfile: Dockerfile
+    ports:
+      - '127.0.0.1:8088:80'
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
   elasticsearch:
     profiles: ['keyword']
     image: ${KB_ES_IMAGE:-docker.elastic.co/elasticsearch/elasticsearch:8.19.17}

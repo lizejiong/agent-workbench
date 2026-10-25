@@ -1,12 +1,68 @@
 # 知识库进度
 
+## 管理台提交整理（2026-10-25）
+
+按用户要求将 React/Ant Design/Vite 管理台、同源代理与部署配置、四份知识库文档及 WEB_VALIDATION 记录整理为本地提交。核对 26 个前端文件的 SHA-256，全部与已通过 19 项测试、类型检查/生产构建和 35 项浏览器/HTTP 场景的验收版本一致，本轮复用这些验证结果，不重复运行相同测试。另记录本机真实百炼 Embedding、22 个 Chunk 入库与向量检索成功的结果。
+
+补充 .playwright-mcp 临时目录忽略规则。对待提交文件按本地实际配置的密钥/密码逐项检查，无泄露匹配；.env、运行日志/回执、依赖、dist 和浏览器产物均排除，git diff --check 通过。无 Java 业务或数据库迁移修改；本次仅本地提交，未推送远程。
+
+## 本机开发环境启动（2026-10-25）
+
+**当前结果（用户再次更新密钥后）：已恢复真实模型调用并完成原文档入库。** 从本地配置重启 AI 服务（PID 27896），健康检查 UP；真实百炼 text-embedding-v4 返回 1024 维向量。通过既有 retry API 创建任务 7d400a4b-d37d-4418-a8f4-d9a2cd90f621，首次执行成功，FETCH/PARSE/SPLIT/EMBED/PERSIST/PUBLISH 六阶段全部 SUCCEEDED；54 个结构块生成 22 个 Chunk、22 个向量，激活 generation=2，文档状态 READY。
+
+通过管理台同源代理对该文档执行真实向量检索，topK=3 返回 3 条证据，全部属于指定知识库/文档及 generation=2，分数类型 COSINE_SIMILARITY，首条约 0.9073。请求验证使用该文档首个 Chunk 的短文本片段，未输出正文或密钥。原文件复用，不重新上传；历史失败任务保留，新任务已成功。脱敏本机回执在 .cache/local-runtime/reprocess-receipt.json（Git 忽略）。本轮无业务代码改动；真实验证覆盖 Embedding、入库和向量检索，不扩展为 Rerank/VLM/MinerU 或关键词服务验收。以下记录保留首次启动及认证故障的过程。
+
+按用户要求实际启动管理台（127.0.0.1:5173）、backend（8080）、ai-service（8081）、Compose PostgreSQL/pgvector（54329）和 MinIO（9000/9001），保留服务运行。使用现有构建产物，无业务代码修改。首次创建独立持久卷，Flyway V1–V8 全部迁移成功，私有原文件 bucket 初始化成功。
+
+真实检查：前端 HTTP 200；backend/AI 健康状态 UP；通过前端代理认证访问 management、知识库分页、模型目录均 200；未认证知识库请求 401；真实浏览器显示“知识工作台”登录页。服务只监听本机。账号 kb-admin，随机密码及存储/数据库凭据保存于 Git 忽略的 deploy/knowledge-base/.env；运行日志与本机启动辅助文件位于 .cache/local-runtime，均未纳入版本库。
+
+当前没有真实供应商密钥，ai-service 明确以 AI_ENABLED=false 启动；管理和上传可用，向量化/检索尚不可用。需要在本地为 AI 服务配置 BAILIAN_API_KEY、AI_ENABLED=true 后重启该服务；没有使用模拟 Embedding 代替真实服务。关键词、远程来源白名单、MinerU/VLM 保持未配置状态。本次只验证启动/代理/鉴权，不重跑此前功能验收。
+
+后续入库故障排查：backend/AI 健康状态仍为 UP；真实模型描述接口返回 qwen-embed / text-embedding-v4 / 1024 维、active=false。本地 AI_ENABLED=false 且 BAILIAN_API_KEY 为空。实际入库 FETCH、PARSE、SPLIT 均通过，EMBED 阶段以 KB_MODEL_UNAVAILABLE 失败，达到 3 次尝试上限。需用户在本地配置真实百炼密钥并启用 AI 后重启 AI 服务，再重试失败任务；原文件已保存，无需重新上传。本轮未修改业务代码或模型绑定，未声称真实 Embedding 联调成功。
+
+用户要求保存配置并重启后，已将本地 .env 的 AI_ENABLED 保存为 true。再次核对该文件与进程/用户/系统环境变量，BAILIAN_API_KEY、DASHSCOPE_API_KEY 均未配置；重启前仍需要用户在本地填入真实密钥。未使用占位密钥启动；未完成 AI 重启或真实向量化验证。此项属于待填写配置，覆盖上文首次启动时的 AI_ENABLED=false 文件状态。
+
+用户填写密钥后，已确认 AI_ENABLED=true、密钥非空，停止本项目原 AI 进程并从本地配置重新启动（PID 28024），健康检查 UP，qwen-embed 描述 active=true、1024 维。随后用无敏感内容的短文本真实调用 /ai/embed，收到 502/AUTH；直接核对当前配置的百炼北京 embeddings 接口，收到 401/invalid_api_key（Incorrect API key provided）。已排除配置未读取、引号/空白及行尾注释问题；密钥未输出到聊天或日志。模型描述 active=true 仅说明本地配置启用，不代表真实认证成功。
+
+当前仍需核对密钥来源/有效性及其地域与 Base URL 是否匹配（当前 dashscope.aliyuncs.com）。官方排查依据：https://help.aliyun.com/zh/model-studio/error-code#apikey-error 。原入库任务仍 FAILED/EMBED、attempts=3；认证恢复前未再次提交，原文件保留。前后端和 AI 进程继续运行，真实向量化与入库恢复尚未完成，未修改业务代码或嵌入空间。
+
+## 当前交付：React / Ant Design / Vite 管理台（2026-10-25，已完成）
+
+按用户明确要求补图形入口。已重读 PLAN/PROGRESS 并核对实际业务接口；web 原为占位目录，后端已有完整管理能力。本轮复用既有 Basic、服务端 tenant/owner、版本 CAS、持久化任务、来源下载、检索与清理，不改业务表/迁移/模型协议，不建设用户或角色管理。
+
+已实现库搜索/分页/创建/重命名/删除、模型选择与文档数；文档上传/URL 导入/状态/最近入库时间/启停/删除与清理回执；解析/分块配置；任务阶段/耗时/次数/重试/取消；Chunk 展示正文/embeddingText/来源/新增编辑删除/独立及批量启停；URL Cron/时区/手动刷新与历史；范围检索与真实策略/通道/精排降级/分数/原文件。页面任务状态由后端读取，隐藏时降频，离开取消。人工覆盖明确确认；空选择不变全量，版本冲突不自动覆盖。
+
+新增 web 构建、请求边界测试、Nginx/Dockerfile、Compose 可选 web profile；Node 20.19 / React19 / AntD6 / Vite8 / TS7，完整锁文件安装。Basic 凭据仅内存；同源代理；不展示 objectKey、内部地址、异常堆栈或整篇日志。
+
+本轮已完成，实测记录见 [WEB_VALIDATION.json](WEB_VALIDATION.json)。无后端业务或数据库迁移变更；以先前交付的真实 JAR 连接全新隔离 PG/pgvector、MinIO、ES 做浏览器联调。Embedding/Rerank/VLM/MinerU 为明确的本地 HTTP 协议桩，不把它们当真实供应商质量验证。
+
+| 本轮检查 | 真实结果 |
+|---|---|
+| 标准锁文件安装 | npm ci --offline --registry=https://registry.npmjs.org --no-audit --no-fund --prefix web 成功，125 包；无项目级 legacy-peer-deps 配置，npm ls --depth=0 成功 |
+| 前端测试 | Vitest 19 项全部通过：凭据/同源路径、重定向、超时覆盖响应体、取消、错误脱敏、401、multipart 幂等键、完整分页选择与原文件名 |
+| 类型与生产构建 | npm run build（先 tsc --noEmit）成功，3111 模块；路由与供应商分包，最大 JS 258.23 kB，无超大包警告 |
+| 真浏览器/HTTP | 35 项场景：33 项真实页面操作、1 项直接 HTTP 未授权检查、1 项前端分包下载失败模拟；最终新构建非预期 JS 错误 0 |
+| 管理主链路 | 页面建库/服务端模型选择、上传、6 阶段持久任务、5 个 Markdown Chunk、授权下载；原文件逐字节一致，保留原始扩展名 |
+| 人工维护 | 编辑后真实检索出现新正文；新增/删除正确；显式单 ID 批量；空选禁用按钮；文档重启不恢复独立禁用块 |
+| 版本与失败 | 重新入库取消不提交，确认请求带当前版本；generation2 无旧块；维度故障失败保留2，页面重试成功发布4；旧表单409后需显式重新载入；隐藏 TEXT 解析器配置保留 |
+| 刷新 | URL 导入接同一持久任务；非法 Cron400、Asia/Shanghai 定时保存含 nextRunAt；304 跳过，内容变化发布2并更新头部与历史 |
+| 降级 | 真实暂停 ES 时返回 VECTOR/失败通道；精排 HTTP 桩 SHORT 时显示 FALLBACK_FUSION，不混淆各分数 |
+| 生命周期与认证 | 两份文档删除后不可检索，清理回执 SUCCEEDED；旧远程对象/ES 清理完成后空库可删除；私有深链404、原文件未认证401、错误密码401；退出/刷新清空页面，浏览器存储为空 |
+| 显示与部署 | Edge 生产预览与 390px 移动布局检查通过，无页面横向溢出；Compose web+keyword config --quiet 成功；容器镜像未构建/启动 |
+
+截图已实际查看：output/playwright/web-documents-desktop.png、web-document-desktop.png、web-document-mobile.png、web-login-desktop.png（本地验收产物，Git 忽略）。详细请求覆盖、样例分数/来源、文件哈希、源文件/构建指纹在 WEB_VALIDATION。临时样例 UUID 不代表持久部署数据，测试设施完成后退出。
+
+开发中发现并修正：弹窗 Form 在挂载前初始化；AntD 供应商分包执行顺序；旧页面引用已替换分包时的空白页（增加明确刷新/重新登录兜底）；已打开任务页的 job 参数切换及过快完成时头部不刷新。初始失败与中间检查不计作最终通过；最终安装后重新运行测试/构建，并验证新构建的 TEXT 配置保留与模拟兜底。
+
+本轮未重跑原全量250项 Maven 回归（Java/迁移没有修改），以原已验收 JAR 完成上述实际 HTTP 集成。真实模型供应商、生产 TLS/来源白名单、对象存储策略与 Nginx/应用镜像启动仍需部署环境联调；未做负载测试。本版继续使用单 pgvector，不新增 IAM、用户管理或回答生成。
+
 ## 提交整理（2026-10-25）
 
 按用户“提交改动，去掉无关代码”的要求核对全部未提交内容：后端、AI嵌入模型身份/版本联动、迁移、部署、验收脚本和文档均属于知识库交付；保留此前已有公共模块和必要测试样例，没有新增用户管理或无关业务。删除4个Java文件中的6处无用导入；与第10阶段已验证的247个构建输入比较，差异仅为这些导入声明，业务逻辑未变。
 
 清理后根项目mvn -B -DskipTests verify于2026-10-25 13:33:27 +08:00成功，完成编译、测试源码编译及打包；本次未重复执行上轮已完成的250项回归。Python/JSON/Markdown、暂存差异及提交范围再次检查；缓存、JAR、IDE文件和本地凭据均被排除。原验收结果保留，清理后的构建信息与当前JAR哈希追加到STAGE10_VALIDATION.cleanupFollowup。知识库交付整理为本地Git提交，未向远程推送；镜像及真实模型供应商联调限制继续有效。
 
-## 当前工作：第 10 阶段，API 管理入口与整体交付（2026-10-25，已交付；镜像联调受外部网络限制）
+## 原第 10 阶段交付：API 管理入口与整体交付（2026-10-25，已交付；镜像联调受外部网络限制）
 
 已按本轮要求重读方案/进度并核对代码。web仍为占位目录，使用约定的API/OpenAPI/Postman/验收脚本交付，不另建前端框架。已采纳用户补充：不建设复杂用户管理；现有服务端账号与私有归属继续复用，仅可选operator标志保护全局指标，不授予其他用户数据权限。
 
@@ -32,7 +88,7 @@
 
 使用：按RUNBOOK配置既有DB/S3/AI与服务端私有账号，启动JAR或Compose；认证GET /api/knowledge/management，下载OpenAPI/集合；执行python -X utf8 scripts/knowledge-base/delivery_acceptance.py。关键词、精排、OCR与远程来源按实际配置启用，未配置能力明确跳过或报错。无IAM建设、无用户管理页面；KB_OPERATOR默认false，仅运维指标使用。后续提交整理见本页顶部记录，不自动扩展后续功能。
 
-剩余外部依赖：真实供应商密钥/固定模型质量、生产来源DNS/出口白名单、生产S3保留策略与ES集群配置尚未联调。应用基础镜像首次拉取发生unexpected EOF（期望47519993字节，仅收到44334499），第二次有界重试362秒仍未完成，已只停止本任务下载进程；应用镜像尚未构建/启动，不能宣称容器端到端通过。Compose配置与实际JAR已验收，网络恢复后按RUNBOOK重试镜像，或先部署已验证JAR。最终状态记录在STAGE10_VALIDATION。当前单pgvector(1024)精确检索，大规模性能、跨不同嵌入空间融合和独立图形管理界面不在本版完成范围；审计/任务保留归档由运维制定。
+剩余外部依赖：真实供应商密钥/固定模型质量、生产来源DNS/出口白名单、生产S3保留策略与ES集群配置尚未联调。应用基础镜像首次拉取发生unexpected EOF（期望47519993字节，仅收到44334499），第二次有界重试362秒仍未完成，已只停止本任务下载进程；应用镜像尚未构建/启动，不能宣称容器端到端通过。Compose配置与实际JAR已验收，网络恢复后按RUNBOOK重试镜像，或先部署已验证JAR。最终状态记录在STAGE10_VALIDATION。原交付的图形界面已由顶部 Web 工作补齐。单 pgvector(1024) 精确检索的大规模性能和跨不同嵌入空间融合仍不在完成范围；审计/任务保留归档由运维制定。
 
 中间发现并已修复：可选ES依赖触发Boot默认localhost健康探测，已排除多余客户端自动装配；多构造器配置绑定增加ConstructorBinding。最终回归已覆盖，未将之前中断/失败的构建计作成功。
 

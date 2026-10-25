@@ -1,8 +1,46 @@
 # 知识库运行手册（第 10 阶段交付）
 
+## Web 管理台（2026-10-25）
+
+已补 React + Ant Design + Vite 管理台；复用现有账号，不建设用户/角色管理。先启动下文后端设施和服务，再从仓库根目录执行：
+
+```powershell
+cd web
+npm ci --registry=https://registry.npmjs.org
+$env:KB_BACKEND_ORIGIN='http://127.0.0.1:8080'
+npm run dev
+```
+
+访问 http://127.0.0.1:5173，使用服务端已有账号登录。KB_BACKEND_ORIGIN 是 Vite 服务端环境变量，不以 VITE_ 注入浏览器；API 同源代理，不放宽 CORS。账号密码只存本次内存，刷新/退出/401 后需重新登录；生产必须使用 HTTPS。不要把真实密钥写进 .env.example 或前端构建参数。
+
+```powershell
+# 在 web/ 执行
+npm run check
+npm test
+npm run build
+npm run preview
+```
+
+preview 在 4173，仅用于本地验证 dist，仍通过同源代理访问后端。Node 使用 20.19+ 的 20.x 或 22.12+；完整操作/部署约定见 [Web 说明](../../web/README.md)。生产可将 dist 部署到既有 Nginx 并使用 web/nginx.conf；需调整 upstream 为部署内网地址，保留认证、安全头与代理预算。
+
+可选容器入口（仓库根目录；先配置既有 Compose .env）：
+
+```powershell
+docker compose --env-file deploy/knowledge-base/.env -f deploy/knowledge-base/compose.yml --profile web config --quiet
+docker compose --env-file deploy/knowledge-base/.env -f deploy/knowledge-base/compose.yml --profile web up -d --build
+```
+
+访问 http://127.0.0.1:8088，web profile 同源转发到 backend:8080。可合并 --profile keyword；服务是否启用仍以后台 capabilities 和真实返回策略为准。Nginx 文件上限 21 MiB 含 multipart；改变 KB_MAX_UPLOAD_BYTES、KB_MAX_UPLOAD_SIZE、KB_MAX_REQUEST_SIZE 时同步调整入口。镜像构建与启动的实际验证范围见最新 PROGRESS，配置可解析不等于镜像已验收。
+
+实际本地验证：标准锁文件 npm ci、npm ls、19项测试、TypeScript/生产构建、35项浏览器/HTTP场景及 Compose web+keyword 配置检查通过，见 [WEB_VALIDATION.json](WEB_VALIDATION.json)。后端 JAR/PG/MinIO/ES 与远程下载实际运行，模型为明确协议桩；没有运行生产 Nginx/应用镜像或真实供应商质量验收。临时测试设施退出，示例数据不常驻。
+
+发布新 dist 时对 index.html 保持不缓存或每次验证，并保留前版带哈希 assets 一段时间，避免活跃页面请求旧分包失败。界面遇页面资源更新/加载失败会显示“刷新并重新登录”，不会展示原始错误堆栈。供应商分包保留 [Rolldown 的初始化执行顺序](https://rolldown.rs/reference/OutputOptions.codeSplitting)，修改构建配置后应重新验证生产预览，而不只运行开发服务器。
+
+浏览器验收顺序：登录→建库（服务端模型）→上传→提交入库→任务阶段→检索证据→授权原文件→编辑 Chunk 后重新检索→独立禁用 Chunk→文档禁用/重启（独立禁用仍保留）→重入库覆盖确认→URL 导入/刷新→删除及资源清理。任务页面提供真实阶段/次数/耗时/错误码与重试；关键词失败可查询状态并重试。409 应先刷新审阅，不自动重放写入；失败清理/卡住任务仍可使用后文持久化恢复命令。
+
 ## 第 10 阶段：部署与 API 管理入口
 
-仓库没有前端构建，本版采用API管理交付。入口GET /api/knowledge/management，契约GET /openapi/knowledge-base.yaml，52条调用集合GET /openapi/knowledge-base.postman_collection.json，均需现有Basic认证。将集合导入Postman，在本地私有环境填写baseUrl/username/password；按操作顺序选择请求，不整份盲跑包含删除/覆盖的集合。凭据不导出、不提交。无需安装React、Node或新增IAM。
+原 API 管理交付继续可用；新 Web 管理台启动见上节。入口GET /api/knowledge/management，契约GET /openapi/knowledge-base.yaml，52条调用集合GET /openapi/knowledge-base.postman_collection.json，均需现有Basic认证。将集合导入Postman，在本地私有环境填写baseUrl/username/password；按操作顺序选择请求，不整份盲跑包含删除/覆盖的集合。凭据不导出、不提交。仅部署 API 时无需 Node；Web 构建要求见上节。不新增 IAM。
 
 推荐启动顺序（仓库根目录，Java17、Docker和Maven可用）：
 
@@ -21,6 +59,8 @@ Invoke-RestMethod http://127.0.0.1:8080/actuator/health
 ```
 
 不要覆盖已有.env；上面Copy-Item只用于首次初始化。AI供应商密钥只注入AI进程，默认绑定的百炼模型不能用另一供应商同维度向量代替。AI受控内网/网关部署、固定模型与配置修订、原生精排协议见[AI服务说明](../../services/ai-service/README.md)。不配置真实模型可启动管理/上传，但入库/查询会明确失败，不能据此称端到端已完成。直接Java启动backend时不会自动读取Compose的.env，注入方式见后文“迁移、本地设施与启动”。
+
+模型认证排查：AI 健康检查 UP 仅证明进程可访问；模型描述 active=true 仅证明本地已启用且密钥非空。应通过 /ai/embed 使用不含敏感信息的短文本验证真实认证和 1024 维响应。若返回 AUTH，核对供应商；百炼 401/invalid_api_key 需检查密钥完整性、有效性、所属地域与 Base URL，参见[官方错误码](https://help.aliyun.com/zh/model-studio/error-code#apikey-error)。当前默认 dashscope.aliyuncs.com 对应北京，不能直接使用其他地域或其他供应商的密钥。将正确密钥保存在本地环境配置并重启 AI 服务后，再重试失败入库任务；原文件无需重新上传。不要为排查输出密钥、完整向量或文档正文，也不要更换已有库的嵌入空间来规避认证问题。
 
 PG17.11/pgvector0.8.7、MinIO发布版本、Java17与Boot3.5.16保持兼容。Compose的ES为可选keyword profile，默认关闭；启用步骤在下一节。普通PDF/Office/Excel/CSV本地解析无需外部OCR；扫描PDF的fast没有OCR，MinerU/VLM须另外配置，见[格式矩阵](FORMATS.md)。当前只交付检索证据，没有新增answer接口。
 

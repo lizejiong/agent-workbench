@@ -3,6 +3,9 @@
 **/target/
 **/node_modules/
 **/dist/
+/output/playwright/
+/.playwright-cli/
+/.playwright-mcp/
 
 # Local environment and credentials
 .env

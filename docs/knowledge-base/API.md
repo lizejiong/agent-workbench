@@ -1,8 +1,31 @@
 # 知识库 API 契约
 
-## L. 第 10 阶段：API 管理入口、审计与指标（当前有效）
+## M. Web 管理台接入（2026-10-25，当前）
 
-项目没有前端应用。本次管理入口为GET /api/knowledge/management（认证后返回Result.data）：delivery=API_ONLY、OpenAPI/调用集合路径、capabilities/知识库入口、真实ingestionDefaults、工作流和冲突提示。它不返回S3/ES/模型内部地址或密钥，不创建用户管理功能。
+没有新增业务 API 或认证协议。Web 使用以下已有契约；原 OpenAPI/Postman 请求仍兼容。/api/knowledge/management 的历史 delivery=API_ONLY 字段保持兼容，它描述该 API 导航，不用于探测独立 Web 是否已部署。开发入口 http://127.0.0.1:5173/#/kbs，生产示例 http://127.0.0.1:8088/#/kbs。Hash 只用于浏览器路由，代理不把它传给服务端。
+
+| 页面 | 主要接口 |
+|---|---|
+| 登录 | GET /api/knowledge/management，内存 Basic；401 回登录 |
+| /#/kbs | /api/kbs CRUD、/api/kb-models 服务端模型选择 |
+| /#/kbs/{id} | 文档分页、multipart 上传、import-url、授权 file、删除回执 |
+| /#/documents/{id}?tab=config | 文档 PATCH version/name/ingestionSpec |
+| ?tab=chunks | 当前代 Chunk 分页及 POST/PATCH/DELETE、独立启停、显式 batch-enabled |
+| ?tab=jobs&job={jobId} | 提交/分页 job、详情/stages、retry、cancel |
+| ?tab=refresh | URL 文档 schedule GET/PUT、refresh、refresh-runs |
+| /#/search?kb={id} | search-capabilities、POST /api/knowledge/retrieve |
+
+请求以 X-Request-Id 关联，标准 Result.data 解包；错误只展示友好说明、code、requestId，隐藏原始服务 message/堆栈。请求重定向被拒绝，凭据不发送到响应提供的 URL；file 按 documentId 构造已有授权接口下载，不展示 objectKey。上传/导入的 Idempotency-Key 在同一对话框相同提交内容重试时复用；任务 requestId 为 UUID，服务端仍负责最终幂等与文档并发约束。
+
+人工维护带版本 CAS；冲突不静默重放。重新入库/刷新检测 hasManualChanges 后展示覆盖说明，并显式发送 confirmOverwriteEdited 与 expectedDocumentVersion。Chunk 空选项不触发批量操作；applyAll 是另一个需确认的按钮，不与 chunkIds 同传。文档启停不批量改写 Chunk 状态。
+
+检索 UI 显示 strategy、channels、rerankStatus、refillLimitReached；scoreType、fusionScore、rerankScore、channelScores 保持各自含义。仅按来源真实存在的章节/页码/行/sheet 字段显示定位。范围选择器请求全部分页，上限 100 页后明确报错；UI 默认上限 16 库/100 文档/topK50/问题4000字符，服务端配置更严格时以校验响应为准。
+
+Web 接入实测见 [WEB_VALIDATION.json](WEB_VALIDATION.json)：19项前端测试、35项浏览器/HTTP场景；未新增后端业务或迁移。
+
+## L. 第 10 阶段：API 管理入口、审计与指标
+
+原 API 管理交付保留。独立 Web 管理台见上节；API 导航仍为GET /api/knowledge/management（认证后返回Result.data）：delivery=API_ONLY、OpenAPI/调用集合路径、capabilities/知识库入口、真实ingestionDefaults、工作流和冲突提示。它不返回S3/ES/模型内部地址或密钥，不创建用户管理功能。
 
 | 方法与路径 | 返回与权限 |
 |---|---|
@@ -17,7 +40,7 @@
 
 KnowledgeBase响应新增documentCount：当前未删文档数量，包含被禁用文档。Document响应新增lastIngestedAt：上次成功发布generation的UTC时间，尚未成功则null，人工修改/失败入库不推进。其他字段和权限契约不变。
 
-调用集合中的kbVersion/documentVersion/scheduleVersion按JSON数字传递，成功响应更新变量；本地上传先选文件。先GET最新文档版本再维护，409时重新读取；人工重建需查看覆盖范围，再显式确认。保持jobRequestId不变可演示提交幂等，新任务手动更换。异步进度只读job/stages，建议活动时每2秒查询，终态停止、后台/隐藏时降至30秒；本项目没有用前端定时器伪造进度的页面。
+调用集合中的kbVersion/documentVersion/scheduleVersion按JSON数字传递，成功响应更新变量；本地上传先选文件。先GET最新文档版本再维护，409时重新读取；人工重建需查看覆盖范围，再显式确认。保持jobRequestId不变可演示提交幂等，新任务手动更换。异步进度只读job/stages，建议活动时每2秒查询，终态停止、后台/隐藏时降至30秒；Web 管理台按此读取真实状态，不计算虚构进度百分比。
 
 operator仅由服务器kb.security.accounts[].operator或示例单账号KB_OPERATOR配置，默认false；请求不能获得该权限。该标志只允许读全局指标，库/文档/审计仍受原tenant+owner校验。全局指标没有普通用户入口，/actuator/env、configprops、loggers、heapdump等路由均拒绝，不新增IAM或账号CRUD。
 

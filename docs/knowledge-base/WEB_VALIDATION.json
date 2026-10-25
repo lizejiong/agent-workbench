@@ -1,0 +1,260 @@
+{
+  "completedAt": "2026-10-25T15:25:16+08:00",
+  "baseCommit": "dd6eca4",
+  "scope": "React / Ant Design / Vite management console; backend business code and migrations unchanged",
+  "runtime": {
+    "node": "20.19.5",
+    "npm": "10.8.2",
+    "react": "19.3.1",
+    "antd": "6.6.7",
+    "vite": "8.3.5",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  },
+  "checks": {
+    "cleanInstall": {
+      "command": "npm ci --offline --registry=https://registry.npmjs.org --no-audit --no-fund --prefix web",
+      "exitCode": 0,
+      "packagesAdded": 125,
+      "notes": "Standard peer resolution; bootstrap-only network workaround is not required by project config or lockfile."
+    },
+    "dependencies": {
+      "command": "npm ls --depth=0",
+      "exitCode": 0
+    },
+    "unitTests": {
+      "command": "npm test",
+      "passed": 19,
+      "failed": 0
+    },
+    "productionBuild": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "typecheck": "tsc --noEmit passed",
+      "transformedModules": 3111,
+      "largestJsBytes": 258231
+    },
+    "compose": {
+      "profiles": [
+        "web",
+        "keyword"
+      ],
+      "configExitCode": 0,
+      "imageBuildAndContainerStart": "NOT_RUN"
+    }
+  },
+  "browser": {
+    "tool": "Playwright CLI; headless Microsoft Edge",
+    "serving": "Vite production preview (4173); development upload flow also verified on 5173",
+    "scenarios": 35,
+    "realUiAndHttpScenarios": 34,
+    "simulatedScenarios": 1,
+    "simulation": "Frontend JavaScript chunk request aborted to verify error boundary and explicit refresh/re-login",
+    "finalUnexpectedJavaScriptErrors": [],
+    "checks": [
+      "production bundle renders and authenticated document read succeeds",
+      "display text differs from structured embedding text with chapter path",
+      "manual chunk content and vector updated through UI",
+      "UI scoped hybrid retrieval returns edited content with source and rerank scores",
+      "authorized original file downloaded by authenticated UI",
+      "empty batch disabled; disabled manual chunk excluded from real search",
+      "document disable excludes all; re-enable preserves independent chunk flag",
+      "selected batch posts exactly one chunk ID without applyAll",
+      "re-ingestion cancel does not submit; explicit confirmation publishes generation 2",
+      "successful re-ingestion only returns generation 2",
+      "failed dimension ingestion shows durable failed stage and clear error code in UI",
+      "failed re-ingestion keeps generation 2 searchable",
+      "UI retry after restoring model publishes new generation",
+      "rerank protocol failure displays explicit fallback and preserves fusion evidence",
+      "real ES outage degrades to VECTOR with channel failure displayed",
+      "URL import downloads and submits the same durable ingestion pipeline",
+      "invalid cron reports friendly error; valid explicit timezone schedule stores next run",
+      "manual refresh receives HTTP 304 and displays skipped without re-ingestion",
+      "changed remote file publishes generation 2 and UI refreshes header and history",
+      "390px mobile document layout has no horizontal page overflow",
+      "manual chunk add and delete update both index and count",
+      "authorized download preserves original filename and extension",
+      "invalid overlap blocked; saved config changes revision without silently re-ingesting",
+      "stale form version returns 409 and requires explicit reload before saving",
+      "duplicate KB name rejected; rename and name filter work",
+      "nonempty KB delete rejected with clear conflict",
+      "both UI document deletions immediately hide records and durable cleanup succeeds",
+      "deleted documents return no search evidence",
+      "deleted resource deep link returns safe 404 without document content",
+      "empty KB deletes after all durable cleanup including old remote objects completes",
+      "logout removes private UI; incorrect server credentials return 401 with safe error",
+      "reload requires re-authentication and browser storage stays empty",
+      "final bundle retains existing TEXT parser and schema revision when updating visible settings",
+      "simulated frontend chunk-download failure shows reload/login fallback instead of blank page",
+      "unauthenticated original-file endpoint returns 401 before content access"
+    ],
+    "sampleSearch": {
+      "query": "PostgreSQL database WEB-MANUAL-20261025",
+      "strategy": "KEYWORD+VECTOR",
+      "rerankStatus": "APPLIED",
+      "returned": 5,
+      "chunkId": "fac4bdd6-ada7-3725-ba7d-b1d2bd6ffd46",
+      "scoreType": "RRF",
+      "channels": [
+        {
+          "channel": "VECTOR",
+          "status": "SUCCEEDED",
+          "candidates": 5,
+          "errorCode": null
+        },
+        {
+          "channel": "KEYWORD",
+          "status": "SUCCEEDED",
+          "candidates": 3,
+          "errorCode": null
+        }
+      ]
+    },
+    "mobile": {
+      "width": 390,
+      "scroll": 390
+    },
+    "browserStorage": {
+      "local": 0,
+      "session": 0
+    },
+    "cleanupReceipts": [
+      {
+        "id": "913a1566-d151-42ca-b2e0-a1d1341de727",
+        "documentId": "221bb5c6-0f18-4d23-8246-81df3e7365d9",
+        "status": "SUCCEEDED"
+      },
+      {
+        "id": "87a2562d-728b-4d0d-ac1d-7ce6eee72533",
+        "documentId": "61190b72-e018-4634-91b6-b3b3db325cd6",
+        "status": "SUCCEEDED"
+      }
+    ],
+    "responseCoverage": [
+      "200 /api/knowledge/management",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6",
+      "200 /api/knowledge/search-capabilities",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/keyword-index",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/chunks",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/chunks/7cffba13-735e-33c3-bab1-c4dc255ef2d4",
+      "200 /api/kbs",
+      "200 /api/kbs/64deb124-72d2-42fb-9f70-b0f23c91df33/documents",
+      "200 /api/knowledge/retrieve",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/file",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/chunks/7cffba13-735e-33c3-bab1-c4dc255ef2d4/enabled",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/enabled",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/chunks/batch-enabled",
+      "202 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/ingestion-jobs",
+      "200 /api/ingestion-jobs/7fc2715c-3415-4974-a147-6ce478f66854",
+      "200 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6/ingestion-jobs",
+      "200 /api/ingestion-jobs/7fc2715c-3415-4974-a147-6ce478f66854/stages",
+      "200 /api/ingestion-jobs/b91c59af-4346-461d-bac4-b96da25e4d5b",
+      "200 /api/ingestion-jobs/b91c59af-4346-461d-bac4-b96da25e4d5b/stages",
+      "202 /api/ingestion-jobs/b91c59af-4346-461d-bac4-b96da25e4d5b/retry",
+      "200 /api/ingestion-jobs/88aea583-d124-4eb6-990c-9d99cf0997d2",
+      "200 /api/ingestion-jobs/88aea583-d124-4eb6-990c-9d99cf0997d2/stages",
+      "200 /api/kbs/64deb124-72d2-42fb-9f70-b0f23c91df33",
+      "200 /api/knowledge/formats",
+      "202 /api/kbs/64deb124-72d2-42fb-9f70-b0f23c91df33/documents/import-url",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/keyword-index",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/chunks",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/refresh-schedule",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/refresh-runs",
+      "400 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/refresh-schedule",
+      "202 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/refresh",
+      "201 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/chunks",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/chunks/cfa69f5e-988f-398b-93c9-f14dc83ba287",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/file",
+      "200 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9/enabled",
+      "409 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9",
+      "200 /api/kb-models",
+      "409 /api/kbs",
+      "409 /api/kbs/64deb124-72d2-42fb-9f70-b0f23c91df33",
+      "202 /api/documents/221bb5c6-0f18-4d23-8246-81df3e7365d9",
+      "200 /api/document-cleanups/913a1566-d151-42ca-b2e0-a1d1341de727",
+      "202 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6",
+      "200 /api/document-cleanups/87a2562d-728b-4d0d-ac1d-7ce6eee72533",
+      "404 /api/documents/61190b72-e018-4634-91b6-b3b3db325cd6",
+      "401 /api/knowledge/management",
+      "200 /api/documents/a6240c69-ff90-4d0a-9e3b-782216c6e7b2",
+      "200 /api/documents/a6240c69-ff90-4d0a-9e3b-782216c6e7b2/keyword-index",
+      "200 /api/kbs/3b0c7f20-d619-4fd4-9a94-b5d5f22bba03",
+      "200 /api/kbs/3b0c7f20-d619-4fd4-9a94-b5d5f22bba03/documents"
+    ]
+  },
+  "services": {
+    "real": [
+      "Packaged Java backend",
+      "PostgreSQL 17 / pgvector 0.8.7",
+      "MinIO S3",
+      "Elasticsearch 8.19.17 with cjk",
+      "Controlled HTTP source with ETag/304"
+    ],
+    "localHttpFixtures": [
+      "Embedding",
+      "Rerank",
+      "VLM",
+      "MinerU"
+    ],
+    "realProviderValidation": false
+  },
+  "authorizedDownload": {
+    "byteComparison": "PASS",
+    "sha256": "7c04d54a26f1af0be04e440f7dd059bf945f1a8b002c0f12b339a4887dfcc3f2",
+    "originalFilenameAndExtension": "PASS"
+  },
+  "backend": {
+    "jarSha256": "2961bbe15ef8e35a4d090134ec86c7208f2f494194aa8d6af08a5d4c7770c362",
+    "migrations": "V1-V8 unchanged",
+    "wholeMavenSuiteRerunThisRound": false,
+    "baseline": "Prior stage 10: 250 tests, 238 passed / 12 optional skipped; this round uses that actual JAR for HTTP integration."
+  },
+  "resolvedDuringImplementation": [
+    "Form initialization before mounting",
+    "Vendor chunk initialization order; strictExecutionOrder enabled",
+    "Old client referencing removed lazy chunks during preview rebuild; explicit reload/login error boundary added and simulated",
+    "Task detail URL change and fast terminal-state refresh"
+  ],
+  "artifacts": [
+    "output/playwright/web-documents-desktop.png",
+    "output/playwright/web-document-desktop.png",
+    "output/playwright/web-document-mobile.png",
+    "output/playwright/web-login-desktop.png"
+  ],
+  "limits": [
+    "No real model-provider quality validation",
+    "Nginx and application container images not built/started in this round",
+    "No load/performance audit or new IAM system",
+    "Test fixtures and infrastructure are disposable; sample UUIDs are not persistent deployment data"
+  ],
+  "sourceSha256": {
+    "web/.dockerignore": "ac0888da44994cf4a9d9de88aaa581ceb47db2d930465a3fa0f537b4a8c9f321",
+    "web/.env.example": "63c5eb55022ef51df92eb0ca41e477b4ab869a7b5adadfafc2998b89d73a8a52",
+    "web/Dockerfile": "7c52a77314ae325ba5a746cde3f8bb054167c44c103102550e166146e6d763dd",
+    "web/index.html": "910de93948729995a355cb60bf97bfc48d26aceb5eb5fb48bf038eaf8ce76447",
+    "web/nginx.conf": "18b37f0dde83ad37b9417c522d352a4ae08cb92a9307c08d5f24fa331053378f",
+    "web/package-lock.json": "902630f212708b87120002fae71e53b9317c87e182df7c1da90d50c441756ea3",
+    "web/package.json": "61393403d318173c9a606391ac4904af7bf0135f5aed2c83f261d6b12f38983d",
+    "web/public/favicon.svg": "37d760703a1f877e3c4da6fdbb6fdb7e19aae26b53bf2f0bfaf46be8896ac577",
+    "web/README.md": "06d43e5cdab9b84ad772ca8a9f6f5e8e09eb8dedf38d2dd49a0867a158eaf35b",
+    "web/src/api.test.ts": "04a82cf941fcc4848d8443ed2a29a614fd5efbd48e7eb21de758088f7a67800c",
+    "web/src/api.ts": "ea85ff23507fe5a8adde5dc83134c8577fd6506802879fa8bd7fe9019922e8b2",
+    "web/src/App.tsx": "5048eaed73683bf48ac473809d52a91444e891fff37de5e94bee9c8433931afb",
+    "web/src/components.tsx": "d07f8a1cc418db6a57af7b1e129a2f64501c726157ca2d693c1b450e4f9f6aac",
+    "web/src/main.tsx": "a57632774ecf0c74f4af681d7159c5060dcd8b8b1d46238b45fa880583380716",
+    "web/src/pages/Chunks.tsx": "d35370358e20962a308e98646ce4ee77e23cd70a2d7c8fc89c97d5035b4752ea",
+    "web/src/pages/DocumentDetail.tsx": "9b06f80ec97061dfcb621183d51d9630438121e34491318dfda26c93b51f892c",
+    "web/src/pages/Documents.tsx": "0b6213809273ed5fbe546e5ce285c5e6d226e59e9f5e1b77dc801099853cb406",
+    "web/src/pages/Jobs.tsx": "d186a8bee3e2ef592569f921ec75f17d257880092811b335eb4f5859a9830d3e",
+    "web/src/pages/KnowledgeBases.tsx": "9312eb232a15defacb1018a76ddeaa5ec020200c5c2f225c9681561ac5574ed3",
+    "web/src/pages/Refresh.tsx": "de6badb18655328ff498d7f18a575522c24e31bfe6b1beb6f594d3be75ff6b90",
+    "web/src/pages/Search.tsx": "0d99e593ea0b4048e983538b9a8018d8c33f035c56c748bc7ff6475fd1a3d489",
+    "web/src/state.tsx": "6233ec865827ecd7bf61113ba1092008557cc2ec141c9dae0c092fbef7799b56",
+    "web/src/styles.css": "9c8c3c2b540538b96891276560898129096d6e738e13b8871112606fb6fd30db",
+    "web/src/types.ts": "b26732b5c92780a154ba57b9fb814c12e994a04bc71da8baeca6fab7211bf844",
+    "web/tsconfig.json": "32ff5192b9474f6dfc218a8ec600dba570eae1e7a7482a549a90eabd05990803",
+    "web/vite.config.ts": "76915270d6845234dbea7bef599b6a106fa870dc8358fd2352470e0aa2a23658"
+  },
+  "distIndexSha256": "3ff1f040135584448f5993f8aa13fac477f6721e93821d1a2fb5cba6f4169c0c"
+}
