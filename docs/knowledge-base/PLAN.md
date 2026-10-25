@@ -1,5 +1,7 @@
 # 知识库建设方案
 
+项目整体定位为 Agent Workbench，知识库/RAG 是其知识能力模块；本方案记录该模块的已实现能力。后续 Agent 运行时与编排使用预留的 agent-service 目录，本轮不扩展实现范围。
+
 ## 当前交付：图形管理台补齐（2026-10-25，已完成）
 
 用户明确采用 React + Ant Design + Vite，在原 web 占位目录内实现可运行管理台。复用既有 REST/Basic/tenant+owner 权限与状态机；不增加 IAM、用户 CRUD、新业务表或第二套任务状态。此前无前端的 API 交付记录作为历史保留，当前图形入口以本节及 web/README.md 为准。

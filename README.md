@@ -1,6 +1,8 @@
-# RAG Agent 项目
+# Agent Workbench
 
-当前仓库包含 Java 公共组件、Python 公共包，以及可独立运行的 Java AI 服务。
+面向智能体应用的工作台，规划涵盖模型接入、知识检索、Agent 编排、工具调用与任务执行。RAG 是其中的知识能力模块。
+
+当前已实现可独立运行的 AI 服务、知识库后端和 Web 管理台，并提供 Java/Python 公共组件。Agent 运行时与编排尚未实现，`services/agent-service` 为后续扩展预留目录。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
 
 ```text
 packages/
