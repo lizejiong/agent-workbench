@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, Button, Card, Form, Input, Space, Switch, Tabs, Tag, Typography } from 'antd';
-import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Alert, Button, Card, Collapse, Form, Input, Space, Switch, Tabs, Tag } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import { useApi, useResource } from '../state';
-import { DocumentInfo, ErrorPanel, IngestionFields, Loading, PageTitle, RefreshButton, Status, submitJob, useOperation } from '../components';
+import { DocumentInfo, ErrorPanel, IngestionFields, Loading, PageTitle, Status, submitJob, useOperation } from '../components';
 import Chunks from './Chunks';
 import Jobs from './Jobs';
 import Refresh from './Refresh';
@@ -25,19 +25,20 @@ export default function DocumentDetail() {
   const { documentId } = useParams(); const [params, setParams] = useSearchParams(); const navigate = useNavigate(); const api = useApi(); const op = useOperation();
   const resource = useResource(signal => api.get<DocumentRecord>(`/api/documents/${documentId}`, signal), [api, documentId], d => d.processStatus === 'PROCESSING');
   const doc = resource.value;
+  const tab = params.get('tab') || 'chunks';
+  const titles: Record<string, string> = { chunks: '分块管理', config: '入库配置', jobs: '入库任务', refresh: '刷新设置' };
   const toggle = () => op.run(async () => { if (!doc) return; await api.send('PATCH', `/api/documents/${doc.id}/enabled`, { version: doc.version, enabled: !doc.enabled }); resource.refresh(); }, doc?.enabled ? '文档已禁用' : '文档已启用，独立禁用的 Chunk 保持禁用');
   const ingest = () => op.run(async () => { if (!doc) return; const job = await submitJob(api, doc, op.confirm); if (job) { setParams({ tab: 'jobs', job: job.id }); resource.refresh(); } });
   const remove = async () => { if (!doc || !await op.confirm('删除文档', '将立即停止检索和刷新，使在途任务失效，并持久化清理所有版本、原文件与索引。此操作无法撤销。', true)) return; await op.run(async () => { const receipt = await api.send<Cleanup>('DELETE', `/api/documents/${doc.id}?version=${doc.version}`); navigate(`/kbs/${doc.kbId}?cleanup=${receipt.id}`); }, '文档已删除，后台将持续清理资源'); };
   return <Loading loading={resource.loading} error={resource.error} retry={resource.refresh}>{doc && <>
-    <Link to={`/kbs/${doc.kbId}`} className="back-link"><ArrowLeftOutlined /> 返回文档列表</Link>
-    <PageTitle eyebrow="DOCUMENT / WORKBENCH" title={doc.name} description={<Space wrap><Status value={doc.processStatus} /><Tag>{doc.chunkCount} 个 Chunk</Tag><Tag>{doc.sourceType === 'URL' ? '远程文档' : '本地文件'}</Tag>{doc.hasManualChanges && <Tag color="gold">含人工维护</Tag>}</Space>} actions={<><RefreshButton onClick={resource.refresh} /><Button icon={<DownloadOutlined />} disabled={op.busy} onClick={() => void op.run(() => api.download(`/api/documents/${doc.id}/file`, doc.originalFilename))}>原文件</Button><Button type="primary" disabled={!doc.enabled} loading={op.busy} onClick={() => void ingest()}>提交入库</Button></>} />
-    <ErrorPanel error={op.error} /><Card className="doc-overview"><div className="toolbar"><Space><Switch aria-label="文档启用状态" checked={doc.enabled} disabled={op.busy} onChange={() => void toggle()} /><span>{doc.enabled ? '文档已启用' : '文档已禁用'}</span></Space><Space><Typography.Text type="secondary" className="compact-code" copyable>{doc.id}</Typography.Text><Button size="small" danger disabled={op.busy} onClick={() => void remove()}>删除文档</Button></Space></div><DocumentInfo doc={doc} /></Card>
+    <PageTitle eyebrow="DOCUMENT WORKSPACE" title={titles[tab] || '文档管理'} breadcrumbs={[{ title: '知识库管理', to: '/kbs' }, { title: '文档管理', to: `/kbs/${doc.kbId}` }, { title: titles[tab] || '文档详情' }]} description={<Space wrap><span className="context-name">{doc.name}</span><Status value={doc.processStatus} />{doc.hasManualChanges && <Tag color="gold">含人工维护</Tag>}</Space>} actions={<><Button disabled={op.busy} onClick={() => void op.run(() => api.download(`/api/documents/${doc.id}/file`, doc.originalFilename))}>原文件</Button><Button type="primary" disabled={!doc.enabled} loading={op.busy} onClick={() => void ingest()}>提交入库</Button></>} />
+    <ErrorPanel error={op.error} /><div className="doc-overview"><Collapse ghost size="small" className="document-info-collapse" items={[{ key: 'info', label: '文档详情', children: <DocumentInfo doc={doc} /> }]} /><Space className="document-toggle"><Switch size="small" aria-label="文档启用状态" checked={doc.enabled} disabled={op.busy} onChange={() => void toggle()} /><span className="muted">{doc.enabled ? '参与检索' : '已停止检索'}</span><Button type="text" className="row-delete" aria-label="删除文档" icon={<DeleteOutlined />} disabled={op.busy} onClick={() => void remove()} /></Space></div>
     {!doc.enabled && <Alert showIcon type="warning" title="文档已退出检索范围。重新启用时只恢复本身仍启用的 Chunk。" />}
-    <Tabs activeKey={params.get('tab') || 'chunks'} onChange={tab => setParams({ tab })} destroyOnHidden items={[
-      { key: 'chunks', label: 'Chunk 内容', children: <Chunks doc={doc} changed={resource.refresh} /> },
+    <Tabs className="document-tabs" activeKey={tab} onChange={tab => setParams({ tab })} destroyOnHidden items={[
+      { key: 'chunks', label: `知识分块 (${doc.chunkCount})`, children: <Chunks doc={doc} changed={resource.refresh} /> },
       { key: 'config', label: '入库配置', children: <Configuration doc={doc} changed={resource.refresh} /> },
       { key: 'jobs', label: '入库任务', children: <Jobs doc={doc} changed={resource.refresh} initialJob={params.get('job') || undefined} /> },
       ...(doc.sourceType === 'URL' ? [{ key: 'refresh', label: '刷新设置', children: <Refresh doc={doc} changed={resource.refresh} /> }] : []),
-    ]} /><Keyword doc={doc} />
+    ]} />{tab === 'config' && <Collapse ghost className="keyword-details" items={[{ key: 'keyword', label: '关键词索引状态', children: <Keyword doc={doc} /> }]} />}
   </>}</Loading>;
 }

@@ -1,0 +1,128 @@
+{
+  "completedAt": "2026-10-26T22:48:19.671299+08:00",
+  "baseCommit": "ac77d512c9cfd494cb3fd80f6ba03ca2c4e293ef",
+  "scope": "Compact frontend layout, progressive disclosure for modal forms and selective icons; no backend or migration changes",
+  "checks": {
+    "typecheck": {
+      "command": "npm run build includes tsc --noEmit",
+      "result": "PASSED"
+    },
+    "unitTests": {
+      "command": "npm test",
+      "passed": 19,
+      "failed": 0,
+      "scope": "Existing API boundary suite; API implementation and tests unchanged after this run"
+    },
+    "productionBuild": {
+      "command": "npm run build",
+      "result": "PASSED",
+      "transformedModules": 3112,
+      "largestJsBytes": 258231
+    },
+    "browser": {
+      "tool": "Playwright CLI / Edge",
+      "origin": "http://127.0.0.1:5173",
+      "passedGroups": 22,
+      "behaviorChecks": [
+        "URL_MINIMAL_DEFAULT_FIELDS_AND_VISIBLE_FOOTER",
+        "COLLAPSED_SETTINGS_INCLUDED_IN_URL_REQUEST_SIMULATED_FAILURE",
+        "FAILED_REQUEST_RETAINS_INPUT_AND_IDEMPOTENCY_KEY",
+        "INVALID_COLLAPSED_SETTINGS_REVEALED_WITHOUT_REQUEST",
+        "CUSTOM_SETTINGS_AND_CHANGED_IDEMPOTENCY_KEY_SIMULATED_FAILURE",
+        "SHORT_DESKTOP_LONG_BODY_SCROLLS_WITH_FIXED_FOOTER",
+        "UPLOAD_MISSING_OR_EMPTY_FILE_REJECTED",
+        "COLLAPSED_SETTINGS_INCLUDED_IN_MULTIPART_SIMULATED_FAILURE",
+        "SHORT_MOBILE_LONG_BODY_SCROLLS_WITH_VISIBLE_ACTIONS",
+        "REOPEN_RESETS_ADVANCED_SETTINGS_AND_AUTO_INGEST",
+        "COMPACT_CHUNK_LIST_VISIBLE_ABOVE_FOLD",
+        "SELECTION_TOOLBAR_ON_DEMAND_AND_VIEW_SWITCH_PRESERVES_SELECTION",
+        "APPLY_ALL_SCOPE_EXPLICIT_AND_CANCELLED_WITHOUT_MUTATION",
+        "PREVIEW_EMBEDDING_TEXT_AND_EDITOR_STACKING_WITH_VISIBLE_FOOTER",
+        "MOBILE_CARDS_NAVIGATION_AND_CONTAINED_TABLE_OVERFLOW",
+        "LEAN_NAVIGATION_COMPACT_SIZES_SHORTCUT_AND_MEMORY_ONLY_SESSION",
+        "SIMPLIFIED_SEARCH_EMPTY_STATE_AND_PARAMETER_DEFAULTS"
+      ],
+      "finalChecks": [
+        "SERVER_MODEL_DEFAULT_AND_TEXT_ACTION_MENU_WITH_DELETE_CONFIRM_CANCELLED",
+        "SETTLED_DEFAULT_URL_MODAL_MINIMAL_FIELDS_AND_FOOTER_BOUNDS",
+        "MOBILE_UPLOAD_EXPANDED_SETTINGS_SCROLL_WITH_FIXED_FOOTER",
+        "DOCUMENT_DETAILS_AND_REAL_PERSISTED_JOB_DETAILS_READABLE",
+        "MOBILE_SOURCE_SUMMARY_CLAMPED_WITHOUT_PAGE_OVERFLOW"
+      ],
+      "viewports": [
+        "1366x768",
+        "1280x600",
+        "390x568",
+        "390x844"
+      ],
+      "defaultUrlModal": {
+        "width": 560,
+        "top": 24,
+        "bottom": 468.8000183105469,
+        "footerBottom": 468.79999923706055,
+        "viewportHeight": 768
+      },
+      "mobileExpandedModal": {
+        "width": 366.3999938964844,
+        "top": 12,
+        "bottom": 556,
+        "footerBottom": 556.0000114440918,
+        "viewportHeight": 568,
+        "bodyHeight": 439,
+        "bodyScrollHeight": 840
+      },
+      "mobileSourceSummary": {
+        "height": 37.400001525878906,
+        "lineHeight": 18.7
+      },
+      "simulatedFailedHttpRequests": 4,
+      "simulationScope": "Three URL requests and one multipart upload intercepted as HTTP 503 to inspect defaults, custom fields, idempotency and failure retention without writing data",
+      "finalUncaughtPageErrors": [],
+      "finalConsoleErrors": 0,
+      "finalConsoleWarnings": 0,
+      "sessionStorageKeys": 0,
+      "localStorageKeys": 0
+    },
+    "realBackendReadOnlyVerification": {
+      "processStatus": "READY",
+      "enabled": true,
+      "activeGeneration": 2,
+      "chunkCount": 22,
+      "hasManualChanges": false
+    }
+  },
+  "limitations": [
+    "Browser checks use the Vite development server; the final production build was compiled but no additional production preview or container smoke run was performed.",
+    "This UI-only iteration did not repeat Maven, real model inference, new document ingestion, remote download, external parser or optional search-channel integration tests.",
+    "Original user document was only read; no new persistent test resources were created.",
+    "WEB_DESIGN_VALIDATION.json and WEB_VALIDATION.json describe earlier source versions, not the current compact UI.",
+    "Changes remain local and uncommitted; no push was requested in this iteration."
+  ],
+  "sourceSha256": {
+    "web/Dockerfile": "7c52a77314ae325ba5a746cde3f8bb054167c44c103102550e166146e6d763dd",
+    "web/index.html": "e2a26a943c6bb900a91b988b492aa6d418905d3f710300f3b494595c95e9744f",
+    "web/nginx.conf": "18b37f0dde83ad37b9417c522d352a4ae08cb92a9307c08d5f24fa331053378f",
+    "web/package-lock.json": "902630f212708b87120002fae71e53b9317c87e182df7c1da90d50c441756ea3",
+    "web/package.json": "61393403d318173c9a606391ac4904af7bf0135f5aed2c83f261d6b12f38983d",
+    "web/public/favicon.svg": "20baa4c79f8627cf8909be9afe89cb7833ad46f50acba02a17c05acaf3ba138d",
+    "web/src/api.test.ts": "04a82cf941fcc4848d8443ed2a29a614fd5efbd48e7eb21de758088f7a67800c",
+    "web/src/api.ts": "ea85ff23507fe5a8adde5dc83134c8577fd6506802879fa8bd7fe9019922e8b2",
+    "web/src/App.tsx": "c58e12d7ae7bd6c3ddae85844b4924bcb27c817771c6b6e6b651e0ae0fc8c747",
+    "web/src/components.tsx": "846184ccfd417d0e733cecb4f52daa37778aa49eda9b33fce6f0f45af34bb7a9",
+    "web/src/main.tsx": "c7dabd532c67897289fd58c8a3c753be5854617a1fb1a7596843eaeedc84813a",
+    "web/src/pages/Chunks.tsx": "5cae57f9c7fcf9d8755d21a57fc17b1b6b373db869d3c9206fce7df56a4ff809",
+    "web/src/pages/DocumentDetail.tsx": "ab8b24d242b22f8d74d02eef8e0cbdf7c831195538ac7bf0b4e219436178ae7f",
+    "web/src/pages/Documents.tsx": "f981ac7716dc6585db9e262cdc8b001b74021f6f4bf2c2d4d44fead80474271e",
+    "web/src/pages/Jobs.tsx": "d186a8bee3e2ef592569f921ec75f17d257880092811b335eb4f5859a9830d3e",
+    "web/src/pages/KnowledgeBases.tsx": "9933cd02d76d07cdfa01a57bdd7955976038c244abbb8e2e1aaee988eea66d6e",
+    "web/src/pages/Refresh.tsx": "de6badb18655328ff498d7f18a575522c24e31bfe6b1beb6f594d3be75ff6b90",
+    "web/src/pages/Search.tsx": "0e2cf0938259507c9fd102aeaf4b2ca85d23c8c4e2c4934953a04a64a89c759d",
+    "web/src/state.tsx": "6233ec865827ecd7bf61113ba1092008557cc2ec141c9dae0c092fbef7799b56",
+    "web/src/styles.css": "db9a3aa1aa82a73bdddc244d8a0ccea0cd0a2f3fa1fcecbb7c66c364e608d895",
+    "web/src/theme.ts": "8479ac0d7f40167a2b55485e26f4b31e89c60933c4004c0c081f5d5736e69756",
+    "web/src/types.ts": "b26732b5c92780a154ba57b9fb814c12e994a04bc71da8baeca6fab7211bf844",
+    "web/tsconfig.json": "32ff5192b9474f6dfc218a8ec600dba570eae1e7a7482a549a90eabd05990803",
+    "web/vite.config.ts": "76915270d6845234dbea7bef599b6a106fa870dc8358fd2352470e0aa2a23658"
+  },
+  "distIndexSha256": "24ab03a276e7d5d29dff2c201ce362a2058a277fbc4255120c034e8b49ca7f86"
+}

@@ -1,0 +1,201 @@
+{
+  "completedAt": "2026-10-26T22:05:05.088203+08:00",
+  "baseCommit": "ac77d512c9cfd494cb3fd80f6ba03ca2c4e293ef",
+  "scope": "Agent Workbench frontend design and interaction refactor; no backend or migration changes",
+  "designReferences": [
+    "https://ant.design/docs/spec/research-list/",
+    "https://ant.design/docs/spec/data-list/",
+    "https://refine.dev/core/docs/ui-integrations/ant-design/components/basic-views/list/"
+  ],
+  "checks": {
+    "typecheck": {
+      "command": "npm run build includes tsc --noEmit",
+      "result": "PASSED"
+    },
+    "unitTests": {
+      "command": "npm test",
+      "passed": 19,
+      "failed": 0
+    },
+    "productionBuild": {
+      "command": "npm run build",
+      "transformedModules": 3112,
+      "largestJsBytes": 258231,
+      "result": "PASSED"
+    },
+    "developmentBrowser": {
+      "browser": "Microsoft Edge via Playwright CLI",
+      "passed": 32,
+      "scenarios": [
+        "UI_CREATE_KB",
+        "UI_EMPTY_UPLOAD_REJECTED",
+        "UI_UPLOAD_FILE",
+        "UI_UPLOAD_CONFIGURATION",
+        "REAL_MODEL_INGESTION",
+        "UI_JOB_DETAILS_AND_STAGES",
+        "EMPTY_SELECTION_DISABLED",
+        "VIEW_SWITCH_PRESERVES_SELECTION",
+        "PAGINATION_RESETS_SELECTION",
+        "PREVIEW_CONTENT_EMBEDDING_AND_SOURCE",
+        "MODEL_TIMEOUT_PRESERVES_OLD_BODY_AND_EDITOR",
+        "EDIT_WITH_REAL_EMBEDDING",
+        "ADD_CHUNK_WITH_REAL_EMBEDDING",
+        "UI_REAL_RETRIEVAL_FINDS_EDITED_CONTENT",
+        "RETRIEVAL_STRATEGY_AND_SOURCE",
+        "AUTHORIZED_SOURCE_DOWNLOAD",
+        "BATCH_DISABLE_ONLY_SELECTED_ID",
+        "DOCUMENT_REENABLE_PRESERVES_DISABLED_CHUNK",
+        "APPLY_ALL_EXPLICIT_CONFIRM_CANCEL",
+        "UI_DELETE_CHUNK_UPDATES_COUNT",
+        "HELP_DRAWER",
+        "DESKTOP_SIDEBAR_COLLAPSE",
+        "GLOBAL_SEARCH_SHORTCUT_AND_EMPTY_RESULT",
+        "GLOBAL_SEARCH_SYNCED_WITH_NAME_FILTER",
+        "MOBILE_KB_NO_PAGE_OVERFLOW",
+        "MOBILE_NAVIGATION_SAME_PAGE_CLOSES",
+        "MOBILE_DEFAULT_CARDS_AND_NO_PAGE_OVERFLOW",
+        "MOBILE_PREVIEW_TO_EDITOR_NO_OVERLAY_BLOCK",
+        "UI_DELETE_DOCUMENT_AND_DURABLE_CLEANUP",
+        "UI_RENAME_KB",
+        "UI_DELETE_EMPTY_KB",
+        "LOGOUT_AND_MEMORY_ONLY_CREDENTIALS"
+      ]
+    },
+    "productionBrowser": {
+      "origin": "http://127.0.0.1:4173",
+      "checks": [
+        "PRODUCTION_KB_PAGE",
+        "PRODUCTION_DOCUMENT_AND_CHUNKS_LAZY_ROUTES",
+        "PRODUCTION_CHUNK_PREVIEW",
+        "PRODUCTION_CONFIGURATION_TAB",
+        "PRODUCTION_JOB_DETAILS",
+        "PRODUCTION_SEARCH_AND_PARAMETER_DEFAULTS"
+      ],
+      "uncaughtPageErrors": []
+    }
+  },
+  "services": {
+    "backend": "existing real Java JAR, unchanged",
+    "database": "real PostgreSQL/pgvector",
+    "objectStorage": "real MinIO",
+    "embedding": "REAL Bailian text-embedding-v4, 1024 dimensions",
+    "keyword": "disabled",
+    "rerank": "disabled"
+  },
+  "realWorkflow": {
+    "temporaryDocumentInitialChunks": 17,
+    "ingestionAttempt": 1,
+    "successfulStages": [
+      "FETCH",
+      "PARSE",
+      "SPLIT",
+      "EMBED",
+      "PERSIST",
+      "PUBLISH"
+    ],
+    "previewTextsDiffer": true,
+    "editedContentRetrieved": true,
+    "search": {
+      "hitCount": 5,
+      "strategy": "VECTOR",
+      "scoreTypes": [
+        "COSINE_SIMILARITY"
+      ]
+    },
+    "originalDownloadByteIdentical": true,
+    "cleanup": {
+      "cleanup": "SUCCEEDED",
+      "temporaryDocumentHttp": 404,
+      "temporaryKbHttp": 404,
+      "originalDocument": {
+        "processStatus": "READY",
+        "enabled": true,
+        "activeGeneration": 2,
+        "chunkCount": 22,
+        "hasManualChanges": false
+      }
+    }
+  },
+  "viewports": [
+    {
+      "width": 1536,
+      "height": 960
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "mobileOverlay": {
+    "viewport": 390,
+    "previewWidth": 390.3999938964844,
+    "editorWidth": 374.3999938964844
+  },
+  "credentialStorage": {
+    "local": 0,
+    "session": 0
+  },
+  "observedFailures": {
+    "realModelTimeouts": 2,
+    "httpStatus": 504,
+    "oldContentPreserved": true,
+    "manualRetriesSucceeded": true,
+    "unexpectedJavaScriptErrorsInFinalProductionRun": 0,
+    "warnings": 0,
+    "notes": "Initial automation selector mistakes and intermediate layouts are not counted as passed. Final production uses the built assets."
+  },
+  "resolvedDuringValidation": [
+    "Model field default lost during conditional form mount",
+    "Preview drawer intercepting editor modal actions",
+    "KB table overflow on narrow viewport",
+    "Fixed-width drawer exceeding mobile viewport"
+  ],
+  "screenshots": [
+    "output/playwright/redesign-chunk-preview.png",
+    "output/playwright/redesign-chunks-desktop.png",
+    "output/playwright/redesign-chunks-mobile.png",
+    "output/playwright/redesign-documents-desktop.png",
+    "output/playwright/redesign-editor-mobile.png",
+    "output/playwright/redesign-job-details.png",
+    "output/playwright/redesign-kbs-desktop.png",
+    "output/playwright/redesign-kbs-mobile.png",
+    "output/playwright/redesign-login-desktop.png",
+    "output/playwright/redesign-search-desktop.png"
+  ],
+  "sourceSha256": {
+    "web/.dockerignore": "ac0888da44994cf4a9d9de88aaa581ceb47db2d930465a3fa0f537b4a8c9f321",
+    "web/.env.example": "63c5eb55022ef51df92eb0ca41e477b4ab869a7b5adadfafc2998b89d73a8a52",
+    "web/Dockerfile": "7c52a77314ae325ba5a746cde3f8bb054167c44c103102550e166146e6d763dd",
+    "web/index.html": "e2a26a943c6bb900a91b988b492aa6d418905d3f710300f3b494595c95e9744f",
+    "web/nginx.conf": "18b37f0dde83ad37b9417c522d352a4ae08cb92a9307c08d5f24fa331053378f",
+    "web/package-lock.json": "902630f212708b87120002fae71e53b9317c87e182df7c1da90d50c441756ea3",
+    "web/package.json": "61393403d318173c9a606391ac4904af7bf0135f5aed2c83f261d6b12f38983d",
+    "web/public/favicon.svg": "20baa4c79f8627cf8909be9afe89cb7833ad46f50acba02a17c05acaf3ba138d",
+    "web/README.md": "ddd2fa786646268d3a02989ea928f12b1d75033d168ecd6eb48fed4fc1ffabdc",
+    "web/src/api.test.ts": "04a82cf941fcc4848d8443ed2a29a614fd5efbd48e7eb21de758088f7a67800c",
+    "web/src/api.ts": "ea85ff23507fe5a8adde5dc83134c8577fd6506802879fa8bd7fe9019922e8b2",
+    "web/src/App.tsx": "18f48cc949d280a5acac67708fb5ee5c4c1d2f1a861fb9f477e48c0dcae8c512",
+    "web/src/components.tsx": "23d6dcb719fe3a449373f926e5d5f82f9fc99f76b7a8c1650d2c5f1e6a4e30f9",
+    "web/src/main.tsx": "c7dabd532c67897289fd58c8a3c753be5854617a1fb1a7596843eaeedc84813a",
+    "web/src/pages/Chunks.tsx": "888a4997568d471d8d05f79db9b431d04692a4e813a6ce4a1d39cd54d62b094d",
+    "web/src/pages/DocumentDetail.tsx": "3eae83252ff964c600a9c9e92d2e8640673465dad0acb16926106bb1af633e4c",
+    "web/src/pages/Documents.tsx": "03cebc96f56f74636f6aa32459f1606e59a7f8219080744e550c2c86a2daa1d9",
+    "web/src/pages/Jobs.tsx": "d186a8bee3e2ef592569f921ec75f17d257880092811b335eb4f5859a9830d3e",
+    "web/src/pages/KnowledgeBases.tsx": "d9bbc75b4e8822b924ef60dd2209ed0e7794c8420cf45f4b64f5d9bb4206bcd8",
+    "web/src/pages/Refresh.tsx": "de6badb18655328ff498d7f18a575522c24e31bfe6b1beb6f594d3be75ff6b90",
+    "web/src/pages/Search.tsx": "d2b61a00f5d3ef2fea4a833b3d1f7fe9e5d33344e251506d93fe86f510d7c59e",
+    "web/src/state.tsx": "6233ec865827ecd7bf61113ba1092008557cc2ec141c9dae0c092fbef7799b56",
+    "web/src/styles.css": "8bd7ee2e21d7ab56ecbf6d30c53ebc335c8818c32c74ae1cb80426790f572281",
+    "web/src/theme.ts": "c7b34609ddfdd56b1f3b595159f3cf3fca53746a916f8cf8956c015e09efa41a",
+    "web/src/types.ts": "b26732b5c92780a154ba57b9fb814c12e994a04bc71da8baeca6fab7211bf844",
+    "web/tsconfig.json": "32ff5192b9474f6dfc218a8ec600dba570eae1e7a7482a549a90eabd05990803",
+    "web/vite.config.ts": "76915270d6845234dbea7bef599b6a106fa870dc8358fd2352470e0aa2a23658"
+  },
+  "distIndexSha256": "131f53a222f436326f684f51964d13a04d6acb3bf89e559b6f38de75398ae16a",
+  "limits": [
+    "No Java changes; previous Maven suite not rerun",
+    "Nginx/app images and load tests not run",
+    "External Rerank/MinerU/VLM and remote-source services not part of this design validation",
+    "Changes remain local; no Git commit or push in this round"
+  ]
+}

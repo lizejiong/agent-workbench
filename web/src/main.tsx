@@ -5,6 +5,7 @@ import zhCN from 'antd/locale/zh_CN';
 import { HashRouter } from 'react-router-dom';
 import { SessionProvider } from './state';
 import App from './App';
+import { workbenchTheme } from './theme';
 import './styles.css';
 
 class PageBoundary extends React.Component<React.PropsWithChildren, { failed: boolean }> {
@@ -17,7 +18,7 @@ class PageBoundary extends React.Component<React.PropsWithChildren, { failed: bo
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><ConfigProvider locale={zhCN} theme={{ token: { colorPrimary: '#0f766e', colorInfo: '#0f766e', borderRadius: 8, fontFamily: 'Inter, "Segoe UI", "Microsoft YaHei", sans-serif', colorBgLayout: '#f4f6f8' } }}>
+  <React.StrictMode><ConfigProvider locale={zhCN} theme={workbenchTheme}>
     <AntApp><PageBoundary><SessionProvider><HashRouter><App /></HashRouter></SessionProvider></PageBoundary></AntApp>
   </ConfigProvider></React.StrictMode>,
 );

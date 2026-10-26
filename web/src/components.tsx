@@ -1,7 +1,7 @@
-import { App, Alert, Button, Card, Descriptions, Empty, Form, InputNumber, Select, Space, Spin, Tag, Typography } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import { App, Alert, Breadcrumb, Button, Descriptions, Empty, Form, InputNumber, Select, Space, Spin, Tag, Typography } from 'antd';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiError, type ApiClient } from './api';
 import type { DocumentRecord, IngestionSpec, Job } from './types';
 
@@ -12,7 +12,7 @@ export const bytes = (value: number) => value < 1024 ? `${value} B` : value < 10
 export function Status({ value }: { value?: string | null }) {
   const labels: Record<string, string> = { PENDING: '待处理', RUNNING: '执行中', PROCESSING: '入库中', READY: '可用', SUCCEEDED: '成功', SUCCESS: '成功', FAILED: '失败', CANCELLED: '已取消', SKIPPED: '已跳过', WAITING_INGESTION: '等待入库' };
   const color = ['SUCCEEDED', 'SUCCESS', 'READY'].includes(value || '') ? 'success' : value === 'FAILED' ? 'error' : ['RUNNING', 'PROCESSING', 'WAITING_INGESTION'].includes(value || '') ? 'processing' : 'default';
-  return <Tag color={color}>{labels[value || ''] || value || '未执行'}</Tag>;
+  return <Tag className="status-tag" color={color}><span className="status-dot" />{labels[value || ''] || value || '未执行'}</Tag>;
 }
 export function ErrorPanel({ error, retry }: { error?: Error; retry?: () => void }) {
   if (!error) return null;
@@ -22,13 +22,13 @@ export function ErrorPanel({ error, retry }: { error?: Error; retry?: () => void
 export function Loading({ loading, error, children, retry }: { loading: boolean; error?: Error; children: ReactNode; retry?: () => void }) {
   return <><ErrorPanel error={error} retry={retry} />{loading ? <div className="loading"><Spin description="正在加载" /></div> : children}</>;
 }
-export function PageTitle({ eyebrow, title, description, actions }: { eyebrow: string; title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
-  return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><Typography.Title level={2}>{title}</Typography.Title>{description && <div className="page-description">{description}</div>}</div><Space wrap>{actions}</Space></div>;
+export function PageTitle({ eyebrow, title, description, actions, breadcrumbs }: { eyebrow: string; title: ReactNode; description?: ReactNode; actions?: ReactNode; breadcrumbs?: { title: ReactNode; to?: string }[] }) {
+  return <div className="page-heading"><Breadcrumb items={(breadcrumbs || [{ title: '工作空间' }, { title: '知识库管理' }]).map(item => ({ title: item.to ? <Link to={item.to}>{item.title}</Link> : item.title }))} /><div className="page-title"><div className="page-title-copy"><div className="eyebrow">{eyebrow}</div><Typography.Title level={2}>{title}</Typography.Title>{description && <div className="page-description">{description}</div>}</div><Space className="page-actions" wrap>{actions}</Space></div></div>;
 }
-export function RefreshButton({ onClick }: { onClick: () => void }) { return <Button icon={<ReloadOutlined />} onClick={onClick}>刷新</Button>; }
+export function RefreshButton({ onClick }: { onClick: () => void }) { return <Button onClick={onClick}>刷新</Button>; }
 export function Nothing({ text = '暂无数据' }: { text?: string }) { return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={text} />; }
 export const defaultSpec: IngestionSpec = { schemaVersion: 1, parser: 'AUTO', parseProfile: 'fast', splitter: { kind: 'STRUCTURAL', maxChars: 1024, overlapChars: 128, tableRows: 50, toleranceChars: 512 } };
-export function IngestionFields() {
+export function IngestionFields({ showNote = true }: { showNote?: boolean }) {
   const kind = Form.useWatch(['ingestionSpec', 'splitter', 'kind']);
   return <>
     <div className="form-grid">
@@ -44,7 +44,7 @@ export function IngestionFields() {
       <Form.Item label="每块表格行数" name={['ingestionSpec', 'splitter', 'tableRows']} rules={[{ required: true }]}><InputNumber min={1} max={1000} disabled={kind === 'WHOLE_DOCUMENT'} /></Form.Item>
       <Form.Item label="结构容忍上限（字符）" name={['ingestionSpec', 'splitter', 'toleranceChars']} tooltip="保留完整代码行或表格行时允许超出目标长度，仍受服务端硬上限约束。" rules={[{ required: true }]}><InputNumber min={0} max={4096} disabled={kind === 'WHOLE_DOCUMENT'} /></Form.Item>
     </div>
-    <Typography.Text type="secondary">修改配置后需显式提交入库；新版本成功发布前，旧版本仍可检索。</Typography.Text>
+    {showNote && <Typography.Text type="secondary">修改配置后需显式提交入库；新版本成功发布前，旧版本仍可检索。</Typography.Text>}
   </>;
 }
 export function Source({ metadata }: { metadata: Record<string, unknown> }) {
@@ -85,10 +85,20 @@ export async function submitJob(api: ApiClient, doc: DocumentRecord, confirm: (t
   return api.send<Job>('POST', retryOf ? `/api/ingestion-jobs/${retryOf}/retry` : `/api/documents/${doc.id}/ingestion-jobs`, request);
 }
 export function ModelInfo({ model, provider, dimension }: { model: string; provider: string; dimension: number }) {
-  return <Space size={4} wrap><Tag>{model}</Tag><Typography.Text type="secondary">{provider} · {dimension} 维</Typography.Text></Space>;
+  return <span className="model-info"><span className="model-name">{model}</span><span className="model-detail">{provider}{dimension > 0 && ` · ${dimension} 维`}</span></span>;
 }
-export function SummaryCard({ title, value, detail }: { title: string; value: ReactNode; detail?: string }) {
-  return <Card size="small" className="summary-card"><div className="summary-label">{title}</div><div className="summary-value">{value}</div>{detail && <div className="summary-detail">{detail}</div>}</Card>;
+export function ListHeading({ title, total, description }: { title: string; total?: number; description?: string }) {
+  return <div className="list-heading"><span>{title}{total !== undefined && <span className="list-count">{total}</span>}</span>{description && <small>{description}</small>}</div>;
+}
+export function DateCell({ value }: { value?: string | null }) {
+  if (!value) return <span className="muted">—</span>;
+  const parsed = new Date(value);
+  return <span className="date-cell" title={date(value)}>{parsed.toLocaleDateString('zh-CN')}<small>{parsed.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</small></span>;
+}
+export function FileBadge({ name, mime }: { name: string; mime?: string }) {
+  const extension = name.includes('.') ? name.split('.').pop()?.toLowerCase() : '';
+  const kind = extension && /^[a-z0-9]{1,5}$/.test(extension) ? extension : mime?.includes('markdown') ? 'md' : 'txt';
+  return <span className="file-badge" data-kind={kind} aria-hidden="true">{kind.toUpperCase()}</span>;
 }
 export function DocumentInfo({ doc }: { doc: DocumentRecord }) {
   return <Descriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small" items={[

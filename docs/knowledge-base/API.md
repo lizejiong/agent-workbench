@@ -2,6 +2,10 @@
 
 ## M. Web 管理台接入（2026-10-25，当前）
 
+2026-10-26 界面改版沿用本节全部 REST 契约。全局知识库搜索使用 /#/kbs?name=关键词，前端仍将 name 传给 GET /api/kbs。分块的表格/卡片切换、预览抽屉与检索参数折叠均为显示状态；更多操作中的“文档全部块”仍显式发送 applyAll=true 并要求确认，空选择不会被转换成全量请求。设计与验证见 [WEB_DESIGN.md](WEB_DESIGN.md)。
+
+同日按反馈精简界面：上传/URL 导入的 ingestionSpec 放入默认折叠的“高级设置”，折叠不省略配置或绕过校验。初值仍为 fast / STRUCTURAL / 1024 字符 / 128 重叠 / 50 表格行 / 512 容忍，重开弹窗恢复初值；URL 的“保存后自动入库”默认勾选，可关闭。错误参数会展开定位，失败重试不清空已填内容，相同内容复用幂等标识。文档行的下载/删除位于“更多”；分块无选择时不展示批量工具栏，完整来源仍在详情中，接口及权限检查不变。当前界面验证见 [WEB_COMPACT_VALIDATION.json](WEB_COMPACT_VALIDATION.json)。
+
 没有新增业务 API 或认证协议。Web 使用以下已有契约；原 OpenAPI/Postman 请求仍兼容。/api/knowledge/management 的历史 delivery=API_ONLY 字段保持兼容，它描述该 API 导航，不用于探测独立 Web 是否已部署。开发入口 http://127.0.0.1:5173/#/kbs，生产示例 http://127.0.0.1:8088/#/kbs。Hash 只用于浏览器路由，代理不把它传给服务端。
 
 | 页面 | 主要接口 |
@@ -21,7 +25,7 @@
 
 检索 UI 显示 strategy、channels、rerankStatus、refillLimitReached；scoreType、fusionScore、rerankScore、channelScores 保持各自含义。仅按来源真实存在的章节/页码/行/sheet 字段显示定位。范围选择器请求全部分页，上限 100 页后明确报错；UI 默认上限 16 库/100 文档/topK50/问题4000字符，服务端配置更严格时以校验响应为准。
 
-Web 接入实测见 [WEB_VALIDATION.json](WEB_VALIDATION.json)：19项前端测试、35项浏览器/HTTP场景；未新增后端业务或迁移。
+历史 Web 接入实测见 [WEB_VALIDATION.json](WEB_VALIDATION.json)：19项前端测试、35项浏览器/HTTP场景。2026-10-26 首轮设计改版完成19项前端测试及38项真实浏览器检查，见 [WEB_DESIGN_VALIDATION.json](WEB_DESIGN_VALIDATION.json)；该源码指纹对应精简前版本。当前精简版单独记录于 WEB_COMPACT_VALIDATION.json；未新增后端业务或迁移。
 
 ## L. 第 10 阶段：API 管理入口、审计与指标
 
