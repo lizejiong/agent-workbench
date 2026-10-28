@@ -17,6 +17,8 @@ npm run dev
 
 访问 http://127.0.0.1:5173，使用服务端已有账号登录。KB_BACKEND_ORIGIN 是 Vite 服务端环境变量，不以 VITE_ 注入浏览器；API 同源代理，不放宽 CORS。账号密码只存本次内存，刷新/退出/401 后需重新登录；生产必须使用 HTTPS。不要把真实密钥写进 .env.example 或前端构建参数。
 
+按用户要求，可在 Git 忽略的 web/.env.local 配置 KB_LOGIN_DEFAULT_USERNAME、KB_LOGIN_DEFAULT_PASSWORD 预填登录页；本机已从现有后端账号配置填写这两项。开发和生产构建均生效，默认值仍可编辑，点击登录后才发起认证；不会创建或改变后端账号。预填密码会随前端代码公开下发，不能把它当作保密凭据；模型、存储和数据库密钥仍不得进入前端。清空两项可恢复空白登录页；修改后重启 Vite，生产需重新 npm run build。此为构建时配置，容器运行时仅设置环境变量不会修改已有静态文件，Docker 构建也不会自动读取被忽略的本地环境文件。
+
 ```powershell
 # 在 web/ 执行
 npm run check

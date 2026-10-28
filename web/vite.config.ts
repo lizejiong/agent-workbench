@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
   }
   const proxy = Object.fromEntries(['/api', '/openapi'].map(path => [path, { target, changeOrigin: false }]));
   return {
+    define: { __LOGIN_DEFAULTS__: JSON.stringify({ username: env.KB_LOGIN_DEFAULT_USERNAME || '', password: env.KB_LOGIN_DEFAULT_PASSWORD || '' }) },
     plugins: [react()],
     server: { port: 5173, strictPort: true, proxy },
     preview: { port: 4173, strictPort: true, proxy },

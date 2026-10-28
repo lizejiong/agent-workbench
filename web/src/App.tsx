@@ -7,6 +7,8 @@ import { ApiClient, basicAuthorization, query } from './api';
 import { useSession } from './state';
 import { ErrorPanel, Loading, useOperation } from './components';
 
+declare const __LOGIN_DEFAULTS__: { username: string; password: string };
+
 const KnowledgeBases = lazy(() => import('./pages/KnowledgeBases'));
 const Documents = lazy(() => import('./pages/Documents'));
 const DocumentDetail = lazy(() => import('./pages/DocumentDetail'));
@@ -33,7 +35,7 @@ function Login() {
     </section>
     <section className="login-form-area"><Card className="login-card" variant="borderless">
       <div className="login-mobile-brand"><Brand /></div><span className="section-kicker">开始工作</span><Typography.Title level={2}>欢迎回到工作台</Typography.Title><p className="muted">使用服务端已配置的账号登录。</p>
-      <ErrorPanel error={op.error} /><Form layout="vertical" onFinish={values => void submit(values)} requiredMark={false} size="large">
+      <ErrorPanel error={op.error} /><Form layout="vertical" initialValues={__LOGIN_DEFAULTS__} onFinish={values => void submit(values)} requiredMark={false} size="large">
         <Form.Item label="账号" name="username" rules={[{ required: true, whitespace: true, message: '请输入账号' }]}><Input placeholder="请输入账号" autoComplete="username" autoFocus /></Form.Item>
         <Form.Item label="密码" name="password" rules={[{ required: true, message: '请输入密码' }]}><Input.Password placeholder="请输入密码" autoComplete="current-password" /></Form.Item>
         <Button type="primary" htmlType="submit" block size="large" loading={op.busy}>登录工作台</Button>

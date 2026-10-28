@@ -22,6 +22,8 @@ npm run dev
 
 打开 <http://127.0.0.1:5173>，使用后端已有账号登录。KB_BACKEND_ORIGIN 只在 Vite 服务端使用，不会进入浏览器包。也可首次复制 `.env.example` 为 `.env.local`；不要覆盖已有配置。代理仅转发 `/api/` 和 `/openapi/`，不用修改后端 CORS。生产必须在 HTTPS 下使用现有 Basic 认证；浏览器凭据仅存页面内存，不写入 URL、Cookie、localStorage 或 sessionStorage，刷新页面需重新登录。
 
+登录预填：在 Git 忽略的 `.env.local` 设置 `KB_LOGIN_DEFAULT_USERNAME`、`KB_LOGIN_DEFAULT_PASSWORD`。开发和生产构建均将其作为可编辑的表单初值，仍需点击登录；未设置或清空时为空白。预填值会随前端资源下发，访问者可读取，不属于保密凭据；不要提交真实值，也不要填入模型或存储密钥。修改后重启开发服务或重新构建生产包；仅修改容器运行时环境不会改变已生成的静态文件。
+
 ```powershell
 npm run check
 npm test

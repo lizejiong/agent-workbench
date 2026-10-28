@@ -2,6 +2,8 @@
 
 ## M. Web 管理台接入（2026-10-25，当前）
 
+2026-10-28 登录页增加配置预填：开发/生产构建读取 KB_LOGIN_DEFAULT_USERNAME、KB_LOGIN_DEFAULT_PASSWORD 作为可编辑初值；未配置则空白，不自动提交登录。认证仍为用户点击后请求 GET /api/knowledge/management，服务端账号与归属规则不变；默认值会出现在前端资源中，不是认证绕过，也不写 localStorage/sessionStorage。修改生产默认值需重新构建，不能用前端配置创建或修改后端账号。
+
 2026-10-26 界面改版沿用本节全部 REST 契约。全局知识库搜索使用 /#/kbs?name=关键词，前端仍将 name 传给 GET /api/kbs。分块的表格/卡片切换、预览抽屉与检索参数折叠均为显示状态；更多操作中的“文档全部块”仍显式发送 applyAll=true 并要求确认，空选择不会被转换成全量请求。设计与验证见 [WEB_DESIGN.md](WEB_DESIGN.md)。
 
 同日按反馈精简界面：上传/URL 导入的 ingestionSpec 放入默认折叠的“高级设置”，折叠不省略配置或绕过校验。初值仍为 fast / STRUCTURAL / 1024 字符 / 128 重叠 / 50 表格行 / 512 容忍，重开弹窗恢复初值；URL 的“保存后自动入库”默认勾选，可关闭。错误参数会展开定位，失败重试不清空已填内容，相同内容复用幂等标识。文档行的下载/删除位于“更多”；分块无选择时不展示批量工具栏，完整来源仍在详情中，接口及权限检查不变。当前界面验证见 [WEB_COMPACT_VALIDATION.json](WEB_COMPACT_VALIDATION.json)。
