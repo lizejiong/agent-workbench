@@ -1,5 +1,9 @@
 # 知识库 API 契约
 
+## RAG R1 增量（2026-10-28）
+
+现有 search/retrieve 共用引擎，已增加总 deadline、取消、COMPLETE/DEGRADED 与 EVIDENCE/NO_EVIDENCE/INDETERMINATE、脱敏版本追踪和 no-store。原 search 数组兼容，新增 X-KB-Retrieval-Status/Outcome；retrieve 新字段、错误码和后续问答/Agent 边界见 [RAG API](../rag/API.md)，机器 OpenAPI 同步。以下历史“模型 deadline”配置现在是总预算的兼容名称，优先使用 KB_RETRIEVAL_DEADLINE；不代表已实现回答生成。
+
 ## M. Web 管理台接入（2026-10-25，当前）
 
 2026-10-28 登录页增加配置预填：开发/生产构建读取 KB_LOGIN_DEFAULT_USERNAME、KB_LOGIN_DEFAULT_PASSWORD 作为可编辑初值；未配置则空白，不自动提交登录。认证仍为用户点击后请求 GET /api/knowledge/management，服务端账号与归属规则不变；默认值会出现在前端资源中，不是认证绕过，也不写 localStorage/sessionStorage。修改生产默认值需重新构建，不能用前端配置创建或修改后端账号。

@@ -53,4 +53,17 @@ class AiEmbeddingClientTest {
                     .isInstanceOfSatisfying(KnowledgeBaseException.class,e->assertThat(e.code()).isEqualTo(expected));
         }
     }
+    @Test void interruptingHttpWorkReleasesThePermitForTheNextRequest()throws Exception {
+        var started=new java.util.concurrent.CountDownLatch(1);
+        var failure=new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        var client=new AiEmbeddingClient(new AiClientProperties(server.url(),null,Duration.ofSeconds(1),Duration.ofSeconds(3),1,10,65536,65536),new ObjectMapper());
+        server.mode="TIMEOUT";server.beforeEmbed=started::countDown;
+        var caller=new Thread(()->{try{client.embed(binding,List.of("cancel me"),"cancel-http",Instant.now().plusSeconds(3));}catch(Throwable e){failure.set(e);}});
+        caller.start();try {
+            assertThat(started.await(2,java.util.concurrent.TimeUnit.SECONDS)).isTrue();caller.interrupt();caller.join(1000);
+            assertThat(caller.isAlive()).isFalse();assertThat(failure.get()).isInstanceOf(KnowledgeBaseException.class);
+            server.mode="GOOD";server.beforeEmbed=()->{};
+            assertThat(client.embed(binding,List.of("next"),"after-cancel",Instant.now().plusSeconds(1)).vectors()).hasSize(1);
+        }finally{caller.interrupt();caller.join(1000);}
+    }
 }

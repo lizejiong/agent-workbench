@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-28",
+  "timezone": "Asia/Shanghai",
+  "scope": "R1 shared structured retrieval hardening; answer, SSE and Agent adapter remain planned",
+  "fullReactor": {
+    "command": "mvn -B -ntp -Dmaven.repo.local=.cache/maven/repository -Dkb.test.elasticsearch-image=atlas-rag-elasticsearch:latest verify",
+    "tests": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 12,
+      "passed": 255
+    },
+    "testResult": "PASS",
+    "buildResult": "FAILED_AT_REPACKAGE_RUNNING_WINDOWS_JAR_LOCK",
+    "log": ".cache/rag-r1-verify.log"
+  },
+  "isolatedReactor": {
+    "command": "mvn -B -ntp -Dmaven.repo.local=<absolute repository cache> -Dtest=VectorSearchDeadlineTest -Dsurefire.failIfNoSpecifiedTests=false verify",
+    "tests": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 2
+    },
+    "buildResult": "SUCCESS",
+    "sourceInputsVerified": 252,
+    "sourceManifestSha256": "1f0a32ec512fb2327db2b14019048586dd82eb3a0f7f998773b2f62709dfc660",
+    "log": ".cache/rag-r1-isolated-verify.log"
+  },
+  "combinedUniqueTests": {
+    "tests": 269,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 12,
+    "passed": 257
+  },
+  "skipped": {
+    "class": "LocalPostgresTest",
+    "count": 12,
+    "reason": "Optional destructive standalone database tests were not configured; independent Testcontainers PG tests ran successfully"
+  },
+  "realServices": [
+    "PostgreSQL 17 / pgvector 0.8.7, new disposable containers",
+    "MinIO RELEASE.2025-09-07T16-13-09Z, new disposable containers",
+    "Elasticsearch 8.19.17 / cjk / BM25, cached atlas-rag-elasticsearch image, new disposable container"
+  ],
+  "modelValidation": "Explicit local HTTP embedding and rerank protocol fixtures; no real supplier quality validation performed",
+  "checks": {
+    "openapi": {
+      "paths": 41,
+      "operations": 52,
+      "resolvedReferences": 421
+    },
+    "composeWebKeywordConfig": "PASS",
+    "dependencyAndAiSourceChanges": false
+  },
+  "artifact": {
+    "path": "services/backend/target/rag-backend-0.1.0-SNAPSHOT-rag-r1.jar",
+    "bytes": 128164414,
+    "sha256": "8684c3e38adc11c8d3f2e935d806809952167017da69aa1afdec13c919219845",
+    "runtimeActivated": false
+  },
+  "localRuntimeRecovery": {
+    "reason": "Root packaging replaced the output with a thin JAR before Windows prevented repackage rename. Restored checksum-verified historical stage10 runnable artifacts and restarted both local processes with the existing ignored launcher/configuration.",
+    "backendBaselineSha256": "919a27d2147729b685ed369e8ca651292f9c5383116257286f1c115de59dff4a",
+    "aiBaselineSha256": "d242bbaaa65a5daf75214ba0b151921b09d473b660d260a5594b18ce74dd6ebf",
+    "backendHealth": "UP",
+    "aiHealth": "UP",
+    "authenticatedCapabilitiesHttp": 200,
+    "authenticatedKnowledgeBaseListHttp": 200,
+    "directKnowledgeDataMutationsIssued": false
+  },
+  "notValidated": [
+    "Real supplier embedding/rerank/chat quality",
+    "RAG generated answers and citations",
+    "SSE browser disconnect lifecycle",
+    "Python Agent tool",
+    "Production load/SLO",
+    "Application container images"
+  ]
+}

@@ -108,6 +108,7 @@ class HybridRetrievalTest {
     }
     @Test void keywordFailureOrTimeoutKeepsVectorResultsAndReportsTheActualStrategy()throws Exception {
         UUID kb=base();fixture(kb);syncAll();index.failQuery=true;var failed=retrieve(kb,"database","HYBRID",false);assertThat(failed.path("strategy").asText()).isEqualTo("VECTOR");assertThat(failed.path("evidence")).isNotEmpty();
+        assertThat(failed.path("status").asText()).isEqualTo("DEGRADED");assertThat(failed.path("outcome").asText()).isEqualTo("EVIDENCE");
         index.failQuery=false;index.slowQuery=true;var timed=retrieve(kb,"database","HYBRID",false);assertThat(timed.path("strategy").asText()).isEqualTo("VECTOR");assertThat(timed.path("channels").toString()).contains("TIMEOUT");
     }
     @Test void vectorFailureKeepsBm25AndAllChannelFailureIsAnErrorRatherThanEmptyEvidence()throws Exception {
@@ -133,6 +134,7 @@ class HybridRetrievalTest {
     @Test void rerankThresholdFailsClosedWhenNoRerankScoresExistAndDoesNotPretendRrfIsConfidence()throws Exception {
         UUID kb=base();fixture(kb);syncAll();model.rerankMode="SHORT";
         var result=call(post("/api/knowledge/retrieve"),Map.of("query","database","kbIds",List.of(kb),"minRerankScore",0.6),200);assertThat(result.path("evidence")).isEmpty();assertThat(result.path("rerankStatus").asText()).isEqualTo("THRESHOLD_UNAVAILABLE");
+        assertThat(result.path("status").asText()).isEqualTo("DEGRADED");assertThat(result.path("outcome").asText()).isEqualTo("INDETERMINATE");
         call(post("/api/knowledge/retrieve"),Map.of("query","database","kbIds",List.of(kb),"minRerankScore",0.6,"rerank",false),400);
         call(post("/api/knowledge/retrieve"),Map.of("query","database","kbIds",List.of(kb),"minScore",0.6),400);
         model.rerankMode="GOOD";var filtered=call(post("/api/knowledge/retrieve"),Map.of("query","database","kbIds",List.of(kb),"minRerankScore",0.6),200);

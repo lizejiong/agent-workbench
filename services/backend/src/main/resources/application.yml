@@ -133,7 +133,7 @@ kb:
     max-kb-ids: ${KB_SEARCH_MAX_KB_IDS:16}
     max-document-ids: ${KB_SEARCH_MAX_DOCUMENT_IDS:100}
     max-query-chars: ${KB_SEARCH_MAX_QUERY_CHARS:4000}
-    deadline: ${KB_SEARCH_MODEL_DEADLINE:40s}
+    deadline: ${KB_RETRIEVAL_DEADLINE:${KB_SEARCH_MODEL_DEADLINE:40s}}
   worker:
     enabled: ${KB_WORKER_ENABLED:true}
     concurrency: ${KB_WORKER_CONCURRENCY:2}

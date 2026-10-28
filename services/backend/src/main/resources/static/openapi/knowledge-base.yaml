@@ -1025,6 +1025,18 @@ openapi: 3.0.3
             "X-KB-Channel-Status":
               "schema":
                 "type": "string"
+            "X-KB-Retrieval-Status":
+              "schema":
+                "type": "string"
+                "enum": ["COMPLETE", "DEGRADED"]
+            "X-KB-Retrieval-Outcome":
+              "schema":
+                "type": "string"
+                "enum": ["EVIDENCE", "NO_EVIDENCE", "INDETERMINATE"]
+            "Cache-Control":
+              "schema":
+                "type": "string"
+                "enum": ["no-store"]
         "400":
           "$ref": "#/components/responses/Error400"
         "401":
@@ -1048,7 +1060,7 @@ openapi: 3.0.3
               "schema":
                 "$ref": "#/components/schemas/Envelope"
         "504":
-          "description": "Query model timeout"
+          "description": "Query model, retrieval phase or total deadline exceeded"
           "content":
             "application/json":
               "schema":
@@ -1763,6 +1775,11 @@ openapi: 3.0.3
       "responses":
         "200":
           "description": "Success"
+          "headers":
+            "Cache-Control":
+              "schema":
+                "type": "string"
+                "enum": ["no-store"]
           "content":
             "application/json":
               "schema":
@@ -1777,13 +1794,31 @@ openapi: 3.0.3
           "$ref": "#/components/responses/Error409"
         "503":
           "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Invalid embedding or provider request rejected"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "422":
+          "description": "Query exceeds encoded model input byte budget"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model, retrieval phase or total deadline exceeded"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
       "requestBody":
         "required": true
         "content":
           "application/json":
             "schema":
               "$ref": "#/components/schemas/KnowledgeSearchRequest"
-      "description": "Authorize all resource scope before external calls. Bounded parallel vector/BM25 channels with independent deadlines; one failure preserves the other; all failed returns 503. Default 50/channel -> 20 fused -> optional rerank -> topK5. RRF uses ranks, keeps raw scores; generation/ownership/body/revision are rechecked before and after reranking. Keyword dirty documents are omitted until their current revision is acknowledged. No generated answer."
+      "description": "One total deadline includes authorization, recall, reranking, assembly and final scope/version validation. Channel deadlines and model HTTP calls use the remaining budget; timeout and interruption cancel outstanding futures. COMPLETE/DEGRADED and EVIDENCE/NO_EVIDENCE/INDETERMINATE distinguish empty evidence from incomplete retrieval. Trace contains only authorized model/index fingerprints and requestId; a changed binding returns 409. All channels failed returns 503; total deadline returns 504. Evidence and source liveness are checked before and after reranking. No generated answer."
   "/api/knowledge/search-capabilities":
     "get":
       "operationId": "getSearchCapabilities"
@@ -3870,6 +3905,15 @@ openapi: 3.0.3
         "minRerankScore":
           "type": "number"
           "nullable": true
+        "status":
+          "type": "string"
+          "enum": ["COMPLETE", "DEGRADED"]
+        "outcome":
+          "type": "string"
+          "enum": ["EVIDENCE", "NO_EVIDENCE", "INDETERMINATE"]
+          "description": "NO_EVIDENCE means complete configured retrieval with no retained evidence; INDETERMINATE means an empty result with a failed dependency or incomplete recall. Neither asserts factual relevance."
+        "trace":
+          "$ref": "#/components/schemas/RetrievalTrace"
       "required":
         - "evidence"
         - "requestedStrategy"
@@ -3881,6 +3925,52 @@ openapi: 3.0.3
         - "topK"
         - "refillLimitReached"
         - "minRerankScore"
+        - "status"
+        - "outcome"
+        - "trace"
+    "RetrievalIndexVersion":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "kbId":
+          "type": "string"
+          "format": "uuid"
+        "embeddingModelId":
+          "type": "string"
+          "nullable": true
+        "embeddingConfigRevision":
+          "type": "string"
+          "nullable": true
+        "aiConfigRevision":
+          "type": "string"
+          "nullable": true
+      "required": ["kbId", "embeddingModelId", "embeddingConfigRevision", "aiConfigRevision"]
+    "RetrievalTrace":
+      "type": "object"
+      "additionalProperties": false
+      "properties":
+        "requestId":
+          "type": "string"
+          "nullable": true
+        "pipelineVersion":
+          "type": "string"
+          "enum": ["retrieval-v1"]
+        "elapsedMs":
+          "type": "integer"
+          "format": "int64"
+          "minimum": 0
+        "indexes":
+          "type": "array"
+          "items":
+            "$ref": "#/components/schemas/RetrievalIndexVersion"
+        "keywordIndexVersion":
+          "type": "string"
+          "nullable": true
+          "description": "Opaque fingerprint of the configured keyword target; null if keyword did not succeed."
+        "rerankModel":
+          "type": "string"
+          "nullable": true
+      "required": ["requestId", "pipelineVersion", "elapsedMs", "indexes", "keywordIndexVersion", "rerankModel"]
     "RetrievalResponse":
       "allOf":
         -

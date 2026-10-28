@@ -23,5 +23,8 @@ public final class KnowledgeSearchTypes {
     public record ChannelScore(String channel,int rank,double score,String scoreType) { }
     public record ChannelState(String channel,String status,int candidates,String errorCode) { }
     public record Retrieval(List<Evidence> evidence,String requestedStrategy,String strategy,String rerankStatus,
-            List<ChannelState> channels,int channelCandidates,int fusionCandidates,int topK,boolean refillLimitReached,Double minRerankScore) { }
+            List<ChannelState> channels,int channelCandidates,int fusionCandidates,int topK,boolean refillLimitReached,Double minRerankScore,
+            String status,String outcome,Trace trace) { }
+    public record IndexVersion(UUID kbId,String embeddingModelId,String embeddingConfigRevision,String aiConfigRevision) { }
+    public record Trace(String requestId,String pipelineVersion,long elapsedMs,List<IndexVersion> indexes,String keywordIndexVersion,String rerankModel) { }
 }

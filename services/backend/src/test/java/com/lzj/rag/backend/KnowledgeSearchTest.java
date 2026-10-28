@@ -97,6 +97,24 @@ class KnowledgeSearchTest {
         model.mode="WRONG_DIM";assertThat(search(Map.of("query","database","kbIds",List.of(data.kb())),"alice",502).path("code").asText()).isEqualTo("KB_MODEL_INVALID_RESPONSE");
         model.mode="TIMEOUT";assertThat(search(Map.of("query","database","kbIds",List.of(data.kb())),"alice",504).path("code").asText()).isEqualTo("KB_MODEL_TIMEOUT");
     }
+    @Test void structuredRetrievalExposesSafeVersionsAndBothEndpointsPreventResponseCaching()throws Exception {
+        var data=dataset();
+        var body=json.writeValueAsBytes(Map.of("query","PostgreSQL connection","kbIds",List.of(data.kb()),"minScore",0.7));
+        var result=mvc.perform(post("/api/knowledge/retrieve").with(auth("alice")).header("X-Request-Id","rag-trace-test").contentType("application/json").content(body))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"))
+                .andExpect(jsonPath("$.data.status").value("COMPLETE")).andExpect(jsonPath("$.data.outcome").value("EVIDENCE"))
+                .andExpect(jsonPath("$.data.trace.pipelineVersion").value("retrieval-v1"))
+                .andExpect(jsonPath("$.data.trace.requestId").value("rag-trace-test"))
+                .andExpect(jsonPath("$.data.trace.indexes[0].kbId").value(data.kb().toString())).andReturn();
+        var trace=json.readTree(result.getResponse().getContentAsByteArray()).at("/data/trace");
+        assertThat(trace.toString()).doesNotContain("tenantId","ownerId","endpoint","token","vectorNamespace");
+        assertThat(trace.at("/indexes/0/embeddingConfigRevision").asText()).matches("[0-9a-f]{64}");
+        assertThat(trace.at("/indexes/0/aiConfigRevision").asText()).isEqualTo("a".repeat(64));
+        mvc.perform(post("/api/knowledge/search").with(auth("alice")).contentType("application/json").content(body))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"))
+                .andExpect(header().string("X-KB-Retrieval-Status","COMPLETE")).andExpect(header().string("X-KB-Retrieval-Outcome","EVIDENCE"))
+                .andExpect(jsonPath("$.data").isArray());
+    }
     @Test void oneQueryVectorServesCompatibleBasesAndDocumentScopePrecedesRanking()throws Exception {
         var data=dataset();UUID other=base("alice",null);UUID doc=document(other,"database-other.md",fixture("database.md"),"alice");
         var one=search(Map.of("query","database","kbIds",List.of(data.kb())),"alice",200).path("data");assertThat(one.size()).isEqualTo(3);for(var hit:one)assertThat(hit.path("kbId").asText()).isEqualTo(data.kb().toString());

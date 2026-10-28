@@ -15,6 +15,6 @@ public record SearchProperties(@DefaultValue("50") @Min(5) @Max(200) int maxTopK
         @DefaultValue("40s") Duration deadline) {
     public SearchProperties {
         if(deadline!=null && (deadline.isNegative() || deadline.isZero() || deadline.compareTo(Duration.ofMinutes(2))>0))
-            throw new IllegalArgumentException("Search model deadline must be positive and at most 2 minutes");
+            throw new IllegalArgumentException("Retrieval total deadline must be positive and at most 2 minutes");
     }
 }

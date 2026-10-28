@@ -12,25 +12,31 @@ public class RrfRerankPostProcessor implements SearchResultPostProcessor {
     private static class Fused {Evidence evidence;final Map<String,SearchChannel.Candidate> channels=new TreeMap<>();double fusion;Double rerank;Fused(Evidence evidence){this.evidence=evidence;}}
     public RrfRerankPostProcessor(HybridProperties config,RerankClient reranker,EvidenceRepository records){this.config=config;this.reranker=reranker;this.records=records;}
     private void score(Fused fused){fused.fusion=fused.channels.values().stream().mapToDouble(c->(c.channel().equals("VECTOR")?config.vectorWeight():config.keywordWeight())/(config.rrfConstant()+c.rank())).sum();}
-    public Result process(KnowledgeBasePrincipal actor,Request request,List<SearchChannel.Candidate> candidates,String requestId,boolean rerank,int fusionLimit) {
+    public Result process(KnowledgeBasePrincipal actor,Request request,List<SearchChannel.Candidate> candidates,String requestId,boolean rerank,int fusionLimit,Instant deadline) {
+        RetrievalDeadline.check(deadline);
         var byId=new LinkedHashMap<UUID,Fused>();
         for(var candidate:candidates){var fused=byId.computeIfAbsent(candidate.evidence().chunkId(),k->new Fused(candidate.evidence()));fused.channels.merge(candidate.channel(),candidate,(a,b)->a.rank()<=b.rank()?a:b);}
         var order=Comparator.<Fused>comparingDouble(f->f.fusion).reversed().thenComparing(f->f.evidence.chunkId());
         byId.values().forEach(this::score);var fused=new ArrayList<>(byId.values().stream().sorted(order).limit(fusionLimit).toList());
         // Never send stale or unauthorized index text to an external reranker.
         filter(actor,request,fused);fused.sort(order);String status=rerank?"SKIPPED_EMPTY":"DISABLED";
+        RetrievalDeadline.check(deadline);
         if(rerank && !fused.isEmpty()) {
             try {
-                var ranking=reranker.rerank(request.query().strip(),fused.stream().map(f->new RerankClient.Input(f.evidence.chunkId(),f.evidence.content())).toList(),requestId,Instant.now().plus(config.rerank().timeout()));
+                Instant local=Instant.now().plus(config.rerank().timeout());
+                Instant modelDeadline=local.isBefore(deadline)?local:deadline;
+                var ranking=reranker.rerank(request.query().strip(),fused.stream().map(f->new RerankClient.Input(f.evidence.chunkId(),f.evidence.content())).toList(),requestId,modelDeadline);
+                RetrievalDeadline.check(modelDeadline);
                 if(ranking.size()!=fused.size() || ranking.stream().map(RerankClient.Ranked::index).distinct().count()!=fused.size())throw new IllegalStateException();
                 for(var ranked:ranking){if(ranked.index()<0 || ranked.index()>=fused.size() || !Double.isFinite(ranked.score()))throw new IllegalStateException();fused.get(ranked.index()).rerank=ranked.score();}
                 status="APPLIED";
             }catch(RuntimeException error) {
-                if(Thread.currentThread().isInterrupted())throw error;
+                RetrievalDeadline.check(deadline);
                 fused.forEach(f->f.rerank=null);status=request.minRerankScore()==null?"FALLBACK_FUSION":"THRESHOLD_UNAVAILABLE";
             }
         }
         filter(actor,request,fused); // Names/coordinates are refreshed; model waiting cannot leak disabled/edited/deleted bodies.
+        RetrievalDeadline.check(deadline);
         Comparator<Fused> resultOrder="APPLIED".equals(status)?Comparator.<Fused>comparingDouble(f->f.rerank).reversed().thenComparing(order):order;
         if(request.minRerankScore()!=null)fused.removeIf(f->f.rerank==null || f.rerank<request.minRerankScore());
         var result=fused.stream().sorted(resultOrder).limit(request.topK()).map(f->{var e=f.evidence;return new Evidence(e.chunkId(),e.kbId(),e.documentId(),e.documentName(),e.chunkIndex(),e.generation(),e.content(),f.fusion,"RRF",e.sourceMetadata(),e.fileUrl(),f.fusion,f.rerank,f.channels.values().stream().map(c->new ChannelScore(c.channel(),c.rank(),c.rawScore(),c.scoreType())).toList());}).toList();

@@ -32,6 +32,10 @@ public class KnowledgeSearchService {
         return recall(actor,request,requestId,request.topK());
     }
     public List<Evidence> recall(KnowledgeBasePrincipal actor,Request request,String requestId,int limit) {
+        return recall(actor,request,requestId,limit,Instant.now().plus(config.deadline()));
+    }
+    public List<Evidence> recall(KnowledgeBasePrincipal actor,Request request,String requestId,int limit,Instant deadline) {
+        RetrievalDeadline.check(deadline);
         String query=request.query()==null?"":request.query().strip();
         if(query.isBlank() || query.codePointCount(0,query.length())>config.maxQueryChars()
                 || query.codePoints().anyMatch(c->c==0 || (c>=0xd800 && c<=0xdfff))
@@ -63,11 +67,15 @@ public class KnowledgeSearchService {
         if(revisions.isEmpty())return List.of(); // No published vectors have pinned an AI revision yet; no paid call is necessary.
         var identity=groups.keySet().iterator().next();String revision=revisions.iterator().next();
         var binding=new EmbeddingClient.Binding(identity.modelId(),identity.provider(),identity.modelName(),identity.dimension(),identity.embeddingSpace(),identity.configVersion(),identity.localRevision(),revision);
-        var result=embeddings.embed(binding,List.of(query),requestId,Instant.now().plus(config.deadline()));
+        RetrievalDeadline.check(deadline);
+        var result=embeddings.embed(binding,List.of(query),requestId,deadline);
         if(result==null || result.vectors()==null || result.vectors().size()!=1 || !revision.equals(result.aiConfigRevision()))
             throw new KnowledgeBaseException(502,"KB_MODEL_INVALID_RESPONSE","Query embedding does not match the bound index");
         var scopes=selected.stream().map(base->new VectorStore.Scope(actor,base.getId(),base.getVectorNamespace(),base.getEmbeddingModelId(),base.getEmbeddingConfigRevision())).toList();
-        return vectors.query(scopes,result.vectors().get(0),revision,docIds,limit,request.minScore()).stream().map(hit->{
+        RetrievalDeadline.check(deadline);
+        var hits=vectors.query(scopes,result.vectors().get(0),revision,docIds,limit,request.minScore());
+        RetrievalDeadline.check(deadline);
+        return hits.stream().map(hit->{
             double score=1-hit.cosineDistance();
             if(!Double.isFinite(score))throw new KnowledgeBaseException(500,"KB_INDEX_INVALID","Index returned an invalid cosine distance");
             return new Evidence(hit.chunkId(),hit.kbId(),hit.documentId(),hit.documentName(),hit.chunkIndex(),hit.generation(),hit.content(),

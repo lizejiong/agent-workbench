@@ -19,12 +19,13 @@ public class KnowledgeSearchController {
     public ResponseEntity<Result<List<KnowledgeSearchTypes.Evidence>>> search(@AuthenticationPrincipal KnowledgeBasePrincipal actor,
             @Valid @RequestBody KnowledgeSearchTypes.Request request) {
         var result=search.retrieve(actor,request,RequestIdContext.get());
-        return ResponseEntity.ok().header("X-KB-Search-Strategy",result.strategy()).header("X-KB-Rerank-Status",result.rerankStatus())
+        return ResponseEntity.ok().header("Cache-Control","no-store").header("X-KB-Search-Strategy",result.strategy()).header("X-KB-Rerank-Status",result.rerankStatus())
+                .header("X-KB-Retrieval-Status",result.status()).header("X-KB-Retrieval-Outcome",result.outcome())
                 .header("X-KB-Channel-Status",result.channels().stream().map(c->c.channel()+":"+c.status()).reduce((a,b)->a+","+b).orElse(""))
                 .body(Results.success(result.evidence()));
     }
     @PostMapping("/api/knowledge/retrieve")
-    public Result<KnowledgeSearchTypes.Retrieval> retrieve(@AuthenticationPrincipal KnowledgeBasePrincipal actor,@Valid @RequestBody KnowledgeSearchTypes.Request request){return Results.success(search.retrieve(actor,request,RequestIdContext.get()));}
+    public ResponseEntity<Result<KnowledgeSearchTypes.Retrieval>> retrieve(@AuthenticationPrincipal KnowledgeBasePrincipal actor,@Valid @RequestBody KnowledgeSearchTypes.Request request){return ResponseEntity.ok().header("Cache-Control","no-store").body(Results.success(search.retrieve(actor,request,RequestIdContext.get())));}
     @GetMapping("/api/knowledge/search-capabilities")
     public Result<Map<String,Object>> capabilities(){return Results.success(Map.of("defaultStrategy",config.strategy(),"keywordConfigured",keyword.enabled(),"keywordAnalyzer",keyword.analyzer(),"keywordScoreType","BM25","rerankConfigured",config.rerank().enabled(),"rerankModel",config.rerank().model(),"channelCandidates",config.channelCandidates(),"fusionCandidates",config.fusionCandidates(),"answerEnabled",false));}
 }

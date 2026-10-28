@@ -1,5 +1,9 @@
 # 知识库建设方案
 
+## RAG 检索增量（2026-10-28）
+
+知识库交付之后的共享检索预算、取消、状态与追踪加固见 [RAG 计划](../rag/PLAN.md)、[进度](../rag/PROGRESS.md)。仍使用原 search/retrieve、pgvector、可选 BM25 和精排，不新增索引或修改 V1–V8；独立问答、SSE 与 Python Agent 工具尚未交付，按 RAG 阶段分别推进。
+
 项目整体定位为 Agent Workbench，知识库/RAG 是其知识能力模块；本方案记录该模块的已实现能力。后续 Agent 运行时与编排使用预留的 agent-service 目录，本轮不扩展实现范围。
 
 ## 后续整体架构边界（2026-10-28，用户确认）

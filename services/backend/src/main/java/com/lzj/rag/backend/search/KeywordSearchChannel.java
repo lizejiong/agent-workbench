@@ -11,6 +11,7 @@ public class KeywordSearchChannel implements SearchChannel {
     public KeywordSearchChannel(KeywordIndex index,EvidenceRepository records){this.index=index;this.records=records;}
     public String name(){return "KEYWORD";}
     public Result search(KnowledgeBasePrincipal actor,KnowledgeSearchTypes.Request request,String id,int limit,Instant deadline) {
+        RetrievalDeadline.check(deadline);
         var result=new LinkedHashMap<UUID,Candidate>();boolean capped=false;
         for(int round=0;round<2 && Instant.now().isBefore(deadline);round++) {
             var keys=records.versionKeys(actor,request);var hits=index.query(request.query().strip(),actor.tenantId(),actor.userId(),keys,Math.min(200,limit*2),deadline);
@@ -21,6 +22,7 @@ public class KeywordSearchChannel implements SearchChannel {
             }
             if(result.size()>=limit || hits.size()<Math.min(200,limit*2)){capped=false;break;}capped=true;
         }
+        RetrievalDeadline.check(deadline);
         return new Result(result.values().stream().sorted(Comparator.comparingDouble(Candidate::rawScore).reversed().thenComparing(c->c.evidence().chunkId())).limit(limit).toList(),capped);
     }
 }
