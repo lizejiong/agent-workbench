@@ -4,6 +4,8 @@
 
 当前已实现可独立运行的 AI 服务、知识库后端和 Web 管理台，并提供 Java/Python 公共组件。Agent 运行时与编排尚未实现，`services/agent-service` 为后续扩展预留目录。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
 
+后续采用 Python / LangGraph 承载 Agent 执行与主模型调用，Java 承载知识业务、检索、业务工具及平台能力，具体职责见 [项目架构边界](docs/ARCHITECTURE.md)。
+
 ```text
 packages/
   java-starters/       Java 公共组件（Maven 多模块）

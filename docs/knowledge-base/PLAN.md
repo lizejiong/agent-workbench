@@ -2,6 +2,10 @@
 
 项目整体定位为 Agent Workbench，知识库/RAG 是其知识能力模块；本方案记录该模块的已实现能力。后续 Agent 运行时与编排使用预留的 agent-service 目录，本轮不扩展实现范围。
 
+## 后续整体架构边界（2026-10-28，用户确认）
+
+完整划分见 [项目架构边界](../ARCHITECTURE.md)。Python / LangGraph 负责 ReAct、工具决策、Graph 检查点/暂停恢复/取消、上下文裁剪与摘要、主 Agent 模型调用及 MCP 客户端装配。Java 继续负责知识库/文档/Chunk、解析分块/Embedding/索引、向量与关键词检索/融合/Rerank、现有模型基础设施、MCP 业务工具服务端及用户/权限/配置/审计。知识业务通过 Java 服务接口供 Agent 使用；Agent 图执行状态由 Python 持有。平台能力按需扩展，继续遵循简单用户管理的要求。本轮仅记录，不启动后续实现阶段。
+
 ## 登录页预填（2026-10-28）
 
 按用户要求支持开发及生产构建的可配置默认账号/密码。Vite 从 KB_LOGIN_DEFAULT_USERNAME、KB_LOGIN_DEFAULT_PASSWORD 注入登录表单初值，未配置时为空；仍需用户点击登录并由既有后端认证，可修改初值，不新增账号、免登录或浏览器存储。实际值仅放 Git 忽略的 web/.env.local；生产预填值属于公开的前端资源，不是服务端秘密。仅调整 App.tsx、vite.config.ts、配置示例及相关文档，沿用现有认证和权限。

@@ -1,5 +1,11 @@
 # 知识库进度
 
+## 后续整体架构归属记录（2026-10-28）
+
+按用户提供的十二项能力划分，将 Python / LangGraph Agent 执行层与 Java 知识/业务平台层的职责写入 docs/ARCHITECTURE.md，并在 README、PLAN 增加入口。明确主 Agent 模型调用、上下文与图状态归 Python；知识入库及检索链路、Java 模型基础设施和 MCP 业务服务端保留 Java，MCP 客户端及工具装配归 Python；用户管理继续从简。
+
+核对现有 services/agent-service 仅含 .gitkeep，services/ai-service 为现有 Java 模型服务；记录区分当前实现和未来方向。本轮只改文档，无业务代码、依赖、接口、迁移或部署变化；文档路径与 Git 差异检查通过，不运行代码测试。随后按用户要求将架构说明、README、PLAN、PROGRESS 共四份文档整理为本地提交；不推送远端，最终提交标识以 git log 为准。
+
 ## 登录页默认账号密码（2026-10-28，已完成）
 
 按用户要求，登录页通过可配置初值预填账号和密码，并明确支持生产构建。App.tsx 的 Form.initialValues 由 Vite 的 KB_LOGIN_DEFAULT_USERNAME、KB_LOGIN_DEFAULT_PASSWORD 注入；未配置时为空，输入仍可修改，需点击登录，不新增认证接口、账号管理、自动登录或浏览器持久化。配置示例不含真实值；本机 web/.env.local 已从现有后端账号配置填好并确认受 Git 忽略。默认密码会进入前端资源，已向用户说明该公开下发特性；模型/数据库/存储密钥未注入。
