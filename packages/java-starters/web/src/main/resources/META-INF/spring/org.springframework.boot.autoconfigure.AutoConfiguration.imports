@@ -1,1 +1,2 @@
 com.lzj.rag.framework.starter.web.config.WebAutoConfiguration
+com.lzj.rag.framework.starter.web.config.ReactiveWebAutoConfiguration

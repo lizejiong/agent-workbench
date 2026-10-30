@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | convention | rag-convention | 错误码、异常、分页、通用响应契约 |
 | common | rag-common | 断言、枚举、对象和线程等工具 |
-| web | rag-web-spring-boot-starter | Spring MVC 全局异常处理、响应构造、请求 ID |
+| web | rag-web-spring-boot-starter | Spring MVC / WebFlux 异常处理、响应构造、请求 ID |
 | designpattern | rag-design-pattern | 不依赖 Spring 的策略选择、责任链和构建器接口 |
 | cache | rag-cache-spring-boot-starter | Redis JSON 缓存、TTL、Key、按需启用的防穿透/击穿能力 |
 | log | rag-log-spring-boot-starter | 注解式方法调用日志 |
@@ -23,6 +23,23 @@
 ```
 
 普通组件构建为 jar；Spring Boot 可执行打包由应用模块显式启用，父 POM 只管理插件配置。
+
+Web starter 保留默认的 MVC 依赖，已有 MVC 服务的接入方式不变。已有 `spring-boot-starter-webflux` 的响应式服务应排除其 MVC 传递依赖：
+
+```xml
+<dependency>
+    <groupId>com.lzj.rag</groupId>
+    <artifactId>rag-web-spring-boot-starter</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+WebFlux 支持使用可选的 `spring-webflux` 依赖，不向 MVC 消费方传递响应式运行时。自动配置按应用类型选择 MVC 或 WebFlux 组件，不会同时注册两套过滤器和异常处理器。
 
 ## 缓存
 
@@ -46,7 +63,21 @@ rag:
 
 普通 JSON 响应约定为 `code`、`message`、`data`、`requestId`；成功 code 为字符串 `"0"`。Python 的响应模型可以对齐这一约定。`isSuccess()` 是 Java 便利方法，不额外输出为 JSON 字段。
 
-Web starter 在请求入口读取或生成 `X-Request-Id`，写入响应头；`Results.success(...)` 和 `Results.failure(...)` 在请求期间复用同一 ID。显式传入 ID 优先，请求结束清理上下文。跨服务传播由各服务的 HTTP 客户端负责；异步线程需要显式传递上下文。
+MVC 适配在请求入口读取或生成 `X-Request-Id`，写入响应头；`Results.success(...)` 和 `Results.failure(...)` 在请求期间复用同一 ID。显式传入 ID 优先，请求结束清理线程上下文。跨服务传播由各服务的 HTTP 客户端负责；异步线程需要显式传递上下文。
+
+WebFlux 适配通过 `ReactiveRequestIdFilter` 校验或生成 ID，接受 1–128 位字母、数字、点、冒号、下划线或横线。ID 保存在 Exchange 和 Reactor Context，不使用 `ThreadLocal`。Controller 使用 `ReactiveRequestIdContext.get(exchange)`，响应式链内可使用 `ReactiveRequestIdContext.current()`；构造响应时显式调用 `Results.success(data, requestId)` 或 `Results.failure(code, message, requestId)`。
+
+MVC 异常处理沿用现有 HTTP 200 加业务错误码的行为。WebFlux 适配使用 HTTP 状态：参数异常与 `ClientException` 为 400，`RemoteException` 为 502，其他公共异常及未知异常为 500；业务异常可在继承公共异常体系的同时实现 `HttpStatusAware`，指定已有接口约定的状态码。默认参数与内部错误使用 `BaseErrorCode`，应用可按已发布接口配置以下属性，不需要复制异常处理器：
+
+```yaml
+rag:
+  web:
+    reactive:
+      input-code: INVALID_INPUT
+      input-message: Malformed request or body exceeds limit
+      internal-code: INTERNAL
+      internal-message: Internal service error
+```
 
 SSE 使用业务自己的事件格式，不包装为普通 JSON `Result`；响应已开始后的错误通过流事件表达。
 
