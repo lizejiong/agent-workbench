@@ -2,6 +2,45 @@
 
 Java 17 / Spring Boot 3.5.16 / WebFlux 的独立服务，统一百炼、DeepSeek、硅基流动的 HTTP 协议。仅负责模型调用与结果归一化；工具实际执行、对话记忆和 Agent 编排由 LangGraph 负责。没有数据库、Redis 或启动时的付费模型探测。
 
+## 模块与目录
+
+沿用仓库现有的单个 `rag-ai-service` Maven 模块，基础包为 `com.lzj.rag.ai`，先按业务划分，再在业务内分层：
+
+```text
+src/main/java/com/lzj/rag/ai/
+├── AiApplication.java           启动入口
+├── infra/provider/
+│   ├── ProviderClient.java      供应商 HTTP/SSE 协议适配
+│   ├── dto/                     客户端拥有的技术请求、响应
+│   ├── exception/               模型调用错误与重试、熔断分类
+│   └── enums/                   供应商类型
+├── model/                       对话、视觉、向量、重排、模型元数据
+│   ├── controller/
+│   │   ├── request/             HTTP 请求及格式校验
+│   │   └── vo/                  HTTP/SSE 返回对象
+│   ├── service/
+│   │   ├── ModelService.java    与 HTTP 无关的业务契约
+│   │   ├── impl/                服务实现与调用编排
+│   │   └── bo/                  业务输入、输出与流事件
+│   ├── converter/               Web ↔ BO、BO ↔ 供应商 DTO 的纯转换
+│   ├── config/                  ai.* 配置与客户端装配
+│   ├── enums/                   模型能力、调用档位
+│   ├── routing/                 模型注册、路由与嵌入配置身份
+│   └── resilience/              模型并发控制和熔断
+└── text/                        Token 估算、代码围栏处理
+    ├── controller/request/      文本请求
+    ├── controller/vo/           文本和估算结果
+    ├── service/impl/            文本业务实现
+    ├── service/bo/              Token 估算业务结果
+    └── converter/               文本结果转换
+```
+
+调用方向为 `Controller → Service → infra/provider`；Controller 使用 Web Converter，Service 使用 Provider Converter。Service 接口只接收 BO 或简单参数，返回 BO、`Mono<BO>` 或 `Flux<BO>`，由 Controller 转为 VO 和 SSE。模型元数据也通过 Service 查询。供应商客户端只依赖自己的 DTO、枚举及通用异常，不反向依赖业务配置、BO 或 Controller。
+
+模块依赖为 `rag-ai-service → rag-web-spring-boot-starter → rag-convention`。请求标识、统一响应构造和异常处理复用公共 Web starter 的 WebFlux 适配；服务内部不再复制 `framework`。本服务已有 `spring-boot-starter-webflux`，接入公共 starter 时排除其默认的 `spring-boot-starter-web` 传递依赖，继续使用 Netty。`model → infra/provider`，供应商客户端使用自身 DTO 和继承公共 `ServiceException` 的 `ModelInvocationException`，只保留模型调用的状态、重试和熔断信息。配置仍使用原有 `ai.*` 键，HTTP 路径、JSON 字段、SSE 事件和状态码约定沿用下文。
+
+当前没有持久化需求，因此按需保留上述目录。详细职责、对象命名和新增代码约定见 [目录与分层说明](docs/STRUCTURE.md)。
+
 ## 构建与启动
 
 在 IDEA 导入仓库根 `pom.xml`，选择 JDK 17、IDEA 自带 Maven，在 Maven 窗口执行根 `verify`。本机 PowerShell 等价命令（从仓库根运行）：
@@ -10,6 +49,8 @@ Java 17 / Spring Boot 3.5.16 / WebFlux 的独立服务，统一百炼、DeepSeek
 & 'C:/Program Files/JetBrains/IntelliJ IDEA 2026.2.1/plugins/maven-plugin/lib/maven3/bin/mvn.cmd' -B -ntp '-Dmaven.repo.local=C:/Users/lzj/Documents/ChatGPT/rag/.cache/maven/repository' verify
 java -jar services/ai-service/target/rag-ai-service-0.1.0-SNAPSHOT.jar --ai.enabled=false
 ```
+
+仅验证本服务及其公共依赖时，在仓库根执行同一 Maven 命令并使用 `-pl services/ai-service -am verify`。重构后首次构建应使用干净输出目录，运行中的 JAR 采用独立目录构建后再发布。测试包对应生产包，模型 HTTP 回归位于 `model/controller`，业务入口校验位于 `model/service/impl`，熔断测试位于 `model/resilience`，文本接口测试位于 `text/controller`。
 
 也可在 IDEA 运行 `com.lzj.rag.ai.AiApplication`。默认端口 8081，可设 `AI_PORT`。无密钥验收用 `AI_ENABLED=false` 或上述参数：`GET /actuator/health` 返回 UP，模型端点返回 503，两个文本工具接口仍可使用。真正调用时配置至少一个聊天供应商密钥并启用 AI；默认三个聊天档位均包含三家供应商，一把聊天密钥即可启动。
 
@@ -38,7 +79,7 @@ YAML 中模型 ID 是逻辑别名，`model` 才是供应商模型名。默认名
 
 ## HTTP 接口
 
-所有普通响应复用 `rag-convention` 的 `code/message/data/requestId`，成功是 `"0"/"success"`。输入错误 HTTP 400，服务禁用或无可用路由 503，入口并发满 429，上游无效响应 502，总超时 504。`X-Request-Id` 可传入 1–128 位字母、数字、点、冒号、下划线或横线，否则生成；响应头、JSON、SSE 和日志使用同一个 ID。健康检查保留 Actuator 格式。
+所有普通响应通过公共 `Results` 构造，使用 `rag-convention` 的 `code/message/data/requestId`，成功是 `"0"/"success"`。公共 WebFlux 异常处理器读取 `rag.web.reactive` 配置，保留本服务的 `INVALID_INPUT`、`INTERNAL` 及对应消息。输入错误 HTTP 400，服务禁用或无可用路由 503，入口并发满 429，上游无效响应 502，总超时 504。`X-Request-Id` 可传入 1–128 位字母、数字、点、冒号、下划线或横线，否则生成；响应头、JSON、SSE 和日志使用同一个 ID。健康检查保留 Actuator 格式。
 
 ```sh
 curl http://localhost:8081/actuator/health
