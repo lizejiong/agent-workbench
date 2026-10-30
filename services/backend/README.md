@@ -2,6 +2,8 @@
 
 Java 17 / Spring Boot 3.5.16 / Spring MVC，接入根 Maven 多模块和公共 Web/响应组件。
 
+代码按知识库、文档、切片、入库、解析、模型、刷新、检索和运维划分业务包，业务内部使用 `controller/request`、`controller/vo`、`service/impl`、`service/bo`、`dao/entity`、`dao/mapper` 及按需创建的 `converter`。实体统一使用 `DO`，接口通过 Request、BO 与 VO 转换；共享 S3 客户端位于 `infra/storage`，继续复用公共组件库。目录职责、依赖边界和测试位置见 [目录与分层说明](docs/STRUCTURE.md)。
+
 第10阶段完成API管理交付：GET /api/knowledge/management导航、认证OpenAPI/52条Postman请求、scripts/knowledge-base/delivery_acceptance.py一键HTTP验收、库文档数和最近成功入库时间。V8复用内容审计表记录同事务摘要；Actuator/Micrometer提供任务、阶段、模型失败、清理和刷新指标。KB_OPERATOR默认false，仅保护全局指标，业务归属不变；不建设用户管理或新的前端框架。完整启动/恢复/最终验证和限制以运行手册、进度为准。
 
 第9阶段增加可配置混合检索：Elasticsearch Java Client/BM25、真实中文分析器检查、数据库事务Outbox与修订可见性、并行向量/关键词召回、RRF去重和可选原生AI精排。POST /api/knowledge/retrieve返回证据及实际通道/精排状态；原/search保留数组并增加策略响应头。关键词和精排默认关闭，向量独立可用；V7自动记录所有入库/维护/删除同步意图。GET文档keyword-index和KB keyword-sync可查询/恢复。Compose可选keyword profile，默认cjk；真实供应商精排需单独联调，本轮提供结构化证据检索。
