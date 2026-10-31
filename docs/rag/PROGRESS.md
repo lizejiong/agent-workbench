@@ -88,3 +88,11 @@ RRF 按查询/通道列表计排名，同一列表重复候选只贡献一次，
 复用既有 AiRerankClient 和供应商适配，按返回 index/chunkId 校验整组评分。候选不足 topK 仍请求评分。新增服务端 BEST_EFFORT/REQUIRED：前者保留无分融合或在阈值模式明确拒收，后者返回 KB_RERANK_UNAVAILABLE；总 deadline/中断不作为降级吞掉。启用要求与阈值冲突在配置构造时拒绝。逐条丢弃弱证据，全部弱时状态 BELOW_THRESHOLD，与无候选、未启用、模型失败区分。评分输入固定展示正文，trace 增加 display-content-v1。
 
 最小验证：RerankDeadlineTest 5 项及 AiRerankProtocolTest 1 项共 6 项通过，0 跳过，日志 `.cache/rag-round5.log`。本地真实 HTTP 对 AI 协议的桩验证乱序、重复/越界、缺分、非法分、错 ID、空结果及 429；后处理覆盖撤权、deadline、少量候选评分、弱证据和两种策略。复用既有外部设施回归结果，未启动 Docker 或全量 verify。无真实供应商质量数据，门槛默认关闭，未声称分数证明事实正确。
+
+## 附件第 6 轮：受控证据上下文（2026-10-31，完成）
+
+RAG 门面共用 EvidenceAssembler，最终用户证据与模型材料均经过当前权限、启停、正文和代次复核。按文档/子问题/章节或 sheet 配额选择，保留本次 E 编号、原正文与展示哈希、来源定位及授权文件接口。可选一跳邻居受同一权限、代次和预算约束，明确标记补充来源、未独立精排；不合并重叠块，来源逐块保留。表格按整行收缩，文本按换行或 Unicode 码点裁剪并标记，循环服从 deadline。
+
+计数复用 AI 文本工具 `/ai/utils/estimate-tokens`，每次非空上下文一次调用，加 25% 余量，并用包含问题、历史和定位元数据的 UTF-8 字节总额保守限制；系统/输出/安全储备另列。estimated 明确为粗估，不宣称目标模型精确计数。资料变更和预算不足明确报错，模型消息与系统提示词不出现在用户视图。
+
+最小验证：EvidenceAssemblerTest 3 项和 KnowledgeSearchTest 的 RAG 端到端场景 1 项最终通过，日志 `.cache/rag-round6-verified.log`。真实 PG/MinIO 上传入库、邻居补充、禁用邻居排除、跨用户来源拒绝与删除后 404；模型和计数工具为 HTTP 桩。修正了样例包含多个有效邻居时对固定返回条数的错误假设，改为检查禁用块不能出现。回执位于隔离副本 `services/backend/target/knowledge-base/rag-retrieve-example.json`。未跑全量 verify、真实模型效果或生产负载。

@@ -42,6 +42,10 @@
 
 中文提示词集中在 `services/backend/src/main/resources/rag/prompts`，维护说明见同目录 README。`kb.rag.prompts.query-version` 默认 query-understanding-v1；修改行为时新增版本，服务端代码继续校验输出。`kb.rag.prompts.directory` 可指定部署方受控模板目录；必须提供选中版本的同名 UTF-8 `.txt`，重启后使用。实际版本和 SHA-256 都会追踪，普通用户不能指定模板文件或读取模板正文。
 
+证据预算配置前缀 `kb.rag.context`：window-tokens=8192、system-reserve=1024、output-reserve=1024、safety-reserve=512、top-k=5、per-document=2、per-query=3、per-source=2、neighbor-radius=0（可设 1）。window-tokens 须由部署方按实际生成模型设置；当前没有模型专用 tokenizer。AI 服务的 `/ai/utils/estimate-tokens` 是既有粗略计数工具，结果以 estimated=true 加 25% 余量处理，同时有保守字节限制。每次非空上下文只请求一次估算；空范围/空证据不调用该工具。
+
+邻居启用后给补充块预留一个条数位置，仍受文档、子问题、章节/sheet 配额约束。409/RAG_EVIDENCE_CHANGED 应重新检索；422/RAG_CONTEXT_BUDGET 应缩小问题/历史或调整与目标模型匹配的预算，不能通过跳过权限或版本检查恢复。估算失败是依赖错误，不转换成无相关资料。
+
 沿用 `deploy/knowledge-base/compose.yml` 和现有私有 `.env`，不覆盖已有凭据。PG/pgvector、MinIO、AI 服务按知识库手册启动；backend 的 `KB_AI_BASE_URL` 指向已有 AI 服务。关键词与 rerank 默认为 false，向量可以独立工作，不要求 ES 健康才能启动。
 
 ```powershell

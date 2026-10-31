@@ -31,5 +31,15 @@ document = {'openapi': '3.0.3', 'info': {'title': 'Java RAG API', 'version': '20
     'security': [{'basicAuth': []}], 'paths': {'/api/rag/retrieve': {'post': operation('retrieveRag', 'RagRetrieveRequest', 'RagRetrieval')}},
     'components': {'securitySchemes': {'basicAuth': {'type':'http','scheme':'basic'}},
         'schemas': {'RagRetrieveRequest': search, 'QueryPlan': query, 'RagRetrieval': retrieval}}}
+snapshot = {'type':'object','properties':{key:dict(string) for key in ['evidenceId','documentName','content','fileUrl','sourceContentHash','snapshotHash']}}
+snapshot['properties'].update({key:uuid for key in ['kbId','documentId','chunkId']})
+snapshot['properties'].update({'generation':{'type':'integer','format':'int64'},'chunkIndex':{'type':'integer'},'sourceMetadata':{'type':'object'},
+    'truncated':{'type':'boolean'},'adjacent':{'type':'boolean'},'parentChunkId':dict(uuid,nullable=True),
+    'subQueries':{'type':'array','items':string},'fusionScore':{'type':'number','nullable':True},'rerankScore':{'type':'number','nullable':True}})
+context = {'type':'object','properties':{'evidence':{'type':'array','maxItems':50,'items':{'$ref':'#/components/schemas/EvidenceSnapshot'}},
+    'estimatedTokens':{'type':'integer','format':'int64'},'inputTokenBudget':{'type':'integer'},'estimated':{'type':'boolean'},
+    'truncated':{'type':'boolean'},'strategyVersion':string,'contentHash':string}}
+document['components']['schemas'].update({'EvidenceSnapshot':snapshot,'EvidenceContext':context})
+retrieval['properties']['context']={'nullable':True,'allOf':[{'$ref':'#/components/schemas/EvidenceContext'}]}
 OUT.write_text(json.dumps(document, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
 print(f'Generated {len(document["paths"])} RAG paths')

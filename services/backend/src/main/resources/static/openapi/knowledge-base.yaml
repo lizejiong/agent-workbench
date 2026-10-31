@@ -3200,6 +3200,7 @@ openapi: 3.0.3
           "type": "string"
           "enum":
             - "COSINE_SIMILARITY"
+            - "UNSCORED"
             - "RRF"
         "sourceMetadata":
           "$ref": "#/components/schemas/KnowledgeSource"

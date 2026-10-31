@@ -60,7 +60,7 @@ class QueryUnderstandingServiceTest {
         var deadline=Instant.now().plusSeconds(5);
         var denied=new com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException(404,"KB_NOT_FOUND","not found");
         org.mockito.Mockito.when(engine.prepare(actor,input.search(),deadline)).thenThrow(denied);
-        var facade=new RagRetrievalServiceImpl(engine,understanding,history);
+        var facade=new RagRetrievalServiceImpl(engine,understanding,history,org.mockito.Mockito.mock(EvidenceAssembler.class));
         assertThatThrownBy(()->facade.retrieve(actor,input,"test",com.lzj.rag.backend.rag.service.RagRetrievalService.QueryMode.USER,deadline)).isSameAs(denied);
         org.mockito.Mockito.verifyNoInteractions(understanding,history);
         org.mockito.Mockito.doReturn(input.search()).when(engine).prepare(actor,input.search(),deadline);

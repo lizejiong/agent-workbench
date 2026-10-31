@@ -32,7 +32,7 @@ import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 
 /** Actual S3 uploads, parsing, HTTP query embeddings and pgvector SQL. Vectors are an explicit local topic fixture. */
 @SpringBootTest(properties={"kb.storage.enabled=true","kb.storage.bucket=kb-search-test","kb.storage.max-upload-bytes=4096",
-        "kb.search.max-top-k=6","kb.search.max-kb-ids=2","kb.search.max-document-ids=3","kb.search.max-query-chars=256",
+        "kb.search.max-top-k=6","kb.search.max-kb-ids=2","kb.search.max-document-ids=3","kb.search.max-query-chars=256","kb.rag.context.neighbor-radius=1",
         "kb.models.profiles.other.enabled=true","kb.models.profiles.other.model-id=other-embed","kb.models.profiles.other.provider=bailian",
         "kb.models.profiles.other.model-name=other-model","kb.models.profiles.other.dimension=1024","kb.models.profiles.other.embedding-space=other-space","kb.models.profiles.other.config-version=other-v1",
         "kb.models.profiles.next.enabled=true","kb.models.profiles.next.model-id=qwen-embed","kb.models.profiles.next.provider=bailian",
@@ -136,6 +136,28 @@ class KnowledgeSearchTest {
         assertThat(search(body,"alice",400).path("code").asText()).isEqualTo("KB_SEARCH_SCOPE_LIMIT");
         search(Map.of("query","database","kbIds",List.of(data.kb(),bob)),"alice",404);
         assertThat(model.requests).hasSize(calls);
+    }
+    @Test void ragEndpointAssemblesVersionedEvidenceAndDisabledNeighborsCannotEnterTheContext()throws Exception {
+        UUID kb=base("alice",null);String text=("Database connection settings. ".repeat(21)+"\n\n").repeat(3);
+        UUID doc=document(kb,"long.md",text,"alice");
+        var chunks=jdbc.queryForList("SELECT id FROM kb_chunk WHERE document_id=? ORDER BY chunk_index",UUID.class,doc);
+        assertThat(chunks).hasSizeGreaterThan(1);
+        var request=Map.of("query","database","kbIds",List.of(kb),"topK",2,"strategy","VECTOR");
+        var result=mvc.perform(post("/api/rag/retrieve").with(auth("alice")).contentType("application/json").content(json.writeValueAsBytes(request)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("READY")).andExpect(jsonPath("$.data.context.estimated").value(true))
+                .andExpect(jsonPath("$.data.context.modelContext").doesNotExist()).andReturn().getResponse();
+        var context=json.readTree(result.getContentAsByteArray()).at("/data/context");assertThat(context.path("evidence")).hasSize(2);
+        var neighbor=context.path("evidence").get(1);assertThat(neighbor.path("adjacent").asBoolean()).isTrue();assertThat(neighbor.path("rerankScore").isNull()).isTrue();
+        assertThat(neighbor.path("evidenceId").asText()).isEqualTo("E2");assertThat(neighbor.path("sourceContentHash").asText()).matches("[0-9a-f]{64}");
+        jdbc.update("UPDATE kb_chunk SET enabled=false WHERE id=?",UUID.fromString(neighbor.path("chunkId").asText()));
+        var after=mvc.perform(post("/api/rag/retrieve").with(auth("alice")).contentType("application/json").content(json.writeValueAsBytes(request)))
+                .andExpect(status().isOk()).andReturn().getResponse();
+        for(var source:json.readTree(after.getContentAsByteArray()).at("/data/context/evidence"))
+            assertThat(source.path("chunkId").asText()).isNotEqualTo(neighbor.path("chunkId").asText());
+        mvc.perform(get(neighbor.path("fileUrl").asText()).with(auth("bob"))).andExpect(status().isNotFound());
+        jdbc.update("UPDATE kb_document SET deleted_at=clock_timestamp() WHERE id=?",doc);
+        mvc.perform(get(neighbor.path("fileUrl").asText()).with(auth("alice"))).andExpect(status().isNotFound());
+        Path out=Path.of("target/knowledge-base/rag-retrieve-example.json");Files.createDirectories(out.getParent());Files.writeString(out,json.writerWithDefaultPrettyPrinter().writeValueAsString(context));
     }
     @Test void oneQueryVectorServesCompatibleBasesAndDocumentScopePrecedesRanking()throws Exception {
         var data=dataset();UUID other=base("alice",null);UUID doc=document(other,"database-other.md",fixture("database.md"),"alice");

@@ -43,6 +43,10 @@ public final class EmbeddingStub implements AutoCloseable {
                 }
                 if(rerankMode.equals("SHORT") && !results.isEmpty())results.remove(0);
                 data=Map.of("results",results,"model",rerankMode.equals("WRONG_MODEL")?"other-rerank":"qwen-rerank");
+            }else if(exchange.getRequestURI().getPath().equals("/ai/utils/estimate-tokens")) {
+                String text=json.readTree(exchange.getRequestBody()).path("text").asText();
+                long wide=text.codePoints().filter(c->Character.UnicodeScript.of(c)==Character.UnicodeScript.HAN).count();
+                data=Map.of("tokens",wide+(text.codePointCount(0,text.length())-wide+3)/4,"estimated",true);
             }else if(exchange.getRequestURI().getPath().equals("/ai/vision")) {
                 visionRequests.add(json.readTree(exchange.getRequestBody()));
                 data=Map.of("content",visionMode.equals("EMPTY")?" ":"Description: invoice. Visible text: INVOICE 42; Apples: 2.","model",visionMode.equals("CHANGED")?"another-model":"qwen-vision","finishReason",visionMode.equals("TRUNCATED")?"length":"stop");

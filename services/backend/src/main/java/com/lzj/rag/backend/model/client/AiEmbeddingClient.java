@@ -238,6 +238,10 @@ public class AiEmbeddingClient implements EmbeddingClient {
         return call("POST", "/ai/chat", body, requestId, deadline);
     }
 
+    public JsonNode tokenEstimateCall(String text, String requestId, Instant deadline) {
+        return call("POST", "/ai/utils/estimate-tokens", Map.of("text",text), requestId, deadline);
+    }
+
     /**
      * 在调用截止时间和响应字节限制内请求 AI 服务，并归一化响应或错误。
      *

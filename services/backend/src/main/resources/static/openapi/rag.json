@@ -293,6 +293,115 @@
                 "$ref": "knowledge-base.yaml#/components/schemas/Retrieval"
               }
             ]
+          },
+          "context": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceContext"
+              }
+            ]
+          }
+        }
+      },
+      "EvidenceSnapshot": {
+        "type": "object",
+        "properties": {
+          "evidenceId": {
+            "type": "string"
+          },
+          "documentName": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "sourceContentHash": {
+            "type": "string"
+          },
+          "snapshotHash": {
+            "type": "string"
+          },
+          "kbId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chunkId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "chunkIndex": {
+            "type": "integer"
+          },
+          "sourceMetadata": {
+            "type": "object"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "adjacent": {
+            "type": "boolean"
+          },
+          "parentChunkId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "subQueries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fusionScore": {
+            "type": "number",
+            "nullable": true
+          },
+          "rerankScore": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "EvidenceContext": {
+        "type": "object",
+        "properties": {
+          "evidence": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/EvidenceSnapshot"
+            }
+          },
+          "estimatedTokens": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "inputTokenBudget": {
+            "type": "integer"
+          },
+          "estimated": {
+            "type": "boolean"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "strategyVersion": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
           }
         }
       }

@@ -16,6 +16,22 @@ import java.util.*;
 @Repository
 public class EvidenceRepository {
 
+    public List<EvidenceBO> adjacent(KnowledgeBasePrincipal actor,SearchBO scope,Collection<UUID> anchors,int radius) {
+        if(anchors.isEmpty() || radius==0) return List.of();
+        if(radius!=1 || anchors.size()>50) throw new IllegalArgumentException("Invalid adjacency budget");
+        var p=params(actor,scope);p.put("anchors",anchors);
+        var ids=jdbc.queryForList("""
+            SELECT DISTINCT c.id FROM kb_chunk c JOIN kb_chunk a ON a.document_id=c.document_id AND a.generation=c.generation
+            JOIN kb_document d ON d.id=c.document_id
+            WHERE a.id IN (:anchors) AND c.kb_id IN (:kbs) AND c.chunk_index BETWEEN a.chunk_index-1 AND a.chunk_index+1
+            AND c.id<>a.id AND c.tenant_id=:tenant AND c.owner_id=:owner AND a.tenant_id=:tenant AND a.owner_id=:owner
+            AND c.enabled AND a.enabled AND c.generation=d.active_generation AND (:allDocs OR d.id IN (:docs))
+            ORDER BY c.id LIMIT 100
+            """,p,UUID.class);
+        return hydrate(actor,scope,ids).values().stream().sorted(Comparator.comparing(EvidenceBO::documentId)
+                .thenComparingInt(EvidenceBO::chunkIndex).thenComparing(EvidenceBO::chunkId)).toList();
+    }
+
     /** 执行包含授权范围条件的命名参数查询。 */
     private final NamedParameterJdbcTemplate jdbc;
 

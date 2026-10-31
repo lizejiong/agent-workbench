@@ -15,8 +15,10 @@ public class RagRetrievalServiceImpl implements RagRetrievalService {
     private final HybridRetrievalService engine;
     private final QueryUnderstandingService understanding;
     private final ConversationHistory history;
-    public RagRetrievalServiceImpl(HybridRetrievalService engine, QueryUnderstandingService understanding, ConversationHistory history) {
+    private final EvidenceAssembler assembler;
+    public RagRetrievalServiceImpl(HybridRetrievalService engine, QueryUnderstandingService understanding, ConversationHistory history,EvidenceAssembler assembler) {
         this.engine=engine;this.understanding=understanding;this.history=history;
+        this.assembler=assembler;
     }
     public RagRetrievalBO retrieve(KnowledgeBasePrincipal actor,RagRetrieveBO request,String requestId,QueryMode mode,Instant deadline) {
         var scope=engine.prepare(actor,request.search(),deadline);
@@ -26,6 +28,14 @@ public class RagRetrievalServiceImpl implements RagRetrievalService {
         if(plan.needsClarification()) return new RagRetrievalBO("NEEDS_CLARIFICATION",plan,null);
         var search=new SearchBO(plan.effectiveQuery(),plan.kbIds(),scope.documentIds(),scope.topK(),scope.minScore(),scope.strategy(),scope.rerank(),scope.minRerankScore());
         var result=engine.retrieveQueries(actor,search,plan.subQueries(),requestId,deadline);
-        return new RagRetrievalBO(result.outcome().equals("EVIDENCE")?"READY":result.outcome().equals("NO_EVIDENCE")?"NO_EVIDENCE":"UNAVAILABLE",plan,result);
+        var context=assembler.assemble(actor,search,plan,result.evidence(),messages,requestId,deadline);
+        var byId=new HashMap<UUID,EvidenceBO>();result.evidence().forEach(e->byId.put(e.chunkId(),e));
+        var safe=context.evidence().stream().map(e->{var scored=e.adjacent()?null:byId.get(e.chunkId());
+            return new EvidenceBO(e.chunkId(),e.kbId(),e.documentId(),e.documentName(),e.chunkIndex(),e.generation(),e.content(),
+                    scored==null?0:scored.score(),scored==null?"UNSCORED":scored.scoreType(),e.sourceMetadata(),e.fileUrl(),
+                    e.fusionScore(),e.rerankScore(),scored==null?List.of():scored.channelScores());}).toList();
+        var filtered=new RetrievalBO(safe,result.requestedStrategy(),result.strategy(),result.rerankStatus(),result.channels(),result.channelCandidates(),
+                result.fusionCandidates(),result.topK(),result.refillLimitReached(),result.minRerankScore(),result.status(),result.outcome(),result.trace(),result.candidateBudgetTruncated());
+        return new RagRetrievalBO(result.outcome().equals("EVIDENCE")?"READY":result.outcome().equals("NO_EVIDENCE")?"NO_EVIDENCE":"UNAVAILABLE",plan,filtered,context);
     }
 }

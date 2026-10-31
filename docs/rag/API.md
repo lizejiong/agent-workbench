@@ -68,11 +68,25 @@ NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不
 
 第 4 轮起，全部去重后的 subQueries 进入同一引擎，按子查询分批、每批通道并行，最多 3×2 次召回。`channels[].subQuery`、`evidence[].channelScores[].subQuery` 标明所属查询；每个查询/通道列表最多贡献一次排名。分数仍分别保留 cosine、BM25、RRF 和 rerank，不相加原始分。`channelCandidates` 为本次总额分配后每通道的实际上限，`candidateBudgetTruncated` 明确全请求候选预算是否压低召回量；它与外部补召回的 `refillLimitReached` 分开，截断导致的空结果为 INDETERMINATE。trace.pipelineVersion 更新为 retrieval-v2。单查询向量、未开启精排时继续保持原 cosine 分数语义。
 
-## B：Java 独立问答与 SSE（后续，未实现）
+## 第 5 轮：精排状态和故障策略
 
 第 5 轮精排状态细分为 DISABLED、SKIPPED_EMPTY、APPLIED、BELOW_THRESHOLD、FALLBACK_FUSION、THRESHOLD_UNAVAILABLE。BELOW_THRESHOLD 表示模型真实评分成功，但本轮逐条丢弃低于 minRerankScore 的候选后没有证据；它不代表已证明库中没有答案。阈值未校准时默认不设置。`trace.rerankInputVersion=display-content-v1` 说明模型输入为展示正文，channelScores、fusionScore、rerankScore 继续分别保留。
 
 精排故障模式由服务端配置：BEST_EFFORT 返回无精排分的融合结果并标记降级；如同时启用分数门槛，则无分结果全部剔除并返回 THRESHOLD_UNAVAILABLE/INDETERMINATE。REQUIRED 在超时、限流、协议错误等情况下返回 503/KB_RERANK_UNAVAILABLE；总 deadline 或中断继续按总预算错误传播。请求不能任意切换故障模式。
+
+## 第 6 轮：证据与上下文
+
+`/api/rag/retrieve` 的 data 增加 context：evidence、estimatedTokens、inputTokenBudget、estimated、truncated、strategyVersion、contentHash。每条证据包含本次 E1/E2 编号、kbId/documentId/chunkId/generation/chunkIndex、documentName、截断后的 content、白名单 sourceMetadata、授权 fileUrl、原正文 sourceContentHash 与展示快照 snapshotHash，以及 truncated、adjacent、parentChunkId、所属 subQueries 和可用的精排/融合分。
+
+证据按引擎排序，先给各子问题一个选取机会，再受文档/子问题/章节或 sheet 来源配额限制。可配置当前代次的相邻块补充，最多一跳，占用同一条数和文本预算，adjacent=true，未冒充独立精排命中。RAG retrieval.evidence 同步为最终有效证据；邻居 scoreType=UNSCORED。旧知识检索入口保持既有 topK 契约。
+
+长表格保留表头、分隔行和完整数据行；普通文本按换行或 Unicode 码点边界缩短并标 truncated。未合并相邻或重叠块，来源仍逐块可追踪。页码不存在时不增加该字段。用户视图不返回内部 modelContext 或系统提示词；模型视图只包含局部编号、资料正文、文档名和白名单定位，省略内部 UUID 和文件 URL。
+
+全部资料、定位元数据、问题和授权历史计入输入预算；系统提示、输出和安全余量另外预留。计数复用 AI 的粗略估算并增加 25% 余量，同时用 UTF-8 字节总额约束输入；estimated=true，不能当作目标模型的精确 tokenizer 或计费。资料全部因预算不可用时返回 422/RAG_CONTEXT_BUDGET；快照变更或撤权导致不可用时返回 409/RAG_EVIDENCE_CHANGED，模型调用前重新验证。来源 fileUrl 每次下载仍执行当前权限与删除检查。历史答案的证据持久化在第 7 轮实现。
+
+示例请求：`{"query":"PostgreSQL 备份","kbIds":["已授权库的 UUID"],"strategy":"VECTOR","topK":5}`。真实入库后的完整证据回执保存在验证构建副本的 `target/knowledge-base/rag-retrieve-example.json`；其中 sourceContentHash/generation 可解释当次来源，引用编号合法性不能证明资料支持答案断言。
+
+## B：Java 独立问答与 SSE（后续，未实现）
 
 拟由同一检索引擎取得证据，再经过权限复核、字符/token 预算裁剪，调用既有 Java AI chat。查询理解采用经过 Jackson schema/字段/类型/长度校验的结构化输出；模型不能赋予授权范围。错误或超时是否使用原 query 必须明确状态，并遵守总调用预算。
 

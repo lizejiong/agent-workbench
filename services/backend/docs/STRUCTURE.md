@@ -52,6 +52,11 @@ src/main/java/com/lzj/rag/backend/
 ├── operations/                      管理导航、审计及业务指标
 │   ├── controller/、service/、converter/
 │   └── config/、metrics/、logging/
+├── rag/                             查询理解与共用证据上下文
+│   ├── controller/request/、controller/vo/
+│   ├── service/、service/impl/、service/bo/
+│   ├── config/                     查询、配额和模型窗口预算
+│   └── prompt/                     中文模板按版本及哈希加载
 ├── security/                        认证身份和业务访问规则
 │   └── config/、model/
 └── infra/                           跨业务复用的技术能力
