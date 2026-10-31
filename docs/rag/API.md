@@ -56,6 +56,16 @@ NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不
 
 单通道失败仍有另一路成功时返回 200 + DEGRADED；全部通道失败返回 503。精排阈值因依赖失败无法应用时返回空 evidence + DEGRADED/INDETERMINATE，调用者不能将其理解为“无相关知识”。
 
+## 第 3 轮：局部查询理解
+
+`POST /api/rag/retrieve` 保留 query/kbIds/documentIds/topK/strategy/rerank/minScore/minRerankScore 的平铺输入，增加可选 conversationId。响应 `data` 为 `{status, query, retrieval}`；query 含 originalQuery/effectiveQuery/subQueries、实际缩小后的 kbIds、needsClarification/clarificationQuestion、degraded/fallbackReason、promptVersion/promptHash/termVersion/model。retrieval 为既有结构化检索结果；澄清时为 null。原 `/api/knowledge/search` 和 `/api/knowledge/retrieve` 保持原契约。
+
+状态：READY 表示保留了证据，NO_EVIDENCE 表示成功检索未保留证据，NEEDS_CLARIFICATION 表示需要补充用户对象；降级空结果为 UNAVAILABLE，依赖错误继续使用 502/503/504，均不伪装为没有资料。查询理解的降级单独见 query.degraded。默认关闭模型改写；术语规则仍确定性执行。第 4 轮接入全部 subQueries 的受控召回。
+
+普通 HTTP 入口固定 USER 模式，queryMode 不属于请求字段。内部 INDEPENDENT 模式不读取 Java 对话，留给 Agent 独立查询；身份不能由模型传入。Java 会话存储交付前，非空未知 conversationId 返回 404。所有库范围先验证，再读取同用户历史或调用理解模型；模型只可缩小范围。JSON 格式、字段、问题数量、ID/数字/否定词检查用于发现部分错误，不保证改写未改变语义。
+
+机器契约：`/openapi/rag.json`，由 `python scripts/rag/build_openapi.py` 生成，知识库 OpenAPI 引用对应路径。
+
 ## B：Java 独立问答与 SSE（后续，未实现）
 
 拟由同一检索引擎取得证据，再经过权限复核、字符/token 预算裁剪，调用既有 Java AI chat。查询理解采用经过 Jackson schema/字段/类型/长度校验的结构化输出；模型不能赋予授权范围。错误或超时是否使用原 query 必须明确状态，并遵守总调用预算。

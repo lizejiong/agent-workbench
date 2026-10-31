@@ -66,3 +66,11 @@ PLAN 和 RUNBOOK 已记录选择规则、单类/单方法命令和结果报告�
 复用现有单一 pgvector、入库模型绑定、证据 BO/VO、总 deadline、参数化 cosine SQL、权限与有效代次检查。新增 `/api/rag/retrieve` 兼容入口；省略范围从可信 tenant+owner 解析，默认范围超额明确拒绝，显式空范围返回 NONE/NO_EVIDENCE 且不调用外部依赖。指定范围逐项授权，保留不同空间 409 的既有政策。
 
 最小验证：隔离副本 `.cache/rag-development-20261031` 执行 `-pl services/backend -am -Dtest=KnowledgeSearchTest -Dsurefire.failIfNoSpecifiedTests=false test`，13 项全部通过，0 跳过。真实 PG/pgvector、MinIO、解析入库，查询向量为 HTTP topic 桩；覆盖正常/无关、默认/空/超额范围、跨用户与租户、启停/删除/旧代次、不同空间、维度错误、模型超时。基线回执为该副本的 `services/backend/target/knowledge-base/search-example.json`；日志 `.cache/rag-round2.log`。复用先前预算/HTTP 边界结果，未运行全量 verify 或真实供应商效果评估。
+
+## 附件第 3 轮：受限查询理解（2026-10-31，完成）
+
+RAG 门面在既有共享引擎之前执行范围预检；USER 从授权 Java 历史接口取上下文，INDEPENDENT 不加载历史，queryMode 不进入普通请求契约。复用已有 AI HTTP 传输增加 ChatClient；理解默认关闭，可配置确定性术语表，JSON 输出校验字段、类型、数量、去重、硬标识/数字/否定词和知识库子集。预算内失败回退规范化查询并明确降级，澄清状态不调用检索。模型查询只用于知识问题，不执行任务。
+
+按用户补充要求，系统提示词改为中文、独立 UTF-8 模板，使用 PromptCatalog 和服务端配置按版本/受控目录加载，保留版本及内容 SHA-256。query 同时追踪术语映射修订与实际模型；提示词、资料和用户输入分离。目录 README 说明维护方式，新增独立 RAG OpenAPI 生成器及契约。
+
+最小验证：`QueryUnderstandingServiceTest` 最终 4 项通过，0 跳过，日志 `.cache/rag-round3-verified.log`；覆盖术语/编号/否定/数量、拆分去重、澄清、错误 JSON、超量、越权、超时及授权顺序。开发中修复了测试桩重复配置引发的测试错误。使用模型输出桩；未进行真实模型语义评估。当前 Java 会话为空实现，非空未知 conversationId 返回 404，实际历史存储在第 7/8 轮补齐；全部子查询的召回在下一轮接入。

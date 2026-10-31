@@ -1,0 +1,301 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Java RAG API",
+    "version": "2026-10-31"
+  },
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "paths": {
+    "/api/rag/retrieve": {
+      "post": {
+        "operationId": "retrieveRag",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RagRetrieveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功；结果携带实际状态、授权证据和降级信息",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/RagRetrieval"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
+    "schemas": {
+      "RagRetrieveRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16000
+          },
+          "kbIds": {
+            "type": "array",
+            "maxItems": 64,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "documentIds": {
+            "type": "array",
+            "maxItems": 500,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true,
+            "minItems": 1
+          },
+          "topK": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200,
+            "default": 5
+          },
+          "strategy": {
+            "type": "string",
+            "enum": [
+              "AUTO",
+              "VECTOR",
+              "KEYWORD",
+              "HYBRID"
+            ]
+          },
+          "rerank": {
+            "type": "boolean"
+          },
+          "minScore": {
+            "type": "number",
+            "minimum": -1,
+            "maximum": 1
+          },
+          "minRerankScore": {
+            "type": "number"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "QueryPlan": {
+        "type": "object",
+        "properties": {
+          "originalQuery": {
+            "type": "string"
+          },
+          "effectiveQuery": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "promptHash": {
+            "type": "string"
+          },
+          "termVersion": {
+            "type": "string"
+          },
+          "subQueries": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "string"
+            }
+          },
+          "kbIds": {
+            "type": "array",
+            "maxItems": 64,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "needsClarification": {
+            "type": "boolean"
+          },
+          "clarificationQuestion": {
+            "type": "string",
+            "nullable": true
+          },
+          "degraded": {
+            "type": "boolean"
+          },
+          "fallbackReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "model": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RagRetrieval": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "NEEDS_CLARIFICATION",
+              "NO_EVIDENCE",
+              "UNAVAILABLE"
+            ]
+          },
+          "query": {
+            "$ref": "#/components/schemas/QueryPlan"
+          },
+          "retrieval": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "knowledge-base.yaml#/components/schemas/Retrieval"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

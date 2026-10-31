@@ -121,12 +121,12 @@ class KnowledgeSearchTest {
     @Test void serverResolvesOnlyOwnedScopesAndExplicitEmptyNeverCallsEmbedding()throws Exception {
         var data=dataset();UUID bob=base("bob",null);document(bob,"private.md","Private database secret","bob");
         var body=Map.of("query","database","strategy","VECTOR");
-        var response=mvc.perform(post("/api/rag/retrieve").with(auth("alice")).contentType("application/json").content(json.writeValueAsBytes(body)))
+        var response=mvc.perform(post("/api/knowledge/retrieve").with(auth("alice")).contentType("application/json").content(json.writeValueAsBytes(body)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.strategy").value("VECTOR")).andReturn().getResponse();
         for(var row:json.readTree(response.getContentAsByteArray()).at("/data/evidence"))
             assertThat(row.path("kbId").asText()).isEqualTo(data.kb().toString());
         int calls=model.requests.size();
-        mvc.perform(post("/api/rag/retrieve").with(auth("alice")).contentType("application/json")
+        mvc.perform(post("/api/knowledge/retrieve").with(auth("alice")).contentType("application/json")
                         .content(json.writeValueAsBytes(Map.of("query","database","kbIds",List.of()))))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.outcome").value("NO_EVIDENCE"))
                 .andExpect(jsonPath("$.data.strategy").value("NONE")).andExpect(jsonPath("$.data.evidence").isEmpty());

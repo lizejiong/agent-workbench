@@ -128,9 +128,30 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
      * @return 当前业务处理结果；失败时通过异常报告。
      */
     public RetrievalBO retrieve(KnowledgeBasePrincipal actor, SearchBO request, String requestId) {
+        return retrieve(actor, request, requestId, Instant.now().plus(limits.deadline()));
+    }
+
+    @Override
+    public SearchBO prepare(KnowledgeBasePrincipal actor, SearchBO request, Instant deadline) {
+        var budget = remaining(deadline);
+        return phase(() -> {
+            var resolved = resolveScope(actor, request);
+            authorize(actor, resolved);
+            return resolved;
+        }, budget, budget.instant());
+    }
+
+    private RetrievalDeadline remaining(Instant deadline) {
+        RetrievalDeadline.check(deadline);
+        var duration = Duration.between(Instant.now(), deadline);
+        return new RetrievalDeadline(duration.compareTo(limits.deadline()) < 0 ? duration : limits.deadline());
+    }
+
+    @Override
+    public RetrievalBO retrieve(KnowledgeBasePrincipal actor, SearchBO request, String requestId, Instant outerDeadline) {
         // 第一阶段：建立共享总预算，补齐默认参数并校验全部访问范围。
         // budget：当前检索共享的总时间预算。
-        var budget = new RetrievalDeadline(limits.deadline());
+        var budget = remaining(outerDeadline);
         final SearchBO supplied = request;
         request = phase(() -> resolveScope(actor, supplied), budget, budget.instant());
         if (request.minRerankScore() == null && config.rerank().minScore() != null)

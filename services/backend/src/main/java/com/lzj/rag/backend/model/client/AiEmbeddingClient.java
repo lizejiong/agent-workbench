@@ -234,6 +234,10 @@ public class AiEmbeddingClient implements EmbeddingClient {
         return call("POST", "/ai/rerank", body, requestId, deadline);
     }
 
+    public JsonNode chatCall(Map<String, Object> body, String requestId, Instant deadline) {
+        return call("POST", "/ai/chat", body, requestId, deadline);
+    }
+
     /**
      * 在调用截止时间和响应字节限制内请求 AI 服务，并归一化响应或错误。
      *

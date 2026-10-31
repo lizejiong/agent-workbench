@@ -20,4 +20,8 @@ public interface HybridRetrievalService {
      * @return 当前业务处理结果；失败时通过异常报告。
      */
     RetrievalBO retrieve(KnowledgeBasePrincipal actor, SearchBO request, String requestId);
+
+    RetrievalBO retrieve(KnowledgeBasePrincipal actor, SearchBO request, String requestId, Instant deadline);
+
+    SearchBO prepare(KnowledgeBasePrincipal actor, SearchBO request, Instant deadline);
 }
