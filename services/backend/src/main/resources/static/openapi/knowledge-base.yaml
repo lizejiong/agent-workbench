@@ -3896,6 +3896,7 @@ openapi: 3.0.3
             - "APPLIED"
             - "FALLBACK_FUSION"
             - "THRESHOLD_UNAVAILABLE"
+            - "BELOW_THRESHOLD"
         "channels":
           "type": "array"
           "items":
@@ -3958,6 +3959,9 @@ openapi: 3.0.3
       "type": "object"
       "additionalProperties": false
       "properties":
+        "rerankInputVersion":
+          "type": "string"
+          "nullable": true
         "requestId":
           "type": "string"
           "nullable": true

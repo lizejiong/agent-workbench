@@ -20,6 +20,27 @@ import com.lzj.rag.backend.search.service.bo.SearchCandidateBO;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 
 class RerankDeadlineTest {
+    @Test void requiredPolicyRejectsFailureWhileBestEffortKeepsUnscoredFusion() {
+        when(records.hydrate(any(),any(),anyCollection())).thenReturn(Map.of(chunk,evidence));
+        when(model.rerank(anyString(),anyList(),anyString(),any())).thenThrow(new KnowledgeBaseException(503,"KB_MODEL_RATE_LIMITED","private detail"));
+        var fallback=processor().process(actor,request,candidates,"fallback",true,20,Instant.now().plusSeconds(2));
+        assertThat(fallback.rerankStatus()).isEqualTo("FALLBACK_FUSION");assertThat(fallback.evidence()).hasSize(1);
+        assertThat(fallback.evidence().get(0).rerankScore()).isNull();assertThat(fallback.evidence().get(0).channelScores().get(0).score()).isEqualTo(.9);
+        var config=new HybridProperties("AUTO",50,20,60,1,1,2,Duration.ofSeconds(2),Duration.ofSeconds(1),
+                new HybridProperties.Rerank(true,"qwen-rerank",Duration.ofSeconds(1),30000,null,HybridProperties.RerankFailureMode.REQUIRED));
+        assertThatThrownBy(()->new RrfRerankPostProcessor(config,model,records).process(actor,request,candidates,"required",true,20,Instant.now().plusSeconds(2)))
+                .isInstanceOfSatisfying(KnowledgeBaseException.class,e->assertThat(e.code()).isEqualTo("KB_RERANK_UNAVAILABLE"));
+    }
+    @Test void aSingleCandidateStillGetsScoredAndWeakEvidenceIsDistinguishedFromMissingScores() {
+        when(records.hydrate(any(),any(),anyCollection())).thenReturn(Map.of(chunk,evidence));
+        when(model.rerank(anyString(),anyList(),anyString(),any())).thenReturn(List.of(new RerankScoreBO(0,.2)));
+        var threshold=new SearchBO("database",List.of(kb),null,5,null,"HYBRID",true,.7);
+        var result=processor().process(actor,threshold,candidates,"weak",true,20,Instant.now().plusSeconds(2));
+        assertThat(result.rerankStatus()).isEqualTo("BELOW_THRESHOLD");assertThat(result.evidence()).isEmpty();
+        verify(model).rerank(anyString(),argThat(rows->rows.size()==1),anyString(),any());
+        assertThatThrownBy(()->new HybridProperties.Rerank(false,"model",Duration.ofSeconds(1),30000,.7)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(()->new HybridProperties.Rerank(false,"model",Duration.ofSeconds(1),30000,null,HybridProperties.RerankFailureMode.REQUIRED)).isInstanceOf(IllegalArgumentException.class);
+    }
     private final RerankClient model=mock(RerankClient.class);
     private final EvidenceRepository records=mock(EvidenceRepository.class);
     private final KnowledgeBasePrincipal actor=new KnowledgeBasePrincipal("alice","unused","a","alice");

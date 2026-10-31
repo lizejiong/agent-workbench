@@ -70,6 +70,10 @@ NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不
 
 ## B：Java 独立问答与 SSE（后续，未实现）
 
+第 5 轮精排状态细分为 DISABLED、SKIPPED_EMPTY、APPLIED、BELOW_THRESHOLD、FALLBACK_FUSION、THRESHOLD_UNAVAILABLE。BELOW_THRESHOLD 表示模型真实评分成功，但本轮逐条丢弃低于 minRerankScore 的候选后没有证据；它不代表已证明库中没有答案。阈值未校准时默认不设置。`trace.rerankInputVersion=display-content-v1` 说明模型输入为展示正文，channelScores、fusionScore、rerankScore 继续分别保留。
+
+精排故障模式由服务端配置：BEST_EFFORT 返回无精排分的融合结果并标记降级；如同时启用分数门槛，则无分结果全部剔除并返回 THRESHOLD_UNAVAILABLE/INDETERMINATE。REQUIRED 在超时、限流、协议错误等情况下返回 503/KB_RERANK_UNAVAILABLE；总 deadline 或中断继续按总预算错误传播。请求不能任意切换故障模式。
+
 拟由同一检索引擎取得证据，再经过权限复核、字符/token 预算裁剪，调用既有 Java AI chat。查询理解采用经过 Jackson schema/字段/类型/长度校验的结构化输出；模型不能赋予授权范围。错误或超时是否使用原 query 必须明确状态，并遵守总调用预算。
 
 模型可见上下文仅包含授权证据、局部引用 ID 及必要来源。系统规则明确文档为不可信资料，不执行其中指令。用户答案返回文本和可解析的引用映射，调试状态另行授权；引用存在、模型判断和分数阈值均不代表事实正确。

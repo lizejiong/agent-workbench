@@ -82,3 +82,9 @@ RAG 门面在既有共享引擎之前执行范围预检；USER 从授权 Java �
 RRF 按查询/通道列表计排名，同一列表重复候选只贡献一次，不按正文合并其他文档。channelScores 与 channels 保留 subQuery，保持原始评分；candidateBudgetTruncated 与 refillLimitReached 独立，降级空结果不宣称确定未命中。pipelineVersion=retrieval-v2。改写结果同时服从项目查询长度上限。
 
 最小验证：预算/取消/重复查询/RRF 的 12 项单元回归与 2 项真实 PG/MinIO/ES 集成场景最终全部通过，日志 `.cache/rag-round4-verified.log`；查询理解 4 项在 `.cache/rag-round4.log` 中通过，相关代码后续未变化。输出纯向量、单查询混合、多查询混合对照到隔离副本 `services/backend/target/knowledge-base/fusion-baseline.json`。模型仍为 HTTP 桩，不报告真实语义提升；未运行全量 verify。
+
+## 附件第 5 轮：精排门槛与故障策略（2026-10-31，完成）
+
+复用既有 AiRerankClient 和供应商适配，按返回 index/chunkId 校验整组评分。候选不足 topK 仍请求评分。新增服务端 BEST_EFFORT/REQUIRED：前者保留无分融合或在阈值模式明确拒收，后者返回 KB_RERANK_UNAVAILABLE；总 deadline/中断不作为降级吞掉。启用要求与阈值冲突在配置构造时拒绝。逐条丢弃弱证据，全部弱时状态 BELOW_THRESHOLD，与无候选、未启用、模型失败区分。评分输入固定展示正文，trace 增加 display-content-v1。
+
+最小验证：RerankDeadlineTest 5 项及 AiRerankProtocolTest 1 项共 6 项通过，0 跳过，日志 `.cache/rag-round5.log`。本地真实 HTTP 对 AI 协议的桩验证乱序、重复/越界、缺分、非法分、错 ID、空结果及 429；后处理覆盖撤权、deadline、少量候选评分、弱证据和两种策略。复用既有外部设施回归结果，未启动 Docker 或全量 verify。无真实供应商质量数据，门槛默认关闭，未声称分数证明事实正确。

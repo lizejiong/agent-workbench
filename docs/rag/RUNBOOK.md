@@ -38,6 +38,8 @@
 
 多查询召回：`kb.retrieval.max-sub-queries=3`，`max-total-candidates=300`；与原 `channel-candidates=50`、`fusion-candidates=20`、最终 topK=5 分开。每通道实际召回量不超过总额除以查询数×通道数，服务端验证总额至少覆盖配置中的单通道和融合容量。子查询分批复用原零队列有界执行器，不为子查询建立新的线程池或新的 deadline。RRF 常数与权重继续使用既有配置。
 
+精排：`kb.retrieval.rerank.failure-mode` 默认 BEST_EFFORT，可设 REQUIRED；REQUIRED 要求 enabled=true。默认 min-score 不设置；如需要门槛，必须结合已标注样本校准，并同时启用精排。当前策略逐条丢弃弱候选，记录 BELOW_THRESHOLD；精排故障时不使用 RRF 分冒充模型分。精排仍使用既有 AI 服务、qwen-rerank 别名、timeout 和 max-input-chars；输入策略版本为 display-content-v1。
+
 中文提示词集中在 `services/backend/src/main/resources/rag/prompts`，维护说明见同目录 README。`kb.rag.prompts.query-version` 默认 query-understanding-v1；修改行为时新增版本，服务端代码继续校验输出。`kb.rag.prompts.directory` 可指定部署方受控模板目录；必须提供选中版本的同名 UTF-8 `.txt`，重启后使用。实际版本和 SHA-256 都会追踪，普通用户不能指定模板文件或读取模板正文。
 
 沿用 `deploy/knowledge-base/compose.yml` 和现有私有 `.env`，不覆盖已有凭据。PG/pgvector、MinIO、AI 服务按知识库手册启动；backend 的 `KB_AI_BASE_URL` 指向已有 AI 服务。关键词与 rerank 默认为 false，向量可以独立工作，不要求 ES 健康才能启动。

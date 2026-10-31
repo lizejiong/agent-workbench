@@ -18,4 +18,9 @@ public record RetrievalTraceBO(
         long elapsedMs,
         List<IndexVersionBO> indexes,
         String keywordIndexVersion,
-        String rerankModel) {}
+        String rerankModel, String rerankInputVersion) {
+    public RetrievalTraceBO(String requestId,String pipelineVersion,long elapsedMs,List<IndexVersionBO> indexes,
+                            String keywordIndexVersion,String rerankModel) {
+        this(requestId,pipelineVersion,elapsedMs,indexes,keywordIndexVersion,rerankModel,rerankModel==null?null:"display-content-v1");
+    }
+}

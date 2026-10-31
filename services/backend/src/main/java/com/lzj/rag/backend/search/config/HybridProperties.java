@@ -71,15 +71,25 @@ public record HybridProperties(
      * @param maxInputChars 模型或解析输入的字符数上限。
      * @param minScore 仅适用于向量通道的最低相似度阈值。
      */
+    public enum RerankFailureMode { BEST_EFFORT, REQUIRED }
+
     public record Rerank(
             @DefaultValue("false") boolean enabled,
             @DefaultValue("qwen-rerank") @Pattern(regexp = "[a-zA-Z0-9_.-]{1,128}") String model,
             @DefaultValue("10s") Duration timeout,
             @DefaultValue("30000") @Min(1024) @Max(1000000) int maxInputChars,
-            Double minScore) {
+            Double minScore,
+            @DefaultValue("BEST_EFFORT") RerankFailureMode failureMode) {
+
+        public Rerank(boolean enabled,String model,Duration timeout,int maxInputChars,Double minScore) {
+            this(enabled,model,timeout,maxInputChars,minScore,RerankFailureMode.BEST_EFFORT);
+        }
 
         /** 校验并补齐缺省配置，构造可直接使用的配置快照。 */
+        @org.springframework.boot.context.properties.bind.ConstructorBinding
         public Rerank {
+            if(failureMode==null || !enabled && failureMode==RerankFailureMode.REQUIRED)
+                throw new IllegalArgumentException("Required reranking must be enabled");
             if (timeout != null
                     && (timeout.isNegative()
                             || timeout.isZero()

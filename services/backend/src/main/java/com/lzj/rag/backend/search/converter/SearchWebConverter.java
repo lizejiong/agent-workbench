@@ -161,7 +161,7 @@ public final class SearchWebConverter {
                                 .map(SearchWebConverter::toIndexVersionVO)
                                 .toList(),
                 value.keywordIndexVersion(),
-                value.rerankModel());
+                value.rerankModel(),value.rerankInputVersion());
     }
 
     /**

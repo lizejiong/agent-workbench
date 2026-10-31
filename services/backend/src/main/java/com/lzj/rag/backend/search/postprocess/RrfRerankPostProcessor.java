@@ -178,6 +178,9 @@ public class RrfRerankPostProcessor implements SearchResultPostProcessor {
             } catch (RuntimeException error) {
                 // error：本次处理捕获的异常，用于归类失败原因。
                 RetrievalDeadline.check(deadline);
+                if(config.rerank().failureMode()==HybridProperties.RerankFailureMode.REQUIRED)
+                    throw new com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException(
+                            503,"KB_RERANK_UNAVAILABLE","Required reranking did not produce valid scores");
                 // f：当前按切片身份聚合的融合状态。
                 fused.forEach(f -> f.rerank = null);
                 status =
@@ -198,9 +201,11 @@ public class RrfRerankPostProcessor implements SearchResultPostProcessor {
                                 .reversed()
                                 .thenComparing(order)
                         : order;
-        if (request.minRerankScore() != null)
+        if (request.minRerankScore() != null) {
             // f：当前按切片身份聚合的融合状态。
             fused.removeIf(f -> f.rerank == null || f.rerank < request.minRerankScore());
+            if("APPLIED".equals(status) && fused.isEmpty()) status="BELOW_THRESHOLD";
+        }
         // result：当前步骤产生的处理结果。
         var result =
                 fused.stream()

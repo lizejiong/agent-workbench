@@ -18,4 +18,4 @@ public record RetrievalTraceVO(
         long elapsedMs,
         List<IndexVersionVO> indexes,
         String keywordIndexVersion,
-        String rerankModel) {}
+        String rerankModel, String rerankInputVersion) {}
