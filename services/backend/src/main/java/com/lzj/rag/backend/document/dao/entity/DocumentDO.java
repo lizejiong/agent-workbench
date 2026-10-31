@@ -1,7 +1,7 @@
 package com.lzj.rag.backend.document.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lzj.rag.backend.knowledgebase.dao.handler.JsonbTypeHandler;
+import com.lzj.rag.backend.infra.persistence.JsonbTypeHandler;
 
 import lombok.Getter;
 import lombok.Setter;

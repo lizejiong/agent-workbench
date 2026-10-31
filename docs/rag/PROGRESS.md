@@ -40,3 +40,17 @@
 不同嵌入空间仍显式拒绝同次 cosine 排序；调用方拆分请求。rerank 仅追踪既有配置别名，当前 AI 协议没有不可变精排供应商修订。关键词目标哈希不代替每文档同步修订。无真实业务语义指标、生产负载或答案效果验收。
 
 下一轮 R2：复用已有 Java `/ai/chat` 和 Jackson，增加受限查询理解、模型前复核的证据组装及非流式独立问答；继续共用现有检索引擎。R2 完成后再单独开展 SSE 与 Python Agent 适配。
+
+## 结构重构回归修补（2026-10-31）
+
+本轮按代码审查结果做小范围修补，保留现有业务分包、Service/BO/VO 和内部实体访问契约。
+
+- WebFlux 公共异常处理保留 Spring `ErrorResponseException` 的 HTTP 状态与协议响应头；4xx/5xx 分别使用应用配置的参数/内部错误码与提示，不输出原始异常原因。通过 WebTestClient 的 WebFlux 处理链测试覆盖不支持的媒体类型 415、显式 404/503、requestId 和自定义错误契约。
+- 表格单元格统一处理 LF、CRLF、CR 后转为 `<br>`，不再残留回车符；保留反斜线和竖线转义。新增表头与正文的单元用例，并通过 CSV 上传、子进程解析、入库与向量发布验证三种换行。此问题在结构重构前已存在。
+- PostgreSQL UUID/JSONB 类型处理器移到 `infra/persistence`，更新 MyBatis 扫描配置和知识库、文档、切片实体引用；移除这些处理器及表格渲染方法中的重复说明性注释。目录与公共 Web 文档同步更新。
+
+隔离源码副本 `.cache/structure-fix-20261031` 的全 reactor `verify` 成功（含可执行 JAR 打包）：共 292 项，280 通过、0 失败、0 错误，12 项 `LocalPostgresTest` 因未配置专用数据库而按原条件跳过；Testcontainers 的 PostgreSQL/pgvector、MinIO 和 Elasticsearch 集成测试实际执行，模型调用使用 HTTP 桩。新增 5 项回归全部通过，其中 CSV 三种换行在同一集成用例内分别验证。425 个构建副本文件与工作区经过 SHA-256 核对。
+
+验证命令：`./mvnw.cmd -B -ntp -f .cache/structure-fix-20261031/pom.xml -Dmaven.repo.local=C:/Users/lzj/Documents/ChatGPT/rag/.cache/maven/repository -Dkb.test.elasticsearch-image=atlas-rag-elasticsearch:latest verify`。日志保存在 `.cache/structure-fix-20261031.log`，逐测试集汇总为 `.cache/structure-fix-20261031/.validation-summary.json`。
+
+构建没有覆盖当前运行中的 JAR。本轮不扩展 R2，不执行运行包部署或真实供应商模型效果评估。

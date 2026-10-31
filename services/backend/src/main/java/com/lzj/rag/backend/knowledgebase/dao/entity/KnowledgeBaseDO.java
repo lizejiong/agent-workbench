@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.lzj.rag.backend.knowledgebase.dao.handler.JsonbTypeHandler;
+import com.lzj.rag.backend.infra.persistence.JsonbTypeHandler;
 
 import lombok.Getter;
 import lombok.Setter;

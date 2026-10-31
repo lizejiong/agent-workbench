@@ -113,6 +113,19 @@ class BinaryFormatsTest {
         assertThat(request.path("preferredModel").asText()).isEqualTo("qwen-vision");assertThat(request.at("/messages/0/images/0/mediaType").asText()).isEqualTo("image/png");
         assertThat(Base64.getDecoder().decode(request.at("/messages/0/images/0/base64").asText())).isEqualTo(files.get("invoice.png"));
     }
+    @Test void multilineCsvCellsKeepOnePublishedTableRowForEveryLineEnding()throws Exception {
+        UUID kb=base();int index=0;
+        for(String newline:List.of("\n","\r\n","\r")) {
+            String csv="名称,备注\r\n苹果,\"第一行"+newline+"第二行\"\r\n";
+            UUID doc=upload(kb,"multiline-"+(index++)+".csv",csv.getBytes(java.nio.charset.StandardCharsets.UTF_8),"fast",201);
+            var result=kernel.ingest(actor(),doc);
+            assertThat(result.chunks()).hasSize(1);
+            var chunks=rows(doc);assertThat(chunks).hasSize(1);
+            assertThat(chunks.get(0).get("content").toString())
+                    .contains("第一行<br>第二行").doesNotContain("\r").hasLineCount(3);
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_vector WHERE document_id=?",Integer.class,doc)).isEqualTo(1);
+        }
+    }
     @Test void scannedPdfFastExplicitlyFailsAndFidelityUsesVersionedProtocolWithoutDowngrade()throws Exception {
         UUID doc=upload(base(),"scanned.pdf",files.get("scanned.pdf"),"fast",201);
         assertThatThrownBy(()->kernel.ingest(actor(),doc)).isInstanceOfSatisfying(KnowledgeBaseException.class,e->assertThat(e.code()).isEqualTo("KB_OCR_REQUIRED"));

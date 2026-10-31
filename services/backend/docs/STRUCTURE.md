@@ -14,7 +14,6 @@ src/main/java/com/lzj/rag/backend/
 │   ├── service/internal/            实体读取及行锁的内部访问契约
 │   ├── dao/entity/                  KnowledgeBaseDO
 │   ├── dao/mapper/                  KnowledgeBaseMapper
-│   ├── dao/handler/                 PostgreSQL UUID、JSONB 类型映射
 │   ├── converter/                  Web 与持久化对象的纯转换
 │   └── exception/                  知识库业务错误分类
 ├── document/                        文档上传、元数据与删除清理
@@ -55,8 +54,10 @@ src/main/java/com/lzj/rag/backend/
 │   └── config/、metrics/、logging/
 ├── security/                        认证身份和业务访问规则
 │   └── config/、model/
-└── infra/storage/                   可独立复用的 S3 技术客户端
-    └── config/、exception/
+└── infra/                           跨业务复用的技术能力
+    ├── storage/                    S3 技术客户端
+    │   └── config/、exception/
+    └── persistence/                PostgreSQL UUID、JSONB 类型映射
 ```
 
 ## 对象和调用边界
@@ -77,7 +78,7 @@ Web Converter 只做字段转换；Data Converter 只做持久化对象与 BO �
 
 统一响应、分页及 Web 基础能力复用 `packages/java-starters`，后端不增加本地 `framework` 副本。知识库专用错误码、数据库错误映射、认证和 JSON 格式规则保留在对应业务中。
 
-`BackendApplication` 位于基础包根部，组件及带 `@Mapper` 的访问接口可被扫描。MyBatis 的类型处理器包配置为 `com.lzj.rag.backend.knowledgebase.dao.handler`；Mapper 使用注解查询，不创建空 XML。Flyway 迁移继续保留在 `src/main/resources/db/migration`。
+`BackendApplication` 位于基础包根部，组件及带 `@Mapper` 的访问接口可被扫描。MyBatis 的类型处理器包配置为 `com.lzj.rag.backend.infra.persistence`；知识库、文档和切片共同使用，不依赖其他业务包。Mapper 使用注解查询，不创建空 XML。Flyway 迁移继续保留在 `src/main/resources/db/migration`。
 
 ## 测试与新增代码
 

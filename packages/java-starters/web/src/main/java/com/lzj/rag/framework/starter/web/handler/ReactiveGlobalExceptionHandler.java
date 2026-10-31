@@ -12,6 +12,7 @@ import org.springframework.core.codec.DecodingException;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
@@ -34,6 +35,16 @@ public class ReactiveGlobalExceptionHandler {
     @ExceptionHandler({ServerWebInputException.class, DecodingException.class, DataBufferLimitException.class})
     public ResponseEntity<Result<Void>> input(Exception error, ServerWebExchange exchange) {
         return response(400, properties.getInputCode(), properties.getInputMessage(), exchange);
+    }
+
+    @ExceptionHandler(ErrorResponseException.class)
+    public ResponseEntity<Result<Void>> http(ErrorResponseException error, ServerWebExchange exchange) {
+        boolean clientError = error.getStatusCode().is4xxClientError();
+        return ResponseEntity.status(error.getStatusCode()).headers(error.getHeaders())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Results.failure(clientError ? properties.getInputCode() : properties.getInternalCode(),
+                        clientError ? properties.getInputMessage() : properties.getInternalMessage(),
+                        ReactiveRequestIdContext.get(exchange)));
     }
 
     @ExceptionHandler(Exception.class)

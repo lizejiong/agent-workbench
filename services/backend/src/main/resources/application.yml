@@ -49,7 +49,7 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     default-statement-timeout: 10
-  type-handlers-package: com.lzj.rag.backend.knowledgebase.dao.handler
+  type-handlers-package: com.lzj.rag.backend.infra.persistence
   global-config:
     banner: false
 kb:

@@ -208,28 +208,19 @@ public class MarkdownDocumentParser implements DocumentParser {
                 append(child, result);
     }
 
-    /**
-     * 将表头和数据行渲染为可读的 Markdown 表格。
-     *
-     * @param header 当前表格的列标题集合。
-     * @param rows 数据库结果或当前表格数据行集合。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
+    /** 将表头和数据行渲染为 Markdown 表格，单元格内换行使用 HTML 换行。 */
     public static String table(List<String> header, List<List<String>> rows) {
-        // first：当前处理范围的起始位置或首个有效内容。
         String first =
                 "| "
                         + String.join(
                                 " | ", header.stream().map(MarkdownDocumentParser::escape).toList())
                         + " |";
-        // result：当前步骤产生的处理结果。
         var result =
                 new StringBuilder(first)
                         .append('\n')
                         .append("| ")
                         .append(String.join(" | ", Collections.nCopies(header.size(), "---")))
                         .append(" |");
-        // row：当前数据库记录或表格数据行。
         for (var row : rows)
             result.append('\n')
                     .append("| ")
@@ -241,13 +232,9 @@ public class MarkdownDocumentParser implements DocumentParser {
         return result.toString();
     }
 
-    /**
-     * 转义单元格中的分隔符和换行，避免破坏 Markdown 表格结构。
-     *
-     * @param text 当前待处理或生成的文本内容。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
+    /** 转义单元格分隔符，并统一 LF、CRLF 和 CR，避免插入额外表格行。 */
     private static String escape(String text) {
-        return text.replace("\\", "\\\\").replace("|", "\\|").replace("\n", "<br>");
+        return text.replace("\r\n", "\n").replace('\r', '\n')
+                .replace("\\", "\\\\").replace("|", "\\|").replace("\n", "<br>");
     }
 }

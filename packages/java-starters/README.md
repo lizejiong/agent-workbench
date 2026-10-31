@@ -67,7 +67,7 @@ MVC 适配在请求入口读取或生成 `X-Request-Id`，写入响应头；`Res
 
 WebFlux 适配通过 `ReactiveRequestIdFilter` 校验或生成 ID，接受 1–128 位字母、数字、点、冒号、下划线或横线。ID 保存在 Exchange 和 Reactor Context，不使用 `ThreadLocal`。Controller 使用 `ReactiveRequestIdContext.get(exchange)`，响应式链内可使用 `ReactiveRequestIdContext.current()`；构造响应时显式调用 `Results.success(data, requestId)` 或 `Results.failure(code, message, requestId)`。
 
-MVC 异常处理沿用现有 HTTP 200 加业务错误码的行为。WebFlux 适配使用 HTTP 状态：参数异常与 `ClientException` 为 400，`RemoteException` 为 502，其他公共异常及未知异常为 500；业务异常可在继承公共异常体系的同时实现 `HttpStatusAware`，指定已有接口约定的状态码。默认参数与内部错误使用 `BaseErrorCode`，应用可按已发布接口配置以下属性，不需要复制异常处理器：
+MVC 异常处理沿用现有 HTTP 200 加业务错误码的行为。WebFlux 适配使用 HTTP 状态：参数异常与 `ClientException` 为 400，`RemoteException` 为 502，其他公共异常及未知异常为 500；业务异常可在继承公共异常体系的同时实现 `HttpStatusAware`，指定已有接口约定的状态码。Spring 的 `ErrorResponseException`（包括 `ResponseStatusException` 和不支持的媒体类型）保留其 HTTP 状态及协议响应头，4xx 使用参数错误契约、5xx 使用内部错误契约，不返回异常中的原始原因。默认参数与内部错误使用 `BaseErrorCode`，应用可按已发布接口配置以下属性，不需要复制异常处理器：
 
 ```yaml
 rag:
