@@ -10,4 +10,4 @@ import java.util.*;
  * @param candidates 本次待领取的任务、可选解析策略或召回候选集合。
  * @param errorCode 可供调用方和运维识别的稳定错误码。
  */
-public record ChannelStateVO(String channel, String status, int candidates, String errorCode) {}
+public record ChannelStateVO(String channel, String status, int candidates, String errorCode, String subQuery) {}

@@ -34,11 +34,21 @@ public record HybridProperties(
         @DefaultValue("4") @Min(2) @Max(32) int concurrency,
         @DefaultValue("40s") Duration vectorTimeout,
         @DefaultValue("5s") Duration keywordTimeout,
-        @DefaultValue Rerank rerank) {
+        @DefaultValue Rerank rerank,
+        @DefaultValue("3") @Min(1) @Max(3) int maxSubQueries,
+        @DefaultValue("300") @Min(1) @Max(1200) int maxTotalCandidates) {
+
+    public HybridProperties(String strategy,int channelCandidates,int fusionCandidates,int rrfConstant,
+                            double vectorWeight,double keywordWeight,int concurrency,Duration vectorTimeout,
+                            Duration keywordTimeout,Rerank rerank) {
+        this(strategy,channelCandidates,fusionCandidates,rrfConstant,vectorWeight,keywordWeight,concurrency,
+                vectorTimeout,keywordTimeout,rerank,3,300);
+    }
 
     /** 校验并补齐缺省配置，构造可直接使用的配置快照。 */
+    @org.springframework.boot.context.properties.bind.ConstructorBinding
     public HybridProperties {
-        if (fusionCandidates > channelCandidates
+        if (maxTotalCandidates < channelCandidates || maxTotalCandidates < fusionCandidates || fusionCandidates > channelCandidates
                 || !Double.isFinite(vectorWeight)
                 || !Double.isFinite(keywordWeight))
             throw new IllegalArgumentException(

@@ -14,7 +14,8 @@ class QueryUnderstandingServiceTest {
     private final UUID kb=UUID.randomUUID();
     private QueryUnderstandingService service(boolean enabled,ChatClient client) {
         return new QueryUnderstandingService(new QueryUnderstandingProperties(enabled,"model",Duration.ofSeconds(1),3,512,Map.of("PG","PostgreSQL")),client,json,
-                new com.lzj.rag.backend.rag.prompt.PromptCatalog(new com.lzj.rag.backend.rag.prompt.PromptProperties(null,"query-understanding-v1")));
+                new com.lzj.rag.backend.rag.prompt.PromptCatalog(new com.lzj.rag.backend.rag.prompt.PromptProperties(null,"query-understanding-v1")),
+                new com.lzj.rag.backend.search.config.SearchProperties(50,16,100,4000,Duration.ofSeconds(40)));
     }
     private SearchBO request(String text) { return new SearchBO(text,List.of(kb),null,5,null); }
     private com.fasterxml.jackson.databind.JsonNode output(String effective,List<String> subs,boolean clarify,String question,List<UUID> ids)throws Exception {

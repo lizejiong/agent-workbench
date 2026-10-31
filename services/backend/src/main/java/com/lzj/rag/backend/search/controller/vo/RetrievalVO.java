@@ -32,4 +32,4 @@ public record RetrievalVO(
         Double minRerankScore,
         String status,
         String outcome,
-        RetrievalTraceVO trace) {}
+        RetrievalTraceVO trace, boolean candidateBudgetTruncated) {}

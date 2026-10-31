@@ -10,4 +10,6 @@ import java.util.*;
  * @param score 当前候选的相关性或融合分数。
  * @param scoreType 评分语义标识，用于区分余弦相似度、BM25 与 RRF。
  */
-public record ChannelScoreBO(String channel, int rank, double score, String scoreType) {}
+public record ChannelScoreBO(String channel, int rank, double score, String scoreType, String subQuery) {
+    public ChannelScoreBO(String channel,int rank,double score,String scoreType) { this(channel,rank,score,scoreType,null); }
+}

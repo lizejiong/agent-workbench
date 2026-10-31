@@ -32,4 +32,11 @@ public record RetrievalBO(
         Double minRerankScore,
         String status,
         String outcome,
-        RetrievalTraceBO trace) {}
+        RetrievalTraceBO trace, boolean candidateBudgetTruncated) {
+    public RetrievalBO(List<EvidenceBO> evidence,String requestedStrategy,String strategy,String rerankStatus,
+                       List<ChannelStateBO> channels,int channelCandidates,int fusionCandidates,int topK,
+                       boolean refillLimitReached,Double minRerankScore,String status,String outcome,RetrievalTraceBO trace) {
+        this(evidence,requestedStrategy,strategy,rerankStatus,channels,channelCandidates,fusionCandidates,topK,
+                refillLimitReached,minRerankScore,status,outcome,trace,false);
+    }
+}

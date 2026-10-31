@@ -122,7 +122,7 @@ public class RrfRerankPostProcessor implements SearchResultPostProcessor {
             // a：同一切片在同一通道中的已有候选，用较小排名保留更优贡献。
             // b：同一切片在同一通道中的新到达候选，用较小排名保留更优贡献。
             fused.channels.merge(
-                    candidate.channel(), candidate, (a, b) -> a.rank() <= b.rank() ? a : b);
+                    candidate.channel()+":"+Objects.toString(candidate.subQuery(),""), candidate, (a, b) -> a.rank() <= b.rank() ? a : b);
         }
         // 第二阶段：以加权 RRF 计算可比较的融合分数，使用切片标识稳定打破平分。
         // f：当前按切片身份聚合的融合状态。
@@ -233,7 +233,7 @@ public class RrfRerankPostProcessor implements SearchResultPostProcessor {
                                                                             c.channel(),
                                                                             c.rank(),
                                                                             c.rawScore(),
-                                                                            c.scoreType()))
+                                                                            c.scoreType(),c.subQuery()))
                                                     .toList());
                                 })
                         .toList();
@@ -274,7 +274,7 @@ public class RrfRerankPostProcessor implements SearchResultPostProcessor {
                                                         .evidence()
                                                         .content()
                                                         .equals(current.content())
-                                                || entry.getKey().equals("KEYWORD")
+                                                || candidate.channel().equals("KEYWORD")
                                                         && !Objects.equals(
                                                                 candidate.syncRevision(),
                                                                 revisions.get(current.chunkId()));

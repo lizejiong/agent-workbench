@@ -74,3 +74,11 @@ RAG 门面在既有共享引擎之前执行范围预检；USER 从授权 Java �
 按用户补充要求，系统提示词改为中文、独立 UTF-8 模板，使用 PromptCatalog 和服务端配置按版本/受控目录加载，保留版本及内容 SHA-256。query 同时追踪术语映射修订与实际模型；提示词、资料和用户输入分离。目录 README 说明维护方式，新增独立 RAG OpenAPI 生成器及契约。
 
 最小验证：`QueryUnderstandingServiceTest` 最终 4 项通过，0 跳过，日志 `.cache/rag-round3-verified.log`；覆盖术语/编号/否定/数量、拆分去重、澄清、错误 JSON、超量、越权、超时及授权顺序。开发中修复了测试桩重复配置引发的测试错误。使用模型输出桩；未进行真实模型语义评估。当前 Java 会话为空实现，非空未知 conversationId 返回 404，实际历史存储在第 7/8 轮补齐；全部子查询的召回在下一轮接入。
+
+## 附件第 4 轮：多查询融合与总预算（2026-10-31，完成）
+
+同一个 HybridRetrievalService 接入去重子查询；最多 3 个子查询分批执行，每批原向量/BM25 通道并行，复用原零队列有界执行器、HTTP 取消和总 deadline。默认 300 候选总额在调用前按查询×通道分配，融合/精排容量和最终 topK 仍独立。配置 record 的兼容构造器已显式标记 ConstructorBinding；真实启动回归发现并修复了该绑定问题。
+
+RRF 按查询/通道列表计排名，同一列表重复候选只贡献一次，不按正文合并其他文档。channelScores 与 channels 保留 subQuery，保持原始评分；candidateBudgetTruncated 与 refillLimitReached 独立，降级空结果不宣称确定未命中。pipelineVersion=retrieval-v2。改写结果同时服从项目查询长度上限。
+
+最小验证：预算/取消/重复查询/RRF 的 12 项单元回归与 2 项真实 PG/MinIO/ES 集成场景最终全部通过，日志 `.cache/rag-round4-verified.log`；查询理解 4 项在 `.cache/rag-round4.log` 中通过，相关代码后续未变化。输出纯向量、单查询混合、多查询混合对照到隔离副本 `services/backend/target/knowledge-base/fusion-baseline.json`。模型仍为 HTTP 桩，不报告真实语义提升；未运行全量 verify。

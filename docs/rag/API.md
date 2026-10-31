@@ -66,6 +66,8 @@ NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不
 
 机器契约：`/openapi/rag.json`，由 `python scripts/rag/build_openapi.py` 生成，知识库 OpenAPI 引用对应路径。
 
+第 4 轮起，全部去重后的 subQueries 进入同一引擎，按子查询分批、每批通道并行，最多 3×2 次召回。`channels[].subQuery`、`evidence[].channelScores[].subQuery` 标明所属查询；每个查询/通道列表最多贡献一次排名。分数仍分别保留 cosine、BM25、RRF 和 rerank，不相加原始分。`channelCandidates` 为本次总额分配后每通道的实际上限，`candidateBudgetTruncated` 明确全请求候选预算是否压低召回量；它与外部补召回的 `refillLimitReached` 分开，截断导致的空结果为 INDETERMINATE。trace.pipelineVersion 更新为 retrieval-v2。单查询向量、未开启精排时继续保持原 cosine 分数语义。
+
 ## B：Java 独立问答与 SSE（后续，未实现）
 
 拟由同一检索引擎取得证据，再经过权限复核、字符/token 预算裁剪，调用既有 Java AI chat。查询理解采用经过 Jackson schema/字段/类型/长度校验的结构化输出；模型不能赋予授权范围。错误或超时是否使用原 query 必须明确状态，并遵守总调用预算。

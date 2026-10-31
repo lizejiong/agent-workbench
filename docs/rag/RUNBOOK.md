@@ -36,6 +36,8 @@
 
 查询理解默认 `kb.rag.understanding.enabled=false`；开启后沿用 `kb.ai` 的 AI 服务连接，model 默认 qwen-plus、timeout 默认 5s、max-sub-queries=3、max-output-tokens=512。可维护 `kb.rag.understanding.terms` 映射，例如 `PG: PostgreSQL`；包含编号/数字的术语映射必须保留原编号。配置修改后重启，映射快照哈希进入 query.termVersion。JSON 结构错误、路由越权或模型失败在总 deadline 内回退规范化查询，返回明确降级原因。
 
+多查询召回：`kb.retrieval.max-sub-queries=3`，`max-total-candidates=300`；与原 `channel-candidates=50`、`fusion-candidates=20`、最终 topK=5 分开。每通道实际召回量不超过总额除以查询数×通道数，服务端验证总额至少覆盖配置中的单通道和融合容量。子查询分批复用原零队列有界执行器，不为子查询建立新的线程池或新的 deadline。RRF 常数与权重继续使用既有配置。
+
 中文提示词集中在 `services/backend/src/main/resources/rag/prompts`，维护说明见同目录 README。`kb.rag.prompts.query-version` 默认 query-understanding-v1；修改行为时新增版本，服务端代码继续校验输出。`kb.rag.prompts.directory` 可指定部署方受控模板目录；必须提供选中版本的同名 UTF-8 `.txt`，重启后使用。实际版本和 SHA-256 都会追踪，普通用户不能指定模板文件或读取模板正文。
 
 沿用 `deploy/knowledge-base/compose.yml` 和现有私有 `.env`，不覆盖已有凭据。PG/pgvector、MinIO、AI 服务按知识库手册启动；backend 的 `KB_AI_BASE_URL` 指向已有 AI 服务。关键词与 rerank 默认为 false，向量可以独立工作，不要求 ES 健康才能启动。

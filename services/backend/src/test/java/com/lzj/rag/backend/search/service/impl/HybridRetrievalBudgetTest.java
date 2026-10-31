@@ -29,6 +29,44 @@ import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 
 /** In-process fault injection exercises the real bounded executor; no external-model claims. */
 class HybridRetrievalBudgetTest {
+    @Test void repeatedSubQueriesDoNotMultiplyCallsAndEveryChannelSharesTheGlobalCandidateCap() {
+        var calls=new java.util.concurrent.CopyOnWriteArrayList<String>();
+        var budgets=new java.util.concurrent.CopyOnWriteArrayList<Integer>();
+        var channels=List.of("VECTOR","KEYWORD").stream().map(name -> new SearchChannel() {
+            public String name(){return name;}
+            public SearchCandidatesBO search(KnowledgeBasePrincipal a,SearchBO r,String id,int limit,Instant deadline) {
+                calls.add(r.query()+":"+name);budgets.add(limit);return empty();
+            }
+        }).map(c -> (SearchChannel)c).toList();
+        var config=new HybridProperties("HYBRID",50,20,60,1,1,2,Duration.ofSeconds(1),Duration.ofSeconds(1),
+                new HybridProperties.Rerank(false,"qwen-rerank",Duration.ofSeconds(1),30000,null),3,60);
+        var es=new KeywordProperties(true,"http://localhost:9200",null,"kb-test","cjk",Duration.ofSeconds(1),Duration.ofMinutes(1),2000,100,5);
+        engine=new HybridRetrievalServiceImpl(vector,new SearchProperties(50,16,100,4000,Duration.ofSeconds(5)),config,es,bases,documents,post,channels);
+        var result=engine.retrieveQueries(actor,request("HYBRID"),List.of("one","one","two"),"multi",Instant.now().plusSeconds(5));
+        assertThat(calls).containsExactlyInAnyOrder("one:VECTOR","one:KEYWORD","two:VECTOR","two:KEYWORD");
+        assertThat(budgets).containsOnly(15);assertThat(result.channels()).hasSize(4);
+        assertThat(result.strategy()).isEqualTo("KEYWORD+VECTOR");assertThat(result.candidateBudgetTruncated()).isTrue();
+        assertThat(result.refillLimitReached()).isFalse();
+    }
+
+    @Test void rrfCountsEachQueryChannelListOnceAndKeepsIdenticalContentFromOtherDocuments() {
+        var records=mock(com.lzj.rag.backend.search.repository.EvidenceRepository.class);
+        var ranking=mock(com.lzj.rag.backend.model.service.RerankClient.class);
+        var first=new com.lzj.rag.backend.search.service.bo.EvidenceBO(UUID.randomUUID(),kb,UUID.randomUUID(),"one",0,1,"same text",1,"COSINE_SIMILARITY",Map.of(),"/file");
+        var second=new com.lzj.rag.backend.search.service.bo.EvidenceBO(UUID.randomUUID(),kb,UUID.randomUUID(),"two",0,1,"same text",1,"COSINE_SIMILARITY",Map.of(),"/file");
+        when(records.hydrate(any(),any(),any())).thenReturn(Map.of(first.chunkId(),first,second.chunkId(),second));
+        when(records.validKeywordRevisions(any(),any(),any())).thenReturn(Map.of());
+        var config=new HybridProperties("VECTOR",50,20,60,1,1,2,Duration.ofSeconds(1),Duration.ofSeconds(1),new HybridProperties.Rerank(false,"model",Duration.ofSeconds(1),30000,null));
+        var processor=new com.lzj.rag.backend.search.postprocess.RrfRerankPostProcessor(config,ranking,records);
+        var candidates=List.of(new com.lzj.rag.backend.search.service.bo.SearchCandidateBO(first,"VECTOR",1,1,"COSINE_SIMILARITY",0,"hash","one"),
+                new com.lzj.rag.backend.search.service.bo.SearchCandidateBO(first,"VECTOR",1,1,"COSINE_SIMILARITY",0,"hash","one"),
+                new com.lzj.rag.backend.search.service.bo.SearchCandidateBO(first,"VECTOR",2,.8,"COSINE_SIMILARITY",0,"hash","two"),
+                new com.lzj.rag.backend.search.service.bo.SearchCandidateBO(second,"VECTOR",1,.9,"COSINE_SIMILARITY",0,"hash","two"));
+        var result=processor.process(actor,request("VECTOR"),candidates,"multi",false,20,Instant.now().plusSeconds(5));
+        assertThat(result.evidence()).hasSize(2);assertThat(result.evidence().get(0).chunkId()).isEqualTo(first.chunkId());
+        assertThat(result.evidence().get(0).fusionScore()).isCloseTo(1d/61+1d/62,within(1e-12));
+        assertThat(result.evidence().get(0).channelScores()).hasSize(2);verifyNoInteractions(ranking);
+    }
     private final KnowledgeSearchService vector=mock(KnowledgeSearchService.class);
     private final KnowledgeBaseAccess bases=mock(KnowledgeBaseAccess.class);
     private final DocumentAccess documents=mock(DocumentAccess.class);

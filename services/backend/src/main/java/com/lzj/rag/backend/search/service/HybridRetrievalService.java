@@ -24,4 +24,6 @@ public interface HybridRetrievalService {
     RetrievalBO retrieve(KnowledgeBasePrincipal actor, SearchBO request, String requestId, Instant deadline);
 
     SearchBO prepare(KnowledgeBasePrincipal actor, SearchBO request, Instant deadline);
+
+    RetrievalBO retrieveQueries(KnowledgeBasePrincipal actor, SearchBO request, List<String> queries, String requestId, Instant deadline);
 }

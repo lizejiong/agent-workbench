@@ -81,7 +81,7 @@ public final class SearchWebConverter {
      */
     public static ChannelScoreVO toChannelScoreVO(ChannelScoreBO value) {
         if (value == null) return null;
-        return new ChannelScoreVO(value.channel(), value.rank(), value.score(), value.scoreType());
+        return new ChannelScoreVO(value.channel(), value.rank(), value.score(), value.scoreType(), value.subQuery());
     }
 
     /**
@@ -93,7 +93,7 @@ public final class SearchWebConverter {
     public static ChannelStateVO toChannelStateVO(ChannelStateBO value) {
         if (value == null) return null;
         return new ChannelStateVO(
-                value.channel(), value.status(), value.candidates(), value.errorCode());
+                value.channel(), value.status(), value.candidates(), value.errorCode(), value.subQuery());
     }
 
     /**
@@ -124,7 +124,7 @@ public final class SearchWebConverter {
                 value.minRerankScore(),
                 value.status(),
                 value.outcome(),
-                SearchWebConverter.toRetrievalTraceVO(value.trace()));
+                SearchWebConverter.toRetrievalTraceVO(value.trace()),value.candidateBudgetTruncated());
     }
 
     /**

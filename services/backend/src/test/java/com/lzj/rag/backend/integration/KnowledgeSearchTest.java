@@ -106,7 +106,7 @@ class KnowledgeSearchTest {
         var result=mvc.perform(post("/api/knowledge/retrieve").with(auth("alice")).header("X-Request-Id","rag-trace-test").contentType("application/json").content(body))
                 .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"))
                 .andExpect(jsonPath("$.data.status").value("COMPLETE")).andExpect(jsonPath("$.data.outcome").value("EVIDENCE"))
-                .andExpect(jsonPath("$.data.trace.pipelineVersion").value("retrieval-v1"))
+                .andExpect(jsonPath("$.data.trace.pipelineVersion").value("retrieval-v2"))
                 .andExpect(jsonPath("$.data.trace.requestId").value("rag-trace-test"))
                 .andExpect(jsonPath("$.data.trace.indexes[0].kbId").value(data.kb().toString())).andReturn();
         var trace=json.readTree(result.getResponse().getContentAsByteArray()).at("/data/trace");

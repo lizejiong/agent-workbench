@@ -25,7 +25,7 @@ public class RagRetrievalServiceImpl implements RagRetrievalService {
         RetrievalDeadline.check(deadline);
         if(plan.needsClarification()) return new RagRetrievalBO("NEEDS_CLARIFICATION",plan,null);
         var search=new SearchBO(plan.effectiveQuery(),plan.kbIds(),scope.documentIds(),scope.topK(),scope.minScore(),scope.strategy(),scope.rerank(),scope.minRerankScore());
-        var result=engine.retrieve(actor,search,requestId,deadline);
+        var result=engine.retrieveQueries(actor,search,plan.subQueries(),requestId,deadline);
         return new RagRetrievalBO(result.outcome().equals("EVIDENCE")?"READY":result.outcome().equals("NO_EVIDENCE")?"NO_EVIDENCE":"UNAVAILABLE",plan,result);
     }
 }

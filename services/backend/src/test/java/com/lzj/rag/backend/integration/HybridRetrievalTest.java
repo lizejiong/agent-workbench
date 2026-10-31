@@ -78,6 +78,7 @@ class HybridRetrievalTest {
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired IngestionKernel kernel;
     @Autowired UserDetailsService users;@Autowired KeywordSyncService sync;@Autowired FaultIndex index;@Autowired KeywordProperties keyword;
     @Autowired DocumentUploadTest.FaultStorage storage;@Autowired DocumentCleanupService deletion;
+    @Autowired com.lzj.rag.backend.search.service.HybridRetrievalService retrievalEngine;
     @BeforeEach void clear(){model.reset();model.vectorizer=KnowledgeSearchTest::topicVector;storage.reset();index.reset();TestDatabaseCleanup.clear(jdbc);}
     private KnowledgeBasePrincipal actor(){return (KnowledgeBasePrincipal)users.loadUserByUsername("alice");}
     private JsonNode call(MockHttpServletRequestBuilder request,Object body,int status)throws Exception{return call(request,body,status,"alice");}
@@ -110,6 +111,16 @@ class HybridRetrievalTest {
         var seen=new HashSet<String>();boolean duplicate=false;
         for(var hit:hits){assertThat(seen.add(hit.path("chunkId").asText())).isTrue();double sum=0;for(var score:hit.path("channelScores"))sum+=1.0/(60+score.path("rank").asInt());assertThat(hit.path("fusionScore").asDouble()).isCloseTo(sum,within(1e-12));assertThat(hit.path("scoreType").asText()).isEqualTo("RRF");if(hit.path("channelScores").size()==2)duplicate=true;}
         assertThat(duplicate).isTrue();assertThat(response.path("strategy").asText()).isEqualTo("KEYWORD+VECTOR");
+        int before=model.requests.size();
+        var multiple=retrievalEngine.retrieveQueries(actor(),new com.lzj.rag.backend.search.service.bo.SearchBO("database backup ZX-1472",List.of(kb),null,5,null,"HYBRID",false,null),
+                List.of("database backup","ZX-1472","ZX-1472"),"multiple",Instant.now().plusSeconds(30));
+        assertThat(model.requests).hasSize(before+2);assertThat(multiple.channels()).hasSize(4);
+        assertThat(multiple.evidence().stream().map(e->e.chunkId()).toList()).doesNotHaveDuplicates();
+        assertThat(multiple.evidence().get(0).channelScores().stream().map(c->c.subQuery()).toList()).contains("ZX-1472");
+        var baseline=retrieve(kb,"database backup ZX-1472","VECTOR",false);
+        Files.createDirectories(Path.of("target/knowledge-base"));
+        Files.writeString(Path.of("target/knowledge-base/fusion-baseline.json"),json.writerWithDefaultPrettyPrinter().writeValueAsString(
+                Map.of("note","Real PG/ES/S3; model HTTP topic fixture, no live semantic quality claim","vector",baseline,"singleQueryHybrid",response,"multiQueryHybrid",multiple)));
     }
     @Test void semanticVectorEvidenceRemainsAvailableWhenKeywordsHaveNoMatchingTokens()throws Exception {
         UUID kb=base();fixture(kb);syncAll();var response=retrieve(kb,"database connection configuration","HYBRID",false);

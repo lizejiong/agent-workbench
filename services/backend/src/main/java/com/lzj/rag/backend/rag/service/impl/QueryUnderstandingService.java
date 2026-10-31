@@ -24,9 +24,12 @@ public class QueryUnderstandingService {
     private final ObjectMapper json;
     private final PromptCatalog.Template prompt;
     private final String termVersion;
+    private final com.lzj.rag.backend.search.config.SearchProperties limits;
 
-    public QueryUnderstandingService(QueryUnderstandingProperties config, ChatClient model, ObjectMapper json, PromptCatalog prompts) {
+    public QueryUnderstandingService(QueryUnderstandingProperties config, ChatClient model, ObjectMapper json, PromptCatalog prompts,
+                                     com.lzj.rag.backend.search.config.SearchProperties limits) {
         this.config=config; this.model=model; this.json=json;
+        this.limits=limits;
         prompt=prompts.query();
         try {
             termVersion=com.lzj.rag.backend.model.catalog.EmbeddingCatalog.sha256(json.writeValueAsString(new TreeMap<>(config.terms())));
@@ -42,7 +45,7 @@ public class QueryUnderstandingService {
                     +(key.matches("[A-Za-z0-9_-]+") ? "(?![A-Za-z0-9_-])" : "");
             normalized=normalized.replaceAll(expression, java.util.regex.Matcher.quoteReplacement(term.getValue()));
         }
-        if (normalized.length()>16000) normalized=original;
+        if (normalized.codePointCount(0,normalized.length())>limits.maxQueryChars()) normalized=original;
         if (!config.enabled() || scope.kbIds().isEmpty()) return plain(original,normalized,scope.kbIds(),false,null);
         RetrievalDeadline.check(deadline);
         try {
@@ -85,9 +88,9 @@ public class QueryUnderstandingService {
     private QueryPlanBO plain(String original,String query,List<UUID> ids,boolean degraded,String reason) {
         return new QueryPlanBO(original,query,List.of(query),List.copyOf(ids),false,null,degraded,reason,prompt.version(),null,termVersion,prompt.sha256());
     }
-    private static String checked(String text) {
+    private String checked(String text) {
         String value=text.strip();
-        if(value.isBlank() || value.length()>16000 || value.codePoints().anyMatch(c -> c==0 || c>=0xd800 && c<=0xdfff)) throw invalid();
+        if(value.isBlank() || value.codePointCount(0,value.length())>limits.maxQueryChars() || value.codePoints().anyMatch(c -> c==0 || c>=0xd800 && c<=0xdfff)) throw invalid();
         return value;
     }
     private static boolean preserves(String from,String to) {

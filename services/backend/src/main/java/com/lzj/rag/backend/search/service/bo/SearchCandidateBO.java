@@ -20,4 +20,8 @@ public record SearchCandidateBO(
         double rawScore,
         String scoreType,
         long syncRevision,
-        String contentHash) {}
+        String contentHash, String subQuery) {
+    public SearchCandidateBO(EvidenceBO evidence,String channel,int rank,double rawScore,String scoreType,long syncRevision,String contentHash) {
+        this(evidence,channel,rank,rawScore,scoreType,syncRevision,contentHash,null);
+    }
+}

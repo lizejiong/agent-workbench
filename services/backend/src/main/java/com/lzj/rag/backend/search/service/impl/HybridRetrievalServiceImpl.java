@@ -149,6 +149,18 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
 
     @Override
     public RetrievalBO retrieve(KnowledgeBasePrincipal actor, SearchBO request, String requestId, Instant outerDeadline) {
+        return retrieveQueries(actor, request, java.util.Collections.singletonList(request.query()), requestId, outerDeadline);
+    }
+
+    @Override
+    public RetrievalBO retrieveQueries(KnowledgeBasePrincipal actor, SearchBO request, List<String> suppliedQueries,
+                                      String requestId, Instant outerDeadline) {
+        if (suppliedQueries == null || suppliedQueries.isEmpty() || suppliedQueries.size() > config.maxSubQueries()
+                || suppliedQueries.stream().anyMatch(q -> q == null || q.isBlank()
+                || q.codePointCount(0,q.length()) > limits.maxQueryChars()
+                || q.codePoints().anyMatch(c -> c == 0 || c >= 0xd800 && c <= 0xdfff)))
+            throw invalid("KB_INVALID_INPUT", "Check subquery count and query limits");
+        final List<String> queries = suppliedQueries.stream().map(String::strip).distinct().toList();
         // 第一阶段：建立共享总预算，补齐默认参数并校验全部访问范围。
         // budget：当前检索共享的总时间预算。
         var budget = remaining(outerDeadline);
@@ -192,9 +204,10 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
         // 纯向量请求沿用既有评分与错误约定，可选通道未启用时仍可独立工作。
         if (request.kbIds().isEmpty()) {
             return response(actor, List.of(), wanted, "NONE", "DISABLED", List.of(),
-                    0, 0, request, false, versions, requestId, budget);
+                    0, 0, request, false, versions, requestId, budget,false);
         }
-        if (strategy.equals("VECTOR") && !rerank) {
+        if (strategy.equals("VECTOR") && !rerank && queries.size()==1 && queries.get(0).equals(request.query().strip())
+                && request.topK() <= config.maxTotalCandidates()) {
             // deadline：本阶段或本次请求必须完成的截止时间。
             Instant deadline = budget.cap(config.vectorTimeout());
             // rows：数据库结果或当前表格数据行集合。
@@ -246,112 +259,58 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
                     false,
                     versions,
                     requestId,
-                    budget);
+                    budget,false);
         }
-        // 第三阶段：计算召回与融合容量，为各通道分配受总预算约束的局部截止时间。
-        // recall：本次各通道召回的候选数量。
-        int recall = Math.max(config.channelCandidates(), request.topK());
-        // fusion：融合候选数量或当前切片累计的 RRF 分数。
-        int fusion = Math.max(config.fusionCandidates(), request.topK());
-        // tasks：并行召回或后台执行任务集合。
-        var tasks = new ArrayList<Running>();
-        // states：每个召回通道的执行结果状态。
+        var names = strategy.equals("HYBRID") ? List.of("VECTOR", "KEYWORD") : List.of(strategy);
+        int requestedRecall = Math.max(config.channelCandidates(), request.topK());
+        int recall = Math.min(requestedRecall, config.maxTotalCandidates() / (queries.size() * names.size()));
+        if (recall < 1) throw invalid("KB_SEARCH_BUDGET", "Recall budget cannot cover selected queries and channels");
+        int fusion = Math.min(config.maxTotalCandidates(), Math.max(config.fusionCandidates(), request.topK()));
         var states = new ArrayList<ChannelStateBO>();
-        // candidates：本次待领取的任务、可选解析策略或召回候选集合。
         var candidates = new ArrayList<SearchCandidateBO>();
-        // capped：本次召回是否触及补充查询上限。
         boolean capped = false;
-        try {
-            // name：当前业务资源或策略的公开名称。
-            for (String name :
-                    strategy.equals("HYBRID") ? List.of("VECTOR", "KEYWORD") : List.of(strategy)) {
-                // timeout：当前阶段允许使用的局部时间预算。
-                Duration timeout =
-                        name.equals("VECTOR") ? config.vectorTimeout() : config.keywordTimeout();
-                // end：当前范围的结束位置或局部阶段截止点。
-                long end = System.nanoTime() + Math.min(timeout.toNanos(), budget.remainingNanos());
-                // deadline：本阶段或本次请求必须完成的截止时间。
-                Instant deadline = budget.cap(timeout);
-                try {
-                    tasks.add(
-                            new Running(
-                                    name,
-                                    end,
-                                    executor.submit(
-                                            () ->
-                                                    new Completed(
-                                                            channels.get(name)
-                                                                    .search(
-                                                                            actor,
-                                                                            effectiveRequest,
-                                                                            requestId,
-                                                                            recall,
-                                                                            deadline),
-                                                            System.nanoTime()))));
-                } catch (RejectedExecutionException busy) {
-                    // busy：本次捕获或匹配的异常，用于保留业务分类及失败原因。
-                    states.add(new ChannelStateBO(name, "FAILED", 0, "KB_SEARCH_CAPACITY"));
+        // 子查询分批执行；每批通道并行，复用零队列有界执行器与同一总 deadline。
+        for (String subQuery : queries) {
+            budget.check();
+            final SearchBO channelRequest = new SearchBO(subQuery, request.kbIds(), request.documentIds(),
+                    request.topK(), request.minScore(), request.strategy(), request.rerank(), request.minRerankScore());
+            var tasks = new ArrayList<Running>();
+            try {
+                for (String name : names) {
+                    Duration timeout = name.equals("VECTOR") ? config.vectorTimeout() : config.keywordTimeout();
+                    long end = System.nanoTime() + Math.min(timeout.toNanos(), budget.remainingNanos());
+                    Instant deadline = budget.cap(timeout);
+                    try {
+                        tasks.add(new Running(name,end,executor.submit(() -> new Completed(
+                                channels.get(name).search(actor,channelRequest,requestId,recall,deadline),System.nanoTime()))));
+                    } catch (RejectedExecutionException busy) {
+                        states.add(new ChannelStateBO(name,"FAILED",0,"KB_SEARCH_CAPACITY",subQuery));
+                    }
                 }
-            }
-            // 按最早截止时间消费 Future，保证短预算通道及时被取消。
-            // 先等待最早截止的通道，避免慢向量调用推迟关键词任务的超时取消。
-            tasks.sort(Comparator.comparingLong(Running::deadline));
-            // task：本次已提交的异步任务，用于等待、取消或跟踪完成情况。
-            for (var task : tasks) {
-                try {
-                    // completed：已完成的通道结果及完成时间。
-                    Completed completed =
-                            task.future()
-                                    .get(
-                                            Math.max(
-                                                    1,
-                                                    Math.min(
-                                                            budget.remainingNanos(),
-                                                            task.deadline() - System.nanoTime())),
-                                            TimeUnit.NANOSECONDS);
-                    if (completed.finished() > task.deadline()) throw new TimeoutException();
-                    candidates.addAll(completed.result().candidates());
-                    capped |= completed.result().refillLimitReached();
-                    states.add(
-                            new ChannelStateBO(
-                                    task.name(),
-                                    "SUCCEEDED",
-                                    completed.result().candidates().size(),
-                                    null));
-                } catch (TimeoutException e) {
-                    // e：向量通道返回的当前切片证据。
-                    task.future().cancel(true);
-                    states.add(
-                            new ChannelStateBO(
-                                    task.name(), "TIMEOUT", 0, "KB_SEARCH_CHANNEL_TIMEOUT"));
-                } catch (ExecutionException e) {
-                    // failure：当前需要传播或记录的业务失败。
-                    // timedOut：当前调用是否由于截止时间或传输超时而失败。
-                    // e：向量通道返回的当前切片证据。
-                    boolean timedOut =
-                            e.getCause() instanceof KnowledgeBaseException failure
-                                    && failure.status() == 504;
-                    // kb：本次捕获或匹配的异常，用于保留业务分类及失败原因。
-                    states.add(
-                            new ChannelStateBO(
-                                    task.name(),
-                                    timedOut ? "TIMEOUT" : "FAILED",
-                                    0,
-                                    e.getCause() instanceof KnowledgeBaseException kb
-                                            ? kb.code()
-                                            : "KB_SEARCH_CHANNEL_FAILED"));
+                tasks.sort(Comparator.comparingLong(Running::deadline));
+                for (var task : tasks) {
+                    try {
+                        var completed = task.future().get(Math.max(1,Math.min(budget.remainingNanos(),task.deadline()-System.nanoTime())),TimeUnit.NANOSECONDS);
+                        if(completed.finished()>task.deadline()) throw new TimeoutException();
+                        var rows=completed.result().candidates();
+                        for(var row:rows.stream().limit(recall).toList()) candidates.add(new SearchCandidateBO(row.evidence(),
+                                row.channel(),row.rank(),row.rawScore(),row.scoreType(),row.syncRevision(),row.contentHash(),subQuery));
+                        capped |= completed.result().refillLimitReached() || rows.size()>recall;
+                        states.add(new ChannelStateBO(task.name(),"SUCCEEDED",Math.min(rows.size(),recall),null,subQuery));
+                    } catch (TimeoutException e) {
+                        task.future().cancel(true);
+                        states.add(new ChannelStateBO(task.name(),"TIMEOUT",0,"KB_SEARCH_CHANNEL_TIMEOUT",subQuery));
+                    } catch (ExecutionException e) {
+                        boolean timedOut=e.getCause() instanceof KnowledgeBaseException failure && failure.status()==504;
+                        states.add(new ChannelStateBO(task.name(),timedOut?"TIMEOUT":"FAILED",0,
+                                e.getCause() instanceof KnowledgeBaseException kb?kb.code():"KB_SEARCH_CHANNEL_FAILED",subQuery));
+                    }
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();throw RetrievalDeadline.cancelled();
+            } finally {
+                tasks.forEach(t -> { if(!t.future().isDone()) t.future().cancel(true); });
             }
-        } catch (InterruptedException e) {
-            // e：向量通道返回的当前切片证据。
-            Thread.currentThread().interrupt();
-            throw RetrievalDeadline.cancelled();
-        } finally {
-            tasks.forEach(
-                    t -> {
-                        // t：当前待取消或检查的通道任务及其 Future。
-                        if (!t.future().isDone()) t.future().cancel(true);
-                    });
         }
         budget.check();
         // 第四阶段：至少一个通道成功才进入后处理，失败通道作为降级信息保留。
@@ -384,6 +343,7 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
                 states.stream()
                         .filter(s -> s.status().equals("SUCCEEDED"))
                         .map(ChannelStateBO::channel)
+                        .distinct()
                         .sorted()
                         .reduce((a, b) -> a + "+" + b)
                         .orElseThrow();
@@ -400,7 +360,7 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
                 capped,
                 versions,
                 requestId,
-                budget);
+                budget,recall < requestedRecall);
     }
 
     /**
@@ -434,7 +394,7 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
             boolean capped,
             List<IndexVersionBO> versions,
             String requestId,
-            RetrievalDeadline budget) {
+            RetrievalDeadline budget, boolean budgetTruncated) {
         // current：分页页码或当前处理的中间对象。
         var current = phase(() -> authorize(actor, request), budget, budget.instant());
         if (!versions.equals(current))
@@ -449,14 +409,14 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
         boolean degraded =
                 states.stream().anyMatch(s -> !s.status().equals("SUCCEEDED"))
                         || Set.of("FALLBACK_FUSION", "THRESHOLD_UNAVAILABLE").contains(rerank)
-                        || capped;
+                        || capped || budgetTruncated;
         // outcome：检索结果的证据确定性分类。
         String outcome = !rows.isEmpty() ? "EVIDENCE" : degraded ? "INDETERMINATE" : "NO_EVIDENCE";
         // trace：本次检索的策略、耗时和索引身份追踪信息。
         var trace =
                 new RetrievalTraceBO(
                         requestId,
-                        "retrieval-v1",
+                        "retrieval-v2",
                         budget.elapsedMillis(),
                         versions,
                         used.contains("KEYWORD") ? keyword.target() : null,
@@ -474,7 +434,7 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
                 request.minRerankScore(),
                 degraded ? "DEGRADED" : "COMPLETE",
                 outcome,
-                trace);
+                trace,budgetTruncated);
     }
 
     /**

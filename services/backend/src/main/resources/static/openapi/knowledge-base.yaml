@@ -3818,6 +3818,9 @@ openapi: 3.0.3
       "type": "object"
       "additionalProperties": false
       "properties":
+        "subQuery":
+          "type": "string"
+          "nullable": true
         "channel":
           "type": "string"
           "enum":
@@ -3844,6 +3847,9 @@ openapi: 3.0.3
       "type": "object"
       "additionalProperties": false
       "properties":
+        "subQuery":
+          "type": "string"
+          "nullable": true
         "channel":
           "type": "string"
           "enum":
@@ -3871,6 +3877,8 @@ openapi: 3.0.3
       "type": "object"
       "additionalProperties": false
       "properties":
+        "candidateBudgetTruncated":
+          "type": "boolean"
         "evidence":
           "type": "array"
           "items":
@@ -3955,7 +3963,7 @@ openapi: 3.0.3
           "nullable": true
         "pipelineVersion":
           "type": "string"
-          "enum": ["retrieval-v1"]
+          "enum": ["retrieval-v2"]
         "elapsedMs":
           "type": "integer"
           "format": "int64"
