@@ -4,19 +4,33 @@
 
 ## 构建与验证
 
-仓库根目录，JDK 17；Docker 用于隔离集成测试，不连接当前业务库。不要为运行测试设置指向业务库的 KB_TEST_JDBC_URL，该可选测试会清空目标表。以下 verify 命令用于没有从本 checkout 的 target 运行应用的环境；已有进程占用 JAR 时先复制构建源到独立目录，绝不在运行目录执行 package/verify。本轮根目录打包遇到此问题后的恢复和独立产物见 PROGRESS。
+仓库根目录，JDK 17；Docker 用于隔离集成测试，不连接当前业务库。不要为运行测试设置指向业务库的 KB_TEST_JDBC_URL，该可选测试会清空目标表。已有进程占用 JAR 时先复制构建源到独立目录，绝不在运行目录执行 package/verify。本轮根目录打包遇到此问题后的恢复和独立产物见 PROGRESS。
+
+开发时先选择与改动直接相关的已有测试类或方法，一次 `test` 同时完成编译与定向验证。例如修改向量调用预算时：
 
 ```powershell
-.\mvnw.cmd -B -ntp '-Dmaven.repo.local=.cache/maven/repository' verify
+.\mvnw.cmd -B -ntp '-Dmaven.repo.local=.cache/maven/repository' -pl services/backend -am '-Dtest=VectorSearchDeadlineTest' '-Dsurefire.failIfNoSpecifiedTests=false' test
 ```
 
-仅检索相关行为：
+需要测试类中的单个场景时，可将 `-Dtest` 改为 `类名#方法名`。`surefire.failIfNoSpecifiedTests=false` 仅允许上游模块没有匹配用例；核对目标模块报告确实执行了选中的测试。文档和注释改动通常只执行 `git diff --check`，不启动 Maven 或 Docker。
+
+阶段验收根据影响范围选择相关集合。下面是检索预算、模型客户端、向量和混合检索的可选组合，按实际改动缩小；纯向量改动通常不需要启动 Elasticsearch：
 
 ```powershell
 .\mvnw.cmd -B -ntp '-Dmaven.repo.local=.cache/maven/repository' -pl services/backend -am '-Dtest=HybridRetrievalBudgetTest,RerankDeadlineTest,VectorSearchDeadlineTest,ElasticsearchDeadlineTest,AiEmbeddingClientTest,KnowledgeSearchTest,HybridRetrievalTest' '-Dsurefire.failIfNoSpecifiedTests=false' test
 ```
 
 本机可给测试增加 `-Dkb.test.elasticsearch-image=atlas-rag-elasticsearch:latest`，它是缓存的 ES 8.19.17，使用新容器和数据；不引用其他项目的数据卷。其他环境默认使用测试声明的公开 ES 8.19.17。Docker 不可用时集成测试会跳过，不能据此认定 PG/ES 已验证。
+
+权限、启停、删除、activeGeneration、向量空间、维度校验或依赖失败的规则发生变化时，选择覆盖对应边界的已有集成用例；缺少覆盖才补测试。检查已通过且相关代码未再变化时复用结果，阶段结束不自动重复全量测试。
+
+全量验证按显式要求、发布流程或实际影响范围触发，在没有运行中 JAR 占用的隔离构建目录执行：
+
+```powershell
+.\mvnw.cmd -B -ntp '-Dmaven.repo.local=.cache/maven/repository' verify
+```
+
+实际执行、未执行和复用的验证范围写入 PROGRESS；开发期缩减验证不等于完成真实供应商效果或生产负载验收。
 
 ## 启动与依赖
 

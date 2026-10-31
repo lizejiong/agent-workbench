@@ -131,6 +131,8 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
         // 第一阶段：建立共享总预算，补齐默认参数并校验全部访问范围。
         // budget：当前检索共享的总时间预算。
         var budget = new RetrievalDeadline(limits.deadline());
+        final SearchBO supplied = request;
+        request = phase(() -> resolveScope(actor, supplied), budget, budget.instant());
         if (request.minRerankScore() == null && config.rerank().minScore() != null)
             request =
                     new SearchBO(
@@ -167,6 +169,10 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
                     "KB_AMBIGUOUS_THRESHOLD",
                     "minScore is a cosine threshold for VECTOR only; use minRerankScore with reranking for hybrid evidence");
         // 纯向量请求沿用既有评分与错误约定，可选通道未启用时仍可独立工作。
+        if (request.kbIds().isEmpty()) {
+            return response(actor, List.of(), wanted, "NONE", "DISABLED", List.of(),
+                    0, 0, request, false, versions, requestId, budget);
+        }
         if (strategy.equals("VECTOR") && !rerank) {
             // deadline：本阶段或本次请求必须完成的截止时间。
             Instant deadline = budget.cap(config.vectorTimeout());
@@ -530,7 +536,8 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
                         && !Set.of("AUTO", "VECTOR", "KEYWORD", "HYBRID")
                                 .contains(request.strategy()))
             throw invalid("KB_INVALID_INPUT", "Check query, topK, strategy and score limits");
-        checkIds(request.kbIds(), limits.maxKbIds(), false);
+        if (request.kbIds() == null || !request.kbIds().isEmpty())
+            checkIds(request.kbIds(), limits.maxKbIds(), false);
         checkIds(request.documentIds(), limits.maxDocumentIds(), true);
         // versions：响应前后用于比较的知识库索引版本快照。
         var versions = new ArrayList<IndexVersionBO>();
@@ -562,6 +569,15 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
      * @param max 当前校验允许的最大长度或数值。
      * @param optional 当前范围参数是否允许省略。
      */
+    private SearchBO resolveScope(KnowledgeBasePrincipal actor, SearchBO request) {
+        if (request.kbIds() != null) return request;
+        var ids = bases.searchableIds(actor, limits.maxKbIds() + 1);
+        if (ids.size() > limits.maxKbIds())
+            throw invalid("KB_SEARCH_SCOPE_LIMIT", "Select explicit knowledge bases within the scope limit");
+        return new SearchBO(request.query(), List.copyOf(ids), request.documentIds(), request.topK(),
+                request.minScore(), request.strategy(), request.rerank(), request.minRerankScore());
+    }
+
     private static void checkIds(List<UUID> ids, int max, boolean optional) {
         if (ids == null && optional) return;
         if (ids == null

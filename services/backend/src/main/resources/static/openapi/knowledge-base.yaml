@@ -1819,6 +1819,57 @@ openapi: 3.0.3
             "schema":
               "$ref": "#/components/schemas/KnowledgeSearchRequest"
       "description": "One total deadline includes authorization, recall, reranking, assembly and final scope/version validation. Channel deadlines and model HTTP calls use the remaining budget; timeout and interruption cancel outstanding futures. COMPLETE/DEGRADED and EVIDENCE/NO_EVIDENCE/INDETERMINATE distinguish empty evidence from incomplete retrieval. Trace contains only authorized model/index fingerprints and requestId; a changed binding returns 409. All channels failed returns 503; total deadline returns 504. Evidence and source liveness are checked before and after reranking. No generated answer."
+  "/api/rag/retrieve":
+    "post":
+      "operationId": "retrieveRag"
+      "summary": "Structured evidence with actual channel/fusion/rerank strategy"
+      "responses":
+        "200":
+          "description": "Success"
+          "headers":
+            "Cache-Control":
+              "schema":
+                "type": "string"
+                "enum": ["no-store"]
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/RetrievalResponse"
+        "400":
+          "$ref": "#/components/responses/Error400"
+        "401":
+          "$ref": "#/components/responses/Error401"
+        "404":
+          "$ref": "#/components/responses/Error404"
+        "409":
+          "$ref": "#/components/responses/Error409"
+        "503":
+          "$ref": "#/components/responses/Error503"
+        "502":
+          "description": "Invalid embedding or provider request rejected"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "422":
+          "description": "Query exceeds encoded model input byte budget"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+        "504":
+          "description": "Model, retrieval phase or total deadline exceeded"
+          "content":
+            "application/json":
+              "schema":
+                "$ref": "#/components/schemas/Envelope"
+      "requestBody":
+        "required": true
+        "content":
+          "application/json":
+            "schema":
+              "$ref": "#/components/schemas/KnowledgeSearchRequest"
+      "description": "One total deadline includes authorization, recall, reranking, assembly and final scope/version validation. Channel deadlines and model HTTP calls use the remaining budget; timeout and interruption cancel outstanding futures. COMPLETE/DEGRADED and EVIDENCE/NO_EVIDENCE/INDETERMINATE distinguish empty evidence from incomplete retrieval. Trace contains only authorized model/index fingerprints and requestId; a changed binding returns 409. All channels failed returns 503; total deadline returns 504. Evidence and source liveness are checked before and after reranking. No generated answer."
   "/api/knowledge/search-capabilities":
     "get":
       "operationId": "getSearchCapabilities"
@@ -2953,13 +3004,13 @@ openapi: 3.0.3
           "description": "Nonblank; trimmed. Default configured limit 4000 Unicode code points, hard cap 16000; also bounded by model request byte budget."
         "kbIds":
           "type": "array"
-          "minItems": 1
+          "minItems": 0
           "maxItems": 64
           "uniqueItems": true
           "items":
             "type": "string"
             "format": "uuid"
-          "description": "Required; default configured maximum 16. Every KB must be owned and live."
+          "description": "Optional/null resolves live KBs owned by the authenticated tenant/user; an explicit empty array searches none. Default maximum 16; excess default scope returns KB_SEARCH_SCOPE_LIMIT. Every selected KB is authorized."
         "documentIds":
           "type": "array"
           "nullable": true
@@ -3005,7 +3056,6 @@ openapi: 3.0.3
           "description": "Finite model-specific threshold. Defaults to configured server threshold; missing rerank scores fail closed."
       "required":
         - "query"
-        - "kbIds"
     "KnowledgeSource":
       "type": "object"
       "additionalProperties": false

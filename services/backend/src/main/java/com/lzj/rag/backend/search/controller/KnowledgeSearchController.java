@@ -95,7 +95,7 @@ public class KnowledgeSearchController {
      * @param request 当前入口接收的请求参数。
      * @return 当前业务处理结果；失败时通过异常报告。
      */
-    @PostMapping("/api/knowledge/retrieve")
+    @PostMapping({"/api/knowledge/retrieve", "/api/rag/retrieve"})
     public ResponseEntity<Result<RetrievalVO>> retrieve(
             @AuthenticationPrincipal KnowledgeBasePrincipal actor,
             @Valid @RequestBody SearchRequest request) {

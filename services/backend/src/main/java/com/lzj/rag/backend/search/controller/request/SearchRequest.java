@@ -20,7 +20,7 @@ import java.util.*;
  */
 public record SearchRequest(
         @NotBlank @Size(max = 32000) @Pattern(regexp = "[^\\x00]*") String query,
-        @NotEmpty @Size(max = 64) List<@NotNull UUID> kbIds,
+        @Size(max = 64) List<@NotNull UUID> kbIds,
         @Size(min = 1, max = 500) List<@NotNull UUID> documentIds,
         @Min(1) Integer topK,
         Double minScore,

@@ -118,6 +118,25 @@ class KnowledgeSearchTest {
                 .andExpect(header().string("X-KB-Retrieval-Status","COMPLETE")).andExpect(header().string("X-KB-Retrieval-Outcome","EVIDENCE"))
                 .andExpect(jsonPath("$.data").isArray());
     }
+    @Test void serverResolvesOnlyOwnedScopesAndExplicitEmptyNeverCallsEmbedding()throws Exception {
+        var data=dataset();UUID bob=base("bob",null);document(bob,"private.md","Private database secret","bob");
+        var body=Map.of("query","database","strategy","VECTOR");
+        var response=mvc.perform(post("/api/rag/retrieve").with(auth("alice")).contentType("application/json").content(json.writeValueAsBytes(body)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.strategy").value("VECTOR")).andReturn().getResponse();
+        for(var row:json.readTree(response.getContentAsByteArray()).at("/data/evidence"))
+            assertThat(row.path("kbId").asText()).isEqualTo(data.kb().toString());
+        int calls=model.requests.size();
+        mvc.perform(post("/api/rag/retrieve").with(auth("alice")).contentType("application/json")
+                        .content(json.writeValueAsBytes(Map.of("query","database","kbIds",List.of()))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.outcome").value("NO_EVIDENCE"))
+                .andExpect(jsonPath("$.data.strategy").value("NONE")).andExpect(jsonPath("$.data.evidence").isEmpty());
+        assertThat(search(body,"carol",200).path("data").isEmpty()).isTrue();
+        assertThat(model.requests).hasSize(calls);
+        base("alice",null);base("alice",null);
+        assertThat(search(body,"alice",400).path("code").asText()).isEqualTo("KB_SEARCH_SCOPE_LIMIT");
+        search(Map.of("query","database","kbIds",List.of(data.kb(),bob)),"alice",404);
+        assertThat(model.requests).hasSize(calls);
+    }
     @Test void oneQueryVectorServesCompatibleBasesAndDocumentScopePrecedesRanking()throws Exception {
         var data=dataset();UUID other=base("alice",null);UUID doc=document(other,"database-other.md",fixture("database.md"),"alice");
         var one=search(Map.of("query","database","kbIds",List.of(data.kb())),"alice",200).path("data");assertThat(one.size()).isEqualTo(3);for(var hit:one)assertThat(hit.path("kbId").asText()).isEqualTo(data.kb().toString());

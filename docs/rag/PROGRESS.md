@@ -54,3 +54,15 @@
 验证命令：`./mvnw.cmd -B -ntp -f .cache/structure-fix-20261031/pom.xml -Dmaven.repo.local=C:/Users/lzj/Documents/ChatGPT/rag/.cache/maven/repository -Dkb.test.elasticsearch-image=atlas-rag-elasticsearch:latest verify`。日志保存在 `.cache/structure-fix-20261031.log`，逐测试集汇总为 `.cache/structure-fix-20261031/.validation-summary.json`。
 
 构建没有覆盖当前运行中的 JAR。本轮不扩展 R2，不执行运行包部署或真实供应商模型效果评估。
+
+## 开发期测试节奏调整（2026-10-31）
+
+按用户要求减少开发过程中的测试。后续优先复用已有定向用例，仅为未覆盖的关键行为和边界补测试；集成测试按数据库、权限、索引或外部协议的实际影响选择，阶段末集中验收受影响范围。已有通过结果在相关代码未变化时复用，全 reactor `verify` 改为按显式要求、发布流程或实际影响范围触发。
+
+PLAN 和 RUNBOOK 已记录选择规则、单类/单方法命令和结果报告边界。此轮仅调整文档，执行 `git diff --check`，没有运行 Maven、Docker 或模型调用；附件中的后续功能阶段尚未在本轮实施。
+
+## 附件第 2 轮：结构化向量检索基线（2026-10-31，完成）
+
+复用现有单一 pgvector、入库模型绑定、证据 BO/VO、总 deadline、参数化 cosine SQL、权限与有效代次检查。新增 `/api/rag/retrieve` 兼容入口；省略范围从可信 tenant+owner 解析，默认范围超额明确拒绝，显式空范围返回 NONE/NO_EVIDENCE 且不调用外部依赖。指定范围逐项授权，保留不同空间 409 的既有政策。
+
+最小验证：隔离副本 `.cache/rag-development-20261031` 执行 `-pl services/backend -am -Dtest=KnowledgeSearchTest -Dsurefire.failIfNoSpecifiedTests=false test`，13 项全部通过，0 跳过。真实 PG/pgvector、MinIO、解析入库，查询向量为 HTTP topic 桩；覆盖正常/无关、默认/空/超额范围、跨用户与租户、启停/删除/旧代次、不同空间、维度错误、模型超时。基线回执为该副本的 `services/backend/target/knowledge-base/search-example.json`；日志 `.cache/rag-round2.log`。复用先前预算/HTTP 边界结果，未运行全量 verify 或真实供应商效果评估。

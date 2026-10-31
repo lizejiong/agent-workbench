@@ -6,6 +6,8 @@
 
 ## 数据集与可重复基线
 
+第 2 轮沿用下述已入库样例和 topic-vector 基线；新增省略范围、空范围、默认范围超额与跨用户显式选择的回归。`KnowledgeSearchTest` 将真实入库后的请求、证据与确定性分数写入构建目录 `services/backend/target/knowledge-base/search-example.json`；隔离构建时文件位于隔离副本下。该基线仍使用 HTTP 模型桩，不计作真实供应商语义效果。
+
 复用 `services/backend/src/test/resources/knowledge-base/search/{database,backup,cooking}.md`：数据库连接说明、pg_dump 备份说明、烘焙负例。`KnowledgeSearchTest` 真实上传/解析/入库，用显式 HTTP topic-vector 桩构造 1024 维向量，再执行真实 PG cosine SQL。
 
 | 场景 | 实际断言 / 标签 |

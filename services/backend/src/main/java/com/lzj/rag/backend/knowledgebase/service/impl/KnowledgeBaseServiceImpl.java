@@ -31,6 +31,14 @@ import java.util.UUID;
 @Service
 public class KnowledgeBaseServiceImpl implements KnowledgeBaseService, KnowledgeBaseAccess {
 
+    @Override
+    public java.util.List<UUID> searchableIds(KnowledgeBasePrincipal actor, int limit) {
+        if (limit < 1 || limit > 65) throw new IllegalArgumentException("Invalid scope limit");
+        return jdbc.query("SELECT id FROM kb_knowledge_base WHERE tenant_id=? AND owner_id=? "
+                        + "AND deleted_at IS NULL ORDER BY id LIMIT ?",
+                (rs, row) -> rs.getObject(1, UUID.class), actor.tenantId(), actor.userId(), limit);
+    }
+
     /** 知识库实体数据访问接口。 */
     private final KnowledgeBaseMapper mapper;
 

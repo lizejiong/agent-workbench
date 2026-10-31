@@ -12,6 +12,9 @@ import java.util.UUID;
  */
 public interface KnowledgeBaseAccess {
 
+    /** 按当前私有库政策解析默认检索范围；最多读取 limit 条，不做无界扫描。 */
+    java.util.List<UUID> searchableIds(KnowledgeBasePrincipal actor, int limit);
+
     /** 返回当前租户与用户拥有且未删除的知识库；不存在或无权访问时报告未找到。 */
     KnowledgeBaseDO requireOwned(KnowledgeBasePrincipal actor, UUID id);
 

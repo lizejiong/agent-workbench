@@ -4,6 +4,8 @@
 
 ## A：结构化检索（已实现）
 
+2026-10-31 第 2 轮：`POST /api/rag/retrieve` 是 `/api/knowledge/retrieve` 的兼容入口，执行同一个引擎。所有三个检索入口均允许省略/null `kbIds`，服务端取当前 tenant+owner 的存活私有库；超过 `kb.search.max-kb-ids` 返回 400/`KB_SEARCH_SCOPE_LIMIT`，要求显式缩小范围，绝不截断后偷偷检索部分库。显式 `kbIds: []` 返回 COMPLETE/NO_EVIDENCE、strategy=NONE、channels=[]，不会调用模型或索引。非空范围保持逐项授权，文档过滤必须属于已选范围。多嵌入空间仍为 409，调用方分别请求，不跨空间比较 cosine。
+
 `POST /api/knowledge/retrieve` 返回统一 Result（code/message/data/requestId）。认证身份取服务端 principal；请求不接受 tenantId、ownerId 或 actor。所有 kbIds、documentIds 逐一验证，不静默丢弃越权库。
 
 ```json
