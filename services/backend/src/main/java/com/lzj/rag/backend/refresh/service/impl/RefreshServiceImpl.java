@@ -2,14 +2,14 @@ package com.lzj.rag.backend.refresh.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzj.rag.backend.document.dao.entity.DocumentDO;
-import com.lzj.rag.backend.document.service.DocumentService;
 import com.lzj.rag.backend.document.service.bo.IngestionSpecBO;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.document.storage.DocumentStorage;
 import com.lzj.rag.backend.document.upload.PreparedUpload;
 import com.lzj.rag.backend.infra.storage.config.StorageProperties;
 import com.lzj.rag.backend.ingestion.service.IngestionJobService;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.parser.routing.ParserRegistry;
 import com.lzj.rag.backend.refresh.config.RemoteProperties;
 import com.lzj.rag.backend.refresh.download.RemoteDownloader;
@@ -40,11 +40,11 @@ public class RefreshServiceImpl implements RefreshService {
     /** 执行数据库查询及受条件保护的业务状态更新。 */
     private final JdbcTemplate jdbc;
 
-    /** 负责文档归属、上传和配置维护的业务服务。 */
-    private final DocumentService documents;
+    /** 供内部流程校验文档归属和取得行锁的访问契约。 */
+    private final DocumentAccess documents;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 负责持久化入库任务及租约状态迁移的业务服务。 */
     private final IngestionJobService jobs;
@@ -80,8 +80,8 @@ public class RefreshServiceImpl implements RefreshService {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
-     * @param documents 负责文档归属、上传和配置维护的业务服务。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param documents 供内部流程校验文档归属和取得行锁的访问契约。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param jobs 负责持久化入库任务及租约状态迁移的业务服务。
      * @param state 负责刷新凭据、源对象切换及终态维护的组件。
      * @param downloader 执行网络许可校验和有界下载的组件。
@@ -94,8 +94,8 @@ public class RefreshServiceImpl implements RefreshService {
      */
     public RefreshServiceImpl(
             JdbcTemplate jdbc,
-            DocumentService documents,
-            KnowledgeBaseService bases,
+            DocumentAccess documents,
+            KnowledgeBaseAccess bases,
             IngestionJobService jobs,
             RefreshState state,
             RemoteDownloader downloader,

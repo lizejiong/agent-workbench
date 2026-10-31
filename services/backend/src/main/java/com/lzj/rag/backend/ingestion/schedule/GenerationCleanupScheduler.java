@@ -44,7 +44,7 @@ public class GenerationCleanupScheduler {
                     cleanup.failed(id);
                 }
         } catch (RuntimeException ignored) {
-            // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
+            // 本轮扫描失败时保留持久化清理记录，后续扫描可继续重试。
             org.slf4j.LoggerFactory.getLogger(getClass())
                     .warn("Generation cleanup paused; persistent records remain recoverable");
         }

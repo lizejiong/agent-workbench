@@ -5,7 +5,6 @@ import com.lzj.rag.backend.document.controller.vo.DocumentVO;
 import com.lzj.rag.backend.document.controller.vo.UploadOperationResultVO;
 import com.lzj.rag.backend.document.converter.DocumentWebConverter;
 import com.lzj.rag.backend.document.service.DocumentService;
-import com.lzj.rag.backend.document.storage.DocumentStorage;
 import com.lzj.rag.backend.document.upload.UploadOperations;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 import com.lzj.rag.framework.convention.page.PageResponse;
@@ -35,21 +34,15 @@ public class DocumentController {
     /** 负责上传预留和失败对象补偿的业务组件。 */
     private final UploadOperations operations;
 
-    /** 支持流式读写及幂等删除的源对象存储组件。 */
-    private final DocumentStorage storage;
-
     /**
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param service 负责文档归属、上传和配置维护的业务服务。
      * @param operations 负责上传预留和失败对象补偿的业务组件。
-     * @param storage 支持流式读写及幂等删除的源对象存储组件。
      */
-    public DocumentController(
-            DocumentService service, UploadOperations operations, DocumentStorage storage) {
+    public DocumentController(DocumentService service, UploadOperations operations) {
         this.service = service;
         this.operations = operations;
-        this.storage = storage;
     }
 
     /**
@@ -148,23 +141,20 @@ public class DocumentController {
     @GetMapping("/api/documents/{id}/file")
     public ResponseEntity<InputStreamResource> file(
             @AuthenticationPrincipal KnowledgeBasePrincipal actor, @PathVariable UUID id) {
-        // doc：当前操作涉及的文档。
-        var doc = service.requireOwned(actor, id);
-        // stream：当前需要关闭的文件或解析资源流。
-        // 先完成业务授权再访问对象存储；流式响应结束后由 Spring 关闭资源。
-        var stream = storage.open(doc.getObjectKey());
+        var file = service.openFile(actor, id);
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(doc.getMimeType()))
-                .contentLength(doc.getFileSize())
+                .contentType(MediaType.parseMediaType(file.mimeType()))
+                .contentLength(file.fileSize())
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()
-                                .filename(doc.getOriginalFilename(), StandardCharsets.UTF_8)
+                                .filename(file.originalFilename(), StandardCharsets.UTF_8)
                                 .build()
                                 .toString())
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .header("X-Content-Type-Options", "nosniff")
-                .body(new InputStreamResource(stream));
+                // Spring 在发送完成或发送失败后关闭文件流。
+                .body(new InputStreamResource(file.content()));
     }
 
     /**

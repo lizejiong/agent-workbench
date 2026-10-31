@@ -5,7 +5,7 @@ import com.lzj.rag.backend.document.service.bo.UploadOperationResultBO;
 import com.lzj.rag.backend.document.storage.DocumentStorage;
 import com.lzj.rag.backend.infra.storage.config.StorageProperties;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 import com.lzj.rag.framework.convention.page.PageResponse;
 
@@ -34,8 +34,8 @@ public class UploadOperations {
     /** 执行数据库查询及受条件保护的业务状态更新。 */
     private final JdbcTemplate jdbc;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 支持流式读写及幂等删除的源对象存储组件。 */
     private final DocumentStorage storage;
@@ -50,14 +50,14 @@ public class UploadOperations {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param storage 支持流式读写及幂等删除的源对象存储组件。
      * @param properties 对象存储连接、文件容量、临时目录及上传补偿配置。
      * @param manager 创建后台短事务及只读事务的事务管理器。
      */
     public UploadOperations(
             JdbcTemplate jdbc,
-            KnowledgeBaseService bases,
+            KnowledgeBaseAccess bases,
             DocumentStorage storage,
             StorageProperties properties,
             PlatformTransactionManager manager) {
@@ -83,14 +83,11 @@ public class UploadOperations {
             KnowledgeBasePrincipal actor, UUID kb, String key, String payloadHash, String name) {
         return tx.execute(
                 ignored -> {
-                    // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
-                    // base：当前操作涉及的知识库及其固定模型绑定。
                     var base = bases.lockOwned(actor, kb);
                     if (base.getEmbeddingModelId() == null)
                         throw conflict(
                                 "KB_MODEL_UNBOUND",
                                 "Bind an allowed embedding profile before uploading");
-                    // previous：本次修改前的记录或此前已经处理的值。
                     var previous =
                             jdbc.queryForList(
                                     "SELECT * FROM kb_upload_operation WHERE kb_id=? AND tenant_id=? AND owner_id=? AND idempotency_key=?",
@@ -99,7 +96,6 @@ public class UploadOperations {
                                     actor.userId(),
                                     key);
                     if (!previous.isEmpty()) {
-                        // row：当前数据库记录或表格数据行。
                         var row = previous.get(0);
                         if (!payloadHash.equals(row.get("payload_hash")))
                             throw conflict(
@@ -116,9 +112,7 @@ public class UploadOperations {
                                 true);
                     }
                     checkName(kb, name, null);
-                    // id：当前业务对象的唯一标识。
                     UUID id = UUID.randomUUID();
-                    // objectKey：对象存储中的源文件键。
                     // 对象路径只使用服务端生成的标识，租户文本和原始文件名不参与路径拼接。
                     String objectKey = "knowledge-base/" + kb + "/" + id + "/original";
                     jdbc.update(
@@ -155,9 +149,7 @@ public class UploadOperations {
             Supplier<T> insert) {
         return tx.execute(
                 ignored -> {
-                    // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
                     bases.lockOwned(actor, kb);
-                    // rows：数据库结果或当前表格数据行集合。
                     var rows =
                             jdbc.queryForList(
                                     "SELECT status, lease_until > CURRENT_TIMESTAMP AS valid FROM kb_upload_operation WHERE id=? FOR UPDATE",
@@ -169,7 +161,6 @@ public class UploadOperations {
                                 "KB_UPLOAD_LEASE_EXPIRED",
                                 "Upload lease expired; inspect and clean the storage operation");
                     }
-                    // result：当前步骤产生的处理结果。
                     T result = insert.get();
                     jdbc.update(
                             "UPDATE kb_upload_operation SET status='COMPLETED', updated_at=CURRENT_TIMESTAMP WHERE id=?",
@@ -186,7 +177,6 @@ public class UploadOperations {
      * @param excluded 名称冲突校验时需要排除的当前记录标识。
      */
     public void checkName(UUID kb, String name, UUID excluded) {
-        // duplicate：当前名称或幂等键是否已经被占用。
         Boolean duplicate =
                 jdbc.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM kb_document WHERE kb_id=? AND lower(name)=lower(?) AND deleted_at IS NULL AND (?::uuid IS NULL OR id<>?))",
@@ -212,7 +202,6 @@ public class UploadOperations {
         try {
             cleanup(actor, kb, id, true);
         } catch (RuntimeException ignored) {
-            // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
             // 补偿意图已持久化；数据库不可用或提交结果不明确时，不能直接删除可能已被文档引用的对象。
             LoggerFactory.getLogger(getClass())
                     .warn("Upload recovery remains pending operationId={}", id);
@@ -241,13 +230,10 @@ public class UploadOperations {
      * @param immediate 是否立即执行清理，忽略常规退避等待。
      */
     private void cleanup(KnowledgeBasePrincipal actor, UUID kb, UUID id, boolean immediate) {
-        // claim：当前后台任务的租约凭据或领取记录。
         Claim claim =
                 tx.execute(
                         ignored -> {
-                            // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
                             bases.lockOwned(actor, kb);
-                            // rows：数据库结果或当前表格数据行集合。
                             var rows =
                                     jdbc.queryForList(
                                             "SELECT *, lease_until <= CURRENT_TIMESTAMP AS expired FROM kb_upload_operation WHERE id=? AND kb_id=? AND tenant_id=? AND owner_id=? FOR UPDATE",
@@ -260,9 +246,7 @@ public class UploadOperations {
                                         404,
                                         "KB_OPERATION_NOT_FOUND",
                                         "Storage operation not found");
-                            // row：当前数据库记录或表格数据行。
                             var row = rows.get(0);
-                            // status：当前业务操作或任务状态。
                             String status = (String) row.get("status");
                             if ("COMPLETED".equals(status)
                                     || Boolean.TRUE.equals(
@@ -280,7 +264,6 @@ public class UploadOperations {
                                 throw conflict(
                                         "KB_OPERATION_BUSY",
                                         "Storage operation has an active lease");
-                            // token：当前任务的租约栅栏令牌或清理凭据。
                             UUID token = UUID.randomUUID();
                             jdbc.update(
                                     """
@@ -296,7 +279,6 @@ public class UploadOperations {
         try {
             storage.delete(claim.objectKey());
         } catch (RuntimeException error) {
-            // error：本次处理捕获的异常，用于归类失败原因。
             jdbc.update(
                     """
                 UPDATE kb_upload_operation SET attempts=attempts+1,error_code='KB_STORAGE_DELETE_FAILED',
@@ -331,7 +313,6 @@ public class UploadOperations {
     public PageResponse<UploadOperationResultBO> list(
             KnowledgeBasePrincipal actor, UUID kb, int current, int size) {
         bases.requireOwned(actor, kb);
-        // total：满足当前查询条件的记录总数。
         Long total =
                 jdbc.queryForObject(
                         "SELECT count(*) FROM kb_upload_operation WHERE kb_id=? AND tenant_id=? AND owner_id=?",
@@ -339,9 +320,6 @@ public class UploadOperations {
                         kb,
                         actor.tenantId(),
                         actor.userId());
-        // rs：数据库查询的当前结果行。
-        // n：当前结果行的顺序编号，由 JDBC 行映射器传入。
-        // records：当前存储记录集合或证据重载组件。
         var records =
                 jdbc.query(
                         "SELECT * FROM kb_upload_operation WHERE kb_id=? AND tenant_id=? AND owner_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?",
@@ -373,8 +351,6 @@ public class UploadOperations {
      */
     private UploadOperationResultBO get(KnowledgeBasePrincipal actor, UUID kb, UUID id) {
         bases.requireOwned(actor, kb);
-        // rs：数据库查询的当前结果行。
-        // n：当前结果行的顺序编号，由 JDBC 行映射器传入。
         return jdbc.queryForObject(
                 "SELECT * FROM kb_upload_operation WHERE id=? AND kb_id=? AND tenant_id=? AND owner_id=?",
                 (rs, n) ->

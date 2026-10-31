@@ -12,6 +12,7 @@ import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBaseBindBO;
 import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBaseCreateBO;
 import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBasePatchBO;
 import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBaseUpdateBO;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.catalog.EmbeddingCatalog;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 import com.lzj.rag.framework.convention.page.PageResponse;
@@ -28,7 +29,7 @@ import java.util.UUID;
 
 /** 管理知识库及不可变嵌入绑定，统一执行归属、版本和并发变更校验。 */
 @Service
-public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
+public class KnowledgeBaseServiceImpl implements KnowledgeBaseService, KnowledgeBaseAccess {
 
     /** 知识库实体数据访问接口。 */
     private final KnowledgeBaseMapper mapper;
@@ -214,7 +215,6 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                     "KB_NOT_EMPTY",
                     "Knowledge base contains documents or pending storage operations");
         }
-        // deleted：当前需要回收的已删除记录集合。
         var deleted = now();
         // changed：输入版本是否发生变化，或条件更新实际影响的行数。
         int changed =
@@ -235,6 +235,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
      * @param id 当前业务对象的唯一标识。
      * @return 当前业务处理结果；失败时通过异常报告。
      */
+    @Override
     public KnowledgeBaseDO requireOwned(KnowledgeBasePrincipal actor, UUID id) {
         // base：当前操作涉及的知识库及其固定模型绑定。
         var base = mapper.selectOne(owned(actor).eq(KnowledgeBaseDO::getId, id));
@@ -250,6 +251,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
      * @param id 当前业务对象的唯一标识。
      * @return 当前业务处理结果；失败时通过异常报告。
      */
+    @Override
     public KnowledgeBaseDO lockOwned(KnowledgeBasePrincipal actor, UUID id) {
         // base：当前操作涉及的知识库及其固定模型绑定。
         var base = mapper.selectOne(owned(actor).eq(KnowledgeBaseDO::getId, id).last("FOR UPDATE"));
@@ -269,7 +271,6 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
     @Transactional(timeout = 10)
     public KnowledgeBaseBO patch(
             KnowledgeBasePrincipal actor, UUID id, KnowledgeBasePatchBO request) {
-        // current：分页页码或当前处理的中间对象。
         var current = lockOwned(actor, id);
         if (request.embeddingProfileId() != null
                 && !request.embeddingProfileId().equals(current.getEmbeddingProfileId())) {

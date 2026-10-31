@@ -11,6 +11,7 @@ src/main/java/com/lzj/rag/backend/
 │   ├── controller/advice/           知识库错误码及数据库错误的业务适配
 │   ├── service/impl/                业务服务接口与实现
 │   ├── service/bo/                  业务输入和结果
+│   ├── service/internal/            实体读取及行锁的内部访问契约
 │   ├── dao/entity/                  KnowledgeBaseDO
 │   ├── dao/mapper/                  KnowledgeBaseMapper
 │   ├── dao/handler/                 PostgreSQL UUID、JSONB 类型映射
@@ -66,6 +67,10 @@ src/main/java/com/lzj/rag/backend/
 
 Service 的事务、版本检查和租约判断仍位于业务实现。`service/impl` 仅放对应 Service 的实现；切片算法、入库流水线、发布、下载和任务调度按各自职责组织。后台入口通过业务契约复用相同规则。
 
+`KnowledgeBaseService` 与 `DocumentService` 面向 Controller、工具及其他业务入口，只使用业务对象。需要读取 DO 或协调行锁的后端流程分别依赖 `service/internal/KnowledgeBaseAccess` 和 `service/internal/DocumentAccess`，不得由 Controller 直接使用。公开服务与内部访问契约由同一个 Spring 组件实现；拆分接口不增加事务，不改变既有查询或锁顺序。`lockOwned` 必须在调用方已有的事务中使用，依次取得知识库、文档及任务锁，锁随该事务结束而释放。
+
+源文件下载通过 `DocumentService.openFile` 校验文档及知识库归属，再读取对象存储，返回 `DocumentFileBO` 的元数据和内容流。Controller 仅构造下载响应，不接触 DO 或对象存储键；内容流由调用方关闭，HTTP 入口交由 Spring 资源响应管理。
+
 Web Converter 只做字段转换；Data Converter 只做持久化对象与 BO 的转换。模型目录及检索所需的固定配置快照归业务所有。pgvector 和关键词索引含有权限、代次与发布修订语义，归 `search/repository`；共享的 `infra/storage` 只负责技术存取，不引用具体业务包，由 `document/storage` 转换技术失败。
 
 ## 公共组件
@@ -79,6 +84,8 @@ Web Converter 只做字段转换；Data Converter 只做持久化对象与 BO �
 单元测试包跟随生产包，例如 `chunk/splitting`、`document/upload`、`model/client`、`search/service/impl`。跨业务 HTTP、数据库与存储场景归 `integration`，测试数据仍使用现有资源目录。
 
 新增功能先选择归属业务，再按实际边界增加 Request、BO、VO、DO 或 Converter；不创建空目录，不复制公共能力，也不为目录示例引入中间件。结构迁移后的首次构建需要清理旧包遗留的编译类，避免 Spring 扫描到新旧两套组件。
+
+注释说明事务范围、锁顺序、执行权、重试或资源生命周期等约束，不重复变量名和代码表面行为。事务模板回调的参数是事务状态，不是异常；忽略异常时应说明保留哪个结果、由哪个流程恢复。
 
 从仓库根验证本服务及公共依赖：
 

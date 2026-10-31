@@ -9,10 +9,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import com.lzj.rag.backend.document.service.DocumentService;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.knowledgebase.dao.entity.KnowledgeBaseDO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.search.channel.SearchChannel;
 import com.lzj.rag.backend.search.config.HybridProperties;
 import com.lzj.rag.backend.search.config.KeywordProperties;
@@ -30,8 +30,8 @@ import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 /** In-process fault injection exercises the real bounded executor; no external-model claims. */
 class HybridRetrievalBudgetTest {
     private final KnowledgeSearchService vector=mock(KnowledgeSearchService.class);
-    private final KnowledgeBaseService bases=mock(KnowledgeBaseService.class);
-    private final DocumentService documents=mock(DocumentService.class);
+    private final KnowledgeBaseAccess bases=mock(KnowledgeBaseAccess.class);
+    private final DocumentAccess documents=mock(DocumentAccess.class);
     private final SearchResultPostProcessor post=mock(SearchResultPostProcessor.class);
     private final KnowledgeBasePrincipal actor=new KnowledgeBasePrincipal("alice","unused","tenant-a","alice");
     private final UUID kb=UUID.randomUUID();

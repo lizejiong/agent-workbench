@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzj.rag.backend.ingestion.config.IngestionProperties;
 import com.lzj.rag.backend.knowledgebase.dao.entity.KnowledgeBaseDO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.search.repository.vector.dto.VectorHitDTO;
 import com.lzj.rag.backend.search.repository.vector.dto.VectorRecordDTO;
 import com.lzj.rag.backend.search.repository.vector.dto.VectorScopeDTO;
@@ -23,8 +23,8 @@ public class PgvectorVectorStore implements VectorStore {
     /** 执行数据库查询及受条件保护的业务状态更新。 */
     private final JdbcTemplate jdbc;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 用于业务请求、持久化快照与元数据转换的 JSON 映射器。 */
     private final ObjectMapper json;
@@ -36,13 +36,13 @@ public class PgvectorVectorStore implements VectorStore {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param json 用于业务请求、持久化快照与元数据转换的 JSON 映射器。
      * @param config 入库流水线的时间预算、文本长度、切片数量和向量写入限制。
      */
     public PgvectorVectorStore(
             JdbcTemplate jdbc,
-            KnowledgeBaseService bases,
+            KnowledgeBaseAccess bases,
             ObjectMapper json,
             IngestionProperties config) {
         this.jdbc = jdbc;

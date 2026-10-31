@@ -2,7 +2,7 @@ package com.lzj.rag.backend.operations.service.impl;
 
 import com.fasterxml.jackson.databind.*;
 import com.lzj.rag.backend.document.service.bo.IngestionSpecBO;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.operations.service.ManagementService;
 import com.lzj.rag.backend.operations.service.bo.ContentAuditBO;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
@@ -21,8 +21,8 @@ public class ManagementServiceImpl implements ManagementService {
     /** 执行数据库查询及受条件保护的业务状态更新。 */
     private final JdbcTemplate jdbc;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 用于业务请求、持久化快照与元数据转换的 JSON 映射器。 */
     private final ObjectMapper json;
@@ -31,10 +31,10 @@ public class ManagementServiceImpl implements ManagementService {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param json 用于业务请求、持久化快照与元数据转换的 JSON 映射器。
      */
-    public ManagementServiceImpl(JdbcTemplate jdbc, KnowledgeBaseService bases, ObjectMapper json) {
+    public ManagementServiceImpl(JdbcTemplate jdbc, KnowledgeBaseAccess bases, ObjectMapper json) {
         this.jdbc = jdbc;
         this.bases = bases;
         this.json = json;

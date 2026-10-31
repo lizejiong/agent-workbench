@@ -113,7 +113,7 @@ public class RemoteDownloader {
      *
      * @param path 当前需要读取、写入或清理的文件路径。
      * @param hash 源内容或切片正文的稳定摘要。
-     * @param size 分页容量或当前数据的字节数。
+     * @param size 下载源文件的实际字节数。
      * @param etag 远程资源的 ETag 条件请求标识。
      * @param lastModified 远程资源返回的最近修改时间标识。
      * @param httpStatus 远程源请求返回的 HTTP 状态。
@@ -129,14 +129,14 @@ public class RemoteDownloader {
                 try {
                     Files.deleteIfExists(path);
                 } catch (IOException ignored) {
-                    // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
+                    // 临时文件删除失败不替换下载结果，记录告警以便后续清理。
                     org.slf4j.LoggerFactory.getLogger(RemoteDownloader.class)
                             .warn("Remote spool remains eligible for cleanup");
                 }
         }
 
         /**
-         * 将临时下载文件包装为流式 MultipartFile 输入。
+         * 将临时下载文件包装为与 HTTP 无关的文件输入，复用上传校验流程。
          *
          * @param filename 经过业务校验的文件名。
          * @return 当前业务处理结果；失败时通过异常报告。
@@ -329,10 +329,10 @@ public class RemoteDownloader {
         } finally {
             slots.release();
             if (spool != null)
-                // ignored：取消或回收过程中捕获的异常，不覆盖原请求处理结果。
                 try {
                     Files.deleteIfExists(spool);
                 } catch (IOException ignored) {
+                    // 临时文件清理失败不覆盖下载异常或已返回的下载结果。
                 }
         }
     }

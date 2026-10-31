@@ -7,17 +7,19 @@ import com.lzj.rag.backend.document.dao.entity.DocumentDO;
 import com.lzj.rag.backend.document.dao.mapper.DocumentMapper;
 import com.lzj.rag.backend.document.service.DocumentService;
 import com.lzj.rag.backend.document.service.bo.DocumentBO;
+import com.lzj.rag.backend.document.service.bo.DocumentFileBO;
 import com.lzj.rag.backend.document.service.bo.DocumentPatchBO;
 import com.lzj.rag.backend.document.service.bo.DocumentUploadBO;
 import com.lzj.rag.backend.document.service.bo.DocumentUploadedBO;
 import com.lzj.rag.backend.document.service.bo.IngestionSpecBO;
 import com.lzj.rag.backend.document.service.bo.UploadSourceBO;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.document.storage.DocumentStorage;
 import com.lzj.rag.backend.document.upload.PreparedUpload;
 import com.lzj.rag.backend.document.upload.UploadOperations;
 import com.lzj.rag.backend.infra.storage.config.StorageProperties;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.catalog.EmbeddingCatalog;
 import com.lzj.rag.backend.parser.routing.ParserRegistry;
 import com.lzj.rag.backend.parser.support.SupportedFiles;
@@ -35,13 +37,13 @@ import java.util.*;
 
 /** 文档业务服务，负责上传校验、归属校验、配置变更和响应转换。 */
 @Service
-public class DocumentServiceImpl implements DocumentService {
+public class DocumentServiceImpl implements DocumentService, DocumentAccess {
 
     /** 文档实体数据访问接口。 */
     private final DocumentMapper mapper;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 负责上传预留和失败对象补偿的业务组件。 */
     private final UploadOperations operations;
@@ -65,7 +67,7 @@ public class DocumentServiceImpl implements DocumentService {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param mapper 文档实体数据访问接口。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param operations 负责上传预留和失败对象补偿的业务组件。
      * @param storage 支持流式读写及幂等删除的源对象存储组件。
      * @param properties 对象存储连接、文件容量、临时目录及上传补偿配置。
@@ -75,7 +77,7 @@ public class DocumentServiceImpl implements DocumentService {
      */
     public DocumentServiceImpl(
             DocumentMapper mapper,
-            KnowledgeBaseService bases,
+            KnowledgeBaseAccess bases,
             UploadOperations operations,
             DocumentStorage storage,
             StorageProperties properties,
@@ -328,6 +330,7 @@ public class DocumentServiceImpl implements DocumentService {
      * @param id 当前业务对象的唯一标识。
      * @return 当前业务处理结果；失败时通过异常报告。
      */
+    @Override
     public DocumentDO requireOwned(KnowledgeBasePrincipal actor, UUID id) {
         // doc：当前操作涉及的文档。
         var doc = mapper.selectOne(owned(actor).eq(DocumentDO::getId, id));
@@ -337,6 +340,17 @@ public class DocumentServiceImpl implements DocumentService {
         return doc;
     }
 
+    /** 先校验文档和知识库归属，再打开对象流，避免未授权请求访问存储。 */
+    @Override
+    public DocumentFileBO openFile(KnowledgeBasePrincipal actor, UUID id) {
+        var doc = requireOwned(actor, id);
+        return new DocumentFileBO(
+                doc.getOriginalFilename(),
+                doc.getMimeType(),
+                doc.getFileSize(),
+                storage.open(doc.getObjectKey()));
+    }
+
     /**
      * 锁定调用者拥有的文档，供后续事务变更使用。
      *
@@ -344,6 +358,7 @@ public class DocumentServiceImpl implements DocumentService {
      * @param id 当前业务对象的唯一标识。
      * @return 当前业务处理结果；失败时通过异常报告。
      */
+    @Override
     public DocumentDO lockOwned(KnowledgeBasePrincipal actor, UUID id) {
         // doc：当前操作涉及的文档。
         var doc = mapper.selectOne(owned(actor).eq(DocumentDO::getId, id).last("FOR UPDATE"));
@@ -438,6 +453,7 @@ public class DocumentServiceImpl implements DocumentService {
      * @param d 本次操作涉及的文档实体。
      * @return 当前业务处理结果；失败时通过异常报告。
      */
+    @Override
     public DocumentBO view(DocumentDO d) {
         return new DocumentBO(
                 d.getId(),

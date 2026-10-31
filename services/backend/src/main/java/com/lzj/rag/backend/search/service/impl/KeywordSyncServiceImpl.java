@@ -1,8 +1,8 @@
 package com.lzj.rag.backend.search.service.impl;
 
-import com.lzj.rag.backend.document.service.DocumentService;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.search.config.KeywordProperties;
 import com.lzj.rag.backend.search.repository.keyword.KeywordIndex;
 import com.lzj.rag.backend.search.repository.keyword.dto.KeywordChunkDTO;
@@ -36,11 +36,11 @@ public class KeywordSyncServiceImpl implements KeywordSyncService {
     /** 关键词检索开关、索引身份、分析器及同步工作线程配置。 */
     private final KeywordProperties config;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
-    /** 负责文档归属、上传和配置维护的业务服务。 */
-    private final DocumentService documents;
+    /** 供内部流程校验文档归属和取得行锁的访问契约。 */
+    private final DocumentAccess documents;
 
     /** 校验检索范围并执行向量召回的业务服务。 */
     private final KnowledgeSearchService sources;
@@ -60,8 +60,8 @@ public class KeywordSyncServiceImpl implements KeywordSyncService {
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
      * @param index 提供关键词索引写入、查询和历史版本删除的组件。
      * @param config 关键词检索开关、索引身份、分析器及同步工作线程配置。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
-     * @param documents 负责文档归属、上传和配置维护的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
+     * @param documents 供内部流程校验文档归属和取得行锁的访问契约。
      * @param sources 校验检索范围并执行向量召回的业务服务。
      * @param manager 创建后台短事务及只读事务的事务管理器。
      */
@@ -69,8 +69,8 @@ public class KeywordSyncServiceImpl implements KeywordSyncService {
             JdbcTemplate jdbc,
             KeywordIndex index,
             KeywordProperties config,
-            KnowledgeBaseService bases,
-            DocumentService documents,
+            KnowledgeBaseAccess bases,
+            DocumentAccess documents,
             KnowledgeSearchService sources,
             PlatformTransactionManager manager) {
         this.jdbc = jdbc;

@@ -8,10 +8,10 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import com.lzj.rag.backend.document.service.DocumentService;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.knowledgebase.dao.entity.KnowledgeBaseDO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.service.EmbeddingClient;
 import com.lzj.rag.backend.model.service.bo.EmbeddingResultBO;
 import com.lzj.rag.backend.search.channel.VectorSearchChannel;
@@ -22,14 +22,14 @@ import com.lzj.rag.backend.search.service.impl.KnowledgeSearchServiceImpl;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 
 class VectorSearchDeadlineTest {
-    private final KnowledgeBaseService bases=mock(KnowledgeBaseService.class);
+    private final KnowledgeBaseAccess bases=mock(KnowledgeBaseAccess.class);
     private final EmbeddingClient embeddings=mock(EmbeddingClient.class);
     private final VectorStore vectors=mock(VectorStore.class);
     private final KnowledgeBasePrincipal actor=new KnowledgeBasePrincipal("alice","unused","tenant-a","alice");
     private final UUID kb=UUID.randomUUID();
     private final SearchBO request=new SearchBO("database",List.of(kb),null,5,null);
     private VectorSearchChannel channel() {
-        return new VectorSearchChannel(new KnowledgeSearchServiceImpl(bases,mock(DocumentService.class),embeddings,vectors,new ObjectMapper(),new SearchProperties(50,16,100,4000,Duration.ofSeconds(40))));
+        return new VectorSearchChannel(new KnowledgeSearchServiceImpl(bases,mock(DocumentAccess.class),embeddings,vectors,new ObjectMapper(),new SearchProperties(50,16,100,4000,Duration.ofSeconds(40))));
     }
     @Test void channelDeadlineReachesTheActualEmbeddingClientWithoutRestartingTheBudget() {
         var base=new KnowledgeBaseDO();base.setId(kb);base.setEmbeddingModelId("qwen-embed");base.setEmbeddingProvider("bailian");base.setEmbeddingDimension(1024);

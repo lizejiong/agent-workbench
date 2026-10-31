@@ -6,7 +6,7 @@ import com.lzj.rag.backend.ingestion.config.IngestionProperties;
 import com.lzj.rag.backend.ingestion.service.IngestionJobService;
 import com.lzj.rag.backend.ingestion.service.bo.IngestionContextBO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.service.bo.EmbeddingResultBO;
 import com.lzj.rag.backend.refresh.state.RefreshState;
 import com.lzj.rag.backend.search.repository.vector.VectorStore;
@@ -29,8 +29,8 @@ public class ChunkIndexWriter {
     /** 在固定所有权及命名空间内读写切片向量的存储组件。 */
     private final VectorStore vectors;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 负责持久化入库任务及租约状态迁移的业务服务。 */
     private final IngestionJobService jobs;
@@ -49,7 +49,7 @@ public class ChunkIndexWriter {
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
      * @param vectors 在固定所有权及命名空间内读写切片向量的存储组件。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param jobs 负责持久化入库任务及租约状态迁移的业务服务。
      * @param json 用于业务请求、持久化快照与元数据转换的 JSON 映射器。
      * @param config 入库流水线的时间预算、文本长度、切片数量和向量写入限制。
@@ -58,7 +58,7 @@ public class ChunkIndexWriter {
     public ChunkIndexWriter(
             JdbcTemplate jdbc,
             VectorStore vectors,
-            KnowledgeBaseService bases,
+            KnowledgeBaseAccess bases,
             IngestionJobService jobs,
             ObjectMapper json,
             IngestionProperties config,

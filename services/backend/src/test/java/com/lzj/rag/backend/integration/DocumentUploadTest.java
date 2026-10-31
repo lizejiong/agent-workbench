@@ -31,6 +31,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import com.lzj.rag.backend.document.service.DocumentService;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.document.service.bo.DocumentPatchBO;
 import com.lzj.rag.backend.document.service.bo.IngestionSpecBO;
 import com.lzj.rag.backend.document.service.bo.SplitterBO;
@@ -50,6 +51,7 @@ import com.lzj.rag.backend.ingestion.service.bo.IngestionResultBO;
 import com.lzj.rag.backend.ingestion.service.bo.IngestionSubmissionBO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
 import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.client.EmbeddingStub;
 import com.lzj.rag.backend.model.service.bo.EmbeddingResultBO;
 import com.lzj.rag.backend.search.repository.vector.VectorStore;
@@ -129,7 +131,9 @@ class DocumentUploadTest {
     @Autowired IngestionJobService jobs;
     @Autowired VectorStore vectorStore;
     @Autowired DocumentService documents;
+    @Autowired DocumentAccess documentAccess;
     @Autowired KnowledgeBaseService bases;
+    @Autowired KnowledgeBaseAccess baseAccess;
     @Autowired org.springframework.security.core.userdetails.UserDetailsService users;
     @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
     @Autowired IngestionProperties ingestionLimits;
@@ -363,7 +367,7 @@ class DocumentUploadTest {
         return UUID.fromString(id);
     }
     private VectorScopeDTO scope(UUID doc){
-        var base=bases.requireOwned(actor("alice"),documents.requireOwned(actor("alice"),doc).getKbId());
+        var base=baseAccess.requireOwned(actor("alice"),documentAccess.requireOwned(actor("alice"),doc).getKbId());
         return new VectorScopeDTO(actor("alice"),base.getId(),base.getVectorNamespace(),base.getEmbeddingModelId(),base.getEmbeddingConfigRevision());
     }
     @Test void synchronousMarkdownPipelinePersistsRealPgvectorAndExportsDisplayAndEmbeddingSamples() throws Exception {

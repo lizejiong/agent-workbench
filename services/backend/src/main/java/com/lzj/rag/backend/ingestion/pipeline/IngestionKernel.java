@@ -199,7 +199,7 @@ public class IngestionKernel {
                 // 失败收敛：仅持有有效执行权的尝试可以更新任务；恢复失败不覆盖原异常。
                 jobs.fail(context, error);
             } catch (RuntimeException ignored) {
-                // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
+                // 保留原始入库错误；失败状态未写入时，由任务租约恢复流程继续处理。
                 org.slf4j.LoggerFactory.getLogger(getClass())
                         .warn("Ingestion failure state awaits recovery jobId={}", context.jobId());
             }

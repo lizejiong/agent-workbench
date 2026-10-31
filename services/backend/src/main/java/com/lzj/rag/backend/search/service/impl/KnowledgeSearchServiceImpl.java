@@ -1,10 +1,10 @@
 package com.lzj.rag.backend.search.service.impl;
 
 import com.fasterxml.jackson.databind.*;
-import com.lzj.rag.backend.document.service.DocumentService;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.knowledgebase.dao.entity.KnowledgeBaseDO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.service.EmbeddingClient;
 import com.lzj.rag.backend.model.service.bo.EmbeddingBindingBO;
 import com.lzj.rag.backend.search.budget.RetrievalDeadline;
@@ -27,11 +27,11 @@ import java.util.*;
 @EnableConfigurationProperties(SearchProperties.class)
 public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
-    /** 负责文档归属、上传和配置维护的业务服务。 */
-    private final DocumentService documents;
+    /** 供内部流程校验文档归属和取得行锁的访问契约。 */
+    private final DocumentAccess documents;
 
     /** 受固定模型身份约束的嵌入客户端。 */
     private final EmbeddingClient embeddings;
@@ -109,16 +109,16 @@ public class KnowledgeSearchServiceImpl implements KnowledgeSearchService {
     /**
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
-     * @param documents 负责文档归属、上传和配置维护的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
+     * @param documents 供内部流程校验文档归属和取得行锁的访问契约。
      * @param embeddings 受固定模型身份约束的嵌入客户端。
      * @param vectors 在固定所有权及命名空间内读写切片向量的存储组件。
      * @param json 用于业务请求、持久化快照与元数据转换的 JSON 映射器。
      * @param config 检索范围、查询长度、返回数量和总时间预算的限制。
      */
     public KnowledgeSearchServiceImpl(
-            KnowledgeBaseService bases,
-            DocumentService documents,
+            KnowledgeBaseAccess bases,
+            DocumentAccess documents,
             EmbeddingClient embeddings,
             VectorStore vectors,
             ObjectMapper json,

@@ -10,7 +10,7 @@ import com.lzj.rag.backend.document.storage.DocumentStorage;
 import com.lzj.rag.backend.infra.storage.config.StorageProperties;
 import com.lzj.rag.backend.ingestion.config.IngestionWorkerProperties;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.refresh.state.RefreshState;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 
@@ -32,8 +32,8 @@ public class DocumentCleanupServiceImpl implements DocumentCleanupService {
     /** 执行数据库查询及受条件保护的业务状态更新。 */
     private final JdbcTemplate jdbc;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
     /** 负责文档归属、上传和配置维护的业务服务。 */
     private final DocumentService documents;
@@ -70,7 +70,7 @@ public class DocumentCleanupServiceImpl implements DocumentCleanupService {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
      * @param documents 负责文档归属、上传和配置维护的业务服务。
      * @param mapper 文档实体数据访问接口。
      * @param maintenance 负责人工切片维护及索引一致性的业务服务。
@@ -83,7 +83,7 @@ public class DocumentCleanupServiceImpl implements DocumentCleanupService {
      */
     public DocumentCleanupServiceImpl(
             JdbcTemplate jdbc,
-            KnowledgeBaseService bases,
+            KnowledgeBaseAccess bases,
             DocumentService documents,
             DocumentMapper mapper,
             ChunkMaintenanceService maintenance,

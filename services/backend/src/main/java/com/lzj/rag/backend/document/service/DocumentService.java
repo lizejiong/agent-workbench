@@ -1,7 +1,7 @@
 package com.lzj.rag.backend.document.service;
 
-import com.lzj.rag.backend.document.dao.entity.DocumentDO;
 import com.lzj.rag.backend.document.service.bo.DocumentBO;
+import com.lzj.rag.backend.document.service.bo.DocumentFileBO;
 import com.lzj.rag.backend.document.service.bo.DocumentPatchBO;
 import com.lzj.rag.backend.document.service.bo.DocumentUploadedBO;
 import com.lzj.rag.backend.document.service.bo.UploadSourceBO;
@@ -10,7 +10,7 @@ import com.lzj.rag.framework.convention.page.PageResponse;
 
 import java.util.*;
 
-/** 可供 HTTP、调度和内部调用共同使用的业务服务契约。 */
+/** 面向 HTTP、工具及其他业务入口的文档服务契约，仅使用业务对象，不暴露持久化实体。 */
 public interface DocumentService {
 
     /**
@@ -89,29 +89,6 @@ public interface DocumentService {
      */
     DocumentBO patch(KnowledgeBasePrincipal actor, UUID id, DocumentPatchBO request);
 
-    /**
-     * 查找当前租户与用户拥有且未删除的文档。
-     *
-     * @param actor 本次业务操作的租户及用户身份。
-     * @param id 当前业务对象的唯一标识。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
-    DocumentDO requireOwned(KnowledgeBasePrincipal actor, UUID id);
-
-    /**
-     * 锁定调用者拥有的文档，供后续事务变更使用。
-     *
-     * @param actor 本次业务操作的租户及用户身份。
-     * @param id 当前业务对象的唯一标识。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
-    DocumentDO lockOwned(KnowledgeBasePrincipal actor, UUID id);
-
-    /**
-     * 将文档实体及处理配置转换为对外响应。
-     *
-     * @param d 本次操作涉及的文档实体。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
-    DocumentBO view(DocumentDO d);
+    /** 校验文档及所属知识库的归属后打开源文件；调用方负责关闭返回的内容流。 */
+    DocumentFileBO openFile(KnowledgeBasePrincipal actor, UUID id);
 }

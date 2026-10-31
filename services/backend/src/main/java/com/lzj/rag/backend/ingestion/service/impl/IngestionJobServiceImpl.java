@@ -1,8 +1,8 @@
 package com.lzj.rag.backend.ingestion.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lzj.rag.backend.document.service.DocumentService;
 import com.lzj.rag.backend.document.service.bo.IngestionSpecBO;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.ingestion.config.IngestionProperties;
 import com.lzj.rag.backend.ingestion.config.IngestionWorkerProperties;
 import com.lzj.rag.backend.ingestion.service.IngestionJobService;
@@ -11,7 +11,7 @@ import com.lzj.rag.backend.ingestion.service.bo.IngestionJobBO;
 import com.lzj.rag.backend.ingestion.service.bo.IngestionStageBO;
 import com.lzj.rag.backend.ingestion.service.bo.IngestionSubmissionBO;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.model.service.bo.EmbeddingBindingBO;
 import com.lzj.rag.backend.operations.logging.OperationLog;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
@@ -34,11 +34,11 @@ public class IngestionJobServiceImpl implements IngestionJobService {
     /** 执行数据库查询及受条件保护的业务状态更新。 */
     private final JdbcTemplate jdbc;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
-    /** 负责文档归属、上传和配置维护的业务服务。 */
-    private final DocumentService documents;
+    /** 供内部流程校验文档归属和取得行锁的访问契约。 */
+    private final DocumentAccess documents;
 
     /** 入库流水线的时间预算、文本长度、切片数量和向量写入限制。 */
     private final IngestionProperties properties;
@@ -64,16 +64,16 @@ public class IngestionJobServiceImpl implements IngestionJobService {
      * 初始化当前组件，保存业务依赖及本次使用的配置。
      *
      * @param jdbc 执行数据库查询及受条件保护的业务状态更新。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
-     * @param documents 负责文档归属、上传和配置维护的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
+     * @param documents 供内部流程校验文档归属和取得行锁的访问契约。
      * @param properties 入库流水线的时间预算、文本长度、切片数量和向量写入限制。
      * @param worker 入库工作线程、租约、重试退避和失效代次清理的配置。
      * @param json 用于业务请求、持久化快照与元数据转换的 JSON 映射器。
      */
     public IngestionJobServiceImpl(
             JdbcTemplate jdbc,
-            KnowledgeBaseService bases,
-            DocumentService documents,
+            KnowledgeBaseAccess bases,
+            DocumentAccess documents,
             IngestionProperties properties,
             IngestionWorkerProperties worker,
             ObjectMapper json) {

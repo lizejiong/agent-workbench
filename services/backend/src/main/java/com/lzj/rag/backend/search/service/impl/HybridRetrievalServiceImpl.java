@@ -1,8 +1,8 @@
 package com.lzj.rag.backend.search.service.impl;
 
-import com.lzj.rag.backend.document.service.DocumentService;
+import com.lzj.rag.backend.document.service.internal.DocumentAccess;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
-import com.lzj.rag.backend.knowledgebase.service.KnowledgeBaseService;
+import com.lzj.rag.backend.knowledgebase.service.internal.KnowledgeBaseAccess;
 import com.lzj.rag.backend.search.budget.RetrievalDeadline;
 import com.lzj.rag.backend.search.channel.SearchChannel;
 import com.lzj.rag.backend.search.config.HybridProperties;
@@ -47,11 +47,11 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
     /** 关键词检索开关、索引身份、分析器及同步工作线程配置。 */
     private final KeywordProperties keyword;
 
-    /** 负责知识库归属、版本与固定模型绑定的业务服务。 */
-    private final KnowledgeBaseService bases;
+    /** 供内部流程校验知识库归属和取得行锁的访问契约。 */
+    private final KnowledgeBaseAccess bases;
 
-    /** 负责文档归属、上传和配置维护的业务服务。 */
-    private final DocumentService documents;
+    /** 供内部流程校验文档归属和取得行锁的访问契约。 */
+    private final DocumentAccess documents;
 
     /** 负责候选融合、重排及最终有效性过滤的组件。 */
     private final SearchResultPostProcessor post;
@@ -86,8 +86,8 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
      * @param limits 检索范围、查询长度、返回数量和总时间预算的限制。
      * @param config 混合检索的召回容量、RRF 权重、通道预算和重排配置。
      * @param keyword 关键词检索开关、索引身份、分析器及同步工作线程配置。
-     * @param bases 负责知识库归属、版本与固定模型绑定的业务服务。
-     * @param documents 负责文档归属、上传和配置维护的业务服务。
+     * @param bases 供内部流程校验知识库归属和取得行锁的访问契约。
+     * @param documents 供内部流程校验文档归属和取得行锁的访问契约。
      * @param post 负责候选融合、重排及最终有效性过滤的组件。
      * @param channels 参与召回的通道集合或按名称索引的通道状态。
      */
@@ -96,8 +96,8 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
             SearchProperties limits,
             HybridProperties config,
             KeywordProperties keyword,
-            KnowledgeBaseService bases,
-            DocumentService documents,
+            KnowledgeBaseAccess bases,
+            DocumentAccess documents,
             SearchResultPostProcessor post,
             List<SearchChannel> channels) {
         this.vector = vector;

@@ -295,12 +295,11 @@ public class AiEmbeddingClient implements EmbeddingClient {
             // errorCode：可供调用方和运维识别的稳定错误码。
             String errorCode = "";
             if (status < 200 || status >= 300) {
-                // ignored：取消或回收过程中捕获的异常，不覆盖原请求处理结果。
                 try {
-                    // error：本次处理捕获的异常，用于归类失败原因。
                     var error = json.readTree(response.body());
                     if (error != null) errorCode = error.path("code").asText();
                 } catch (com.fasterxml.jackson.core.JsonProcessingException ignored) {
+                    // 上游错误正文不是 JSON 时，继续根据 HTTP 状态归类失败。
                 }
             }
             if (status == 409) throw changed();

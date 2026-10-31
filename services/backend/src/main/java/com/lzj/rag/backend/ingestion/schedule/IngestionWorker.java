@@ -122,7 +122,7 @@ public class IngestionWorker {
                     try {
                         jobs.releaseUnstarted(context);
                     } catch (RuntimeException ignored) {
-                        // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
+                        // 释放失败时保留持久化领取记录，由租约到期后的扫描恢复。
                         LOG.warn("Unstarted claim awaits lease recovery jobId={}", context.jobId());
                     }
                 }
@@ -142,7 +142,7 @@ public class IngestionWorker {
             try {
                 if (!jobs.renew(execution.context())) execution.task().cancel(true);
             } catch (RuntimeException ignored) {
-                // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
+                // 续租失败时记录告警，任务的执行权仍受数据库租约和发布栅栏约束。
                 LOG.warn("Lease renewal unavailable jobId={}", execution.context().jobId());
             }
         }

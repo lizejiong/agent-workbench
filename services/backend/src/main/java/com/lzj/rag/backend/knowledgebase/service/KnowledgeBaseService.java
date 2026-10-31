@@ -1,6 +1,5 @@
 package com.lzj.rag.backend.knowledgebase.service;
 
-import com.lzj.rag.backend.knowledgebase.dao.entity.KnowledgeBaseDO;
 import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBaseBO;
 import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBaseBindBO;
 import com.lzj.rag.backend.knowledgebase.service.bo.KnowledgeBaseCreateBO;
@@ -11,7 +10,7 @@ import com.lzj.rag.framework.convention.page.PageResponse;
 
 import java.util.UUID;
 
-/** 可供 HTTP、调度和内部调用共同使用的业务服务契约。 */
+/** 面向 HTTP、工具及其他业务入口的知识库服务契约，仅使用业务对象，不暴露持久化实体。 */
 public interface KnowledgeBaseService {
 
     /**
@@ -72,24 +71,6 @@ public interface KnowledgeBaseService {
      * @param version 当前记录版本或本次请求固定的版本标记。
      */
     void delete(KnowledgeBasePrincipal actor, UUID id, long version);
-
-    /**
-     * 查找当前租户与用户拥有且未删除的知识库。
-     *
-     * @param actor 本次业务操作的租户及用户身份。
-     * @param id 当前业务对象的唯一标识。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
-    KnowledgeBaseDO requireOwned(KnowledgeBasePrincipal actor, UUID id);
-
-    /**
-     * 按归属条件锁定知识库，作为文档与任务变更的首个业务锁。
-     *
-     * @param actor 本次业务操作的租户及用户身份。
-     * @param id 当前业务对象的唯一标识。
-     * @return 当前业务处理结果；失败时通过异常报告。
-     */
-    KnowledgeBaseDO lockOwned(KnowledgeBasePrincipal actor, UUID id);
 
     /**
      * 在锁内按预期版本局部更新知识库信息与启用状态。

@@ -154,7 +154,6 @@ public class KnowledgeBaseMetrics {
             Map<String, Double> loaded =
                     read.execute(
                             ignored -> {
-                                // ignored：回收或补偿过程中捕获的异常，不覆盖原业务处理结果。
                                 // values：本次处理的参数值或指标快照集合。
                                 var values = new HashMap<String, Double>();
                                 collect(
