@@ -113,6 +113,26 @@ curl.exe --user "$($env:KB_SMOKE_USER):$($env:KB_SMOKE_PASSWORD)" http://localho
 
 第 8 轮定向方法：`KnowledgeSearchTest#realSseDeliversIncrementalTextAndPersistsOnlyTheCompletedReferenceSet+realSseDistinguishesNoEvidenceInvalidCitationsBrokenUpstreamsAndTimeouts+realSseCancelAndDisconnectCloseUpstreamAndExpiredRunsRecoverWithoutReplay`，同时复用上面的 3 项普通问答回归和 QueryUnderstandingServiceTest。真实网络验证使用 Spring MVC 随机端口、OkHttp 客户端、PG/MinIO 与本地 HTTP 模型桩，不依赖现有运行实例。
 
+## 第 9 阶段：内部证据与 Python 适配
+
+当前没有 Python 主 Agent 可部署。可运行示例及中文接入说明见 `examples/integration/rag_agent/README.md`，依赖固定 httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1，Python 3.12+。Java 沿用原服务启动，Flyway V10 新建委托/取消控制表，不改变索引或 Agent 图数据。
+
+`kb.rag.internal.enabled=false` 默认关闭。启用时通过受控 YAML 配置 `service-token-hashes.<service-id>` 为安全随机服务令牌的 SHA-256（64 位小写十六进制）；不要配置原始用户/租户代替授权。示例配置位于 `backend-agent.yml.example`，复制后按原 Spring 配置机制加载。原始令牌只在 Python/部署秘密管理，用户在原 Basic 认证边界签发范围委托；服务令牌单独不能查数据。委托默认 delegation-ttl=5m（最多 15m），concurrency=4 的内部零队列工作池复用原检索门面。跨主机使用 HTTPS，内部路径不应映射为匿名浏览器代理。
+
+宿主 FastAPI lifespan 复用一个 AsyncClient；每回合为工具绑定可信身份/会话/范围、委托、剩余 deadline 和 traceId。deadline 由 Java 再限制，取消通知最多 0.5s，无整请求自动重放。服务凭据或委托过期返回 401，先在用户边界重新授权；超范围 403 不得扩大范围兜底。429/502/503/504 按工具 retryable 与宿主总预算处理；HTTP 错误不是 NO_EVIDENCE。内部 requestId 复用 409，重试必须新建 ID。
+
+委托撤销通过本人 `DELETE /api/rag/delegations/{id}`；进行中的请求返回前复核，监控消费撤销/跨实例取消。控制表无查询正文，过期委托一天后每分钟最多批量清理 1000 条并级联清理控制记录。RAG_TOOL_TIMEOUT 为总截止，原 KB_MODEL_TIMEOUT 为模型 HTTP 超时；RAG_TOOL_CAPACITY 是内部池拒绝，RAG_DELEGATION_INVALID 为过期/撤销或当前用户失效。只按 requestId/traceId 和受控 code 排障，不把令牌、SQL、资料或原始响应放进 Agent 日志。
+
+定向 Java 验证使用隔离构建副本，避免覆盖运行 JAR：
+
+```powershell
+.\mvnw.cmd -B -ntp -f .cache/rag-development-20261031/pom.xml '-Dmaven.repo.local=C:/Users/lzj/Documents/ChatGPT/rag/.cache/maven/repository' -pl services/backend -am '-Dtest=KnowledgeSearchTest#internalToolUsesUserDelegationCurrentScopeAndIndependentTraceAcrossHttp+internalToolCancellationBeforeAndDuringRecallNeverProducesEvidenceAndFailuresStayUnavailable,KnowledgeBaseSecurityConfigurationTest,QueryUnderstandingServiceTest' '-Dsurefire.failIfNoSpecifiedTests=false' test
+```
+
+真实跨语言验收另选 `KnowledgeSearchTest#pythonAdapterCallsRunningJavaEvidenceServiceWithUniqueReferencesAndSharedTrace`，追加本机 `-Dkb.test.python-exe=C:/Users/lzj/Documents/ChatGPT/rag/packages/python-common/.venv/Scripts/python.exe` 和 `-Dkb.test.rag-adapter=C:/Users/lzj/Documents/ChatGPT/rag/examples/integration/rag_agent/contract_smoke.py`。该方法只有显式提供 Python 路径时执行；未配置而跳过不能算联调通过。凭据用进程 stdin 注入，不出现在命令行。真实样例回执在隔离副本 `target/knowledge-base/agent-tool-contract.json`，已提交脱敏汇总见 `AGENT_INTEGRATION_VALIDATION.json`。
+
+本轮上述 Java 9 项与真实跨语言 1 项均通过、0 跳过；Python 4 项和 ruff 通过，FastAPI lifespan 关闭验证通过。未启动真实 LangGraph、业务 Agent、付费模型或生产部署。恢复图前的身份校验与旧消息清理须由宿主接入，不会因示例提供 reconfirm 就自动生效。
+
 - 404：核对当前账号归属和请求范围；不要换成管理身份绕过检查。
 - 409/KB_SEARCH_MODEL_MISMATCH：按兼容嵌入空间分别请求；不能更换向量模型来规避错误。KB_SEARCH_SCOPE_CHANGED 表示请求期间绑定变化，重新读取并提交一个新请求。
 - DEGRADED/INDETERMINATE：看 channels.errorCode 与 rerankStatus，修复 ES 同步/精排依赖；不是“已证明无知识”。

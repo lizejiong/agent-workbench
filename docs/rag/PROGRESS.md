@@ -116,3 +116,19 @@ Flyway V9 保存独立问答会话、运行和含来源哈希的结果；短事�
 日志检查发现断连时既有 JSON 全局异常处理器会再次写 SSE 响应；已在流式 Controller 局部处理已提交 SSE 的 IOException，随后仅重跑受影响断连方法 1 项通过，日志 `.cache/rag-round8-disconnect.log`，不再出现重复写 JSON/Servlet 异常。另统一执行器拒绝为 503，并确保已建立运行先发 meta。OpenAPI 生成器输出 6 个 RAG 路径，两个契约文件 512 个引用解析通过，`git diff --check` 通过。测试结束关闭容器时的连接池清理告警不作为业务调用失败。
 
 没有运行全 reactor verify、付费供应商、事实/注入语义效果评估或生产负载/慢客户端容量测试；未部署或覆盖本地运行 JAR。附件第 2–8 轮范围到此结束，不自动实施第 9 轮 Python Agent 或后续评估阶段。
+
+## 第 9 阶段：Java 内部证据与 Python 工具适配（2026-11-01，备用交付完成）
+
+按新授权检查仓库后确认 agent-service 只有占位，未安装 LangGraph/LangChain，无已有主 ReAct/图/工具接口。因此未创建新 Agent，增加 examples/integration/rag_agent 的 async query-only 工具、FastAPI lifespan、真实调用脚本、中文提示片段与说明；Python 不承接 RAG 算法，不调用 /answer、不直接写知识表，Java 不读写 Agent 图或历史。
+
+新增 `/internal/rag/retrieve`，共用原 RAG 门面和证据组装并固定 INDEPENDENT；服务身份单独安全链与数据权限分开。用户通过原 Basic 签发短期随机委托，绑定服务/用户/租户/宿主会话/库与可选文档，DB 只存哈希；当前用户及原知识权限每次复查。支持本人撤销、范围收缩和过期。V10 的两张表只保存委托与请求取消控制元数据，没有 Agent 消息或第二套知识索引。
+
+内部执行器有界零队列，deadline 受宿主、服务器与委托三方封顶。显式取消接口及数据库墓碑支持取消先到与跨实例传播，Future 中断传递到原 JDK HTTP；Python 取消 HTTP 后在 0.5s 内尽力通知，通知失败仍有 Java deadline。requestId 与 traceId 在 Python、Java、模型 HTTP 之间传播，内部 Agent 响应只含授权快照、真实分数、版本和受控状态，不透传 SQL/地址/异常。
+
+Python 使用共享 httpx 连接池和可信上下文，工具参数仅 query；READY/NO_EVIDENCE/NEEDS_CLARIFICATION/UNAVAILABLE 与权限失败分别处理。每次局部 E 编号映射为全请求唯一 K 编号，注册表绑定用户/租户/会话，只允许实际取得的引用；工具视图按保守 UTF-8 guard 裁剪并区分 Java/工具哈希。图恢复示例用新委托精确确认当前 generation/hash，无法确认不回用旧摘录，宿主仍须清理旧敏感 ToolMessage。
+
+验证：隔离目录 `.cache/rag-development-20261031` 的 Java 9 项通过、0 跳过（`.cache/rag-round9-java-verified.log`）；新增真实 Python→Java 联调 1 项通过、0 跳过（`.cache/rag-round9-cross-language.log`）。真实 PG/pgvector、MinIO 与 MVC 随机端口，Embedding/计数为 HTTP 桩；覆盖当前范围/版本、服务与用户委托、越权范围、未知会话字段拒绝、撤销、禁用资料、trace、取消先到/进行中取消及故障不冒充无证据。最初 DeferredResult 导包错误在编译时修复，最终组合通过。Python 4 项、ruff、FastAPI lifespan 的复用/关闭检查通过。OpenAPI 增加至 10 个 RAG 路径，引用静态解析通过；未运行全量 verify。
+
+最后将 DeferredResult/HTTP 生命周期协调移到 controller/support，保持业务服务只处理原检索 BO；增加工作开始前的持久取消状态检查，覆盖任务登记与句柄注册间隙，委托预检查询也兼容最小查询长度配置。受影响的 3 项集成场景（含真实 Python 调用）复核全部通过、0 跳过，日志 `.cache/rag-round9-final.log`。OpenAPI 的两个文件共 561 个引用解析通过。
+
+联调脱敏回执与依赖版本在 AGENT_INTEGRATION_VALIDATION.json；实际虚拟环境 Python 3.12.13、httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1。真实连续两次检索、来源渲染和引用映射已验证，业务工具仅只读结果桩；没有真实主 Agent 回答、LangGraph 工具注册/图恢复、业务系统或付费模型联调，未部署。宿主项目到位后按示例接入其既有工具/图，不将本次备用交付宣称为完整 Agent 上线。

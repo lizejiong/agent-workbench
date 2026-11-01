@@ -1,6 +1,6 @@
 # RAG API
 
-已实现 A 和 B 的普通/流式问答、取消、运行及会话读取；C 尚待实施。契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`，复用知识库服务和 Basic 认证。
+已实现 A、B 及 C 的 Java 内部证据接口和 Python 适配示例；工作区没有真实主 Agent，LangGraph 联调待宿主完成。契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`。
 
 ## A：结构化检索（已实现）
 
@@ -149,8 +149,29 @@ finish.persisted=true 表示已读取数据库终态；持久化依赖失败会�
 
 运行 result 的 modelCalls.purpose=ANSWER_REQUESTED 表示配置模型已请求，ANSWER_STARTED 表示上游 start 已报告实际模型；两者不代表成功或已有 usage。成功结果为 ANSWER（必要时另有 CITATION_REPAIR）。运行列状态与 answer 部分正文优先于持久 result_json 检查点。来源/引用/模型版本可追踪不代表事实正确。
 
-## C：Python Agent 检索工具（后续，未实现）
+## C：Agent 内部证据契约（第 9 阶段）
 
-工具拟名 knowledge_search，参数为 query、已授权范围内 kbIds、可选 documentIds/topK/strategy；身份与服务凭据来自可信执行上下文，不能由模型参数传入任意 actor 或 Basic 密钥。工具调用现有 A，向 Python 返回受限证据、来源、分数、实际策略、status/outcome/requestId；内部 trace 和错误细节按模型可见白名单裁剪。
+`POST /internal/rag/retrieve` 共用原检索引擎/证据组装，固定 INDEPENDENT 模式，不接收 conversationId、身份、queryMode 或模型字段。请求 query/kbIds/documentIds/topK/strategy/rerank/分数字段同结构化检索；省略范围取委托中已授权集合，显式范围只能缩小。工具模型侧只有 `async search_knowledge(query: str)`，这些检索选项来自可信宿主配置，不是模型自由参数。未部署关键词时 AUTO 仍独立使用 VECTOR。
 
-Python 继续持有 Agent 主循环、图检查点、取消和会话上下文。工具失败以受控错误交还 Agent，不包装成无证据；Agent 继续决策和组织回答。需在 R4 实现剩余预算传递、网络超时和取消传播，当前 Java 请求体没有可由模型控制的 deadline 字段。
+| 头 | 可信来源和规则 |
+|---|---|
+| Authorization: Bearer 服务令牌 | 仅宿主部署秘密管理；Java 配置服务 ID→SHA-256，原用户 Basic 不能代替服务身份 |
+| X-Rag-Service | 受控服务 ID，须匹配 Bearer；服务身份本身没有 tenant/owner 数据权限 |
+| X-Rag-Delegation | 用户认证边界签发的随机短期令牌，绑定服务、用户/租户、Agent 会话及库/文档 scope；禁止进入模型 |
+| X-Request-Id | 宿主为每次工具尝试生成，全局唯一，安全字符 1–128；复用返回 409，不重放/缓存旧正文 |
+| X-Rag-Deadline | 必填 ISO-8601 绝对时间，由宿主剩余预算计算；Java 取其与 SearchProperties.deadline、委托过期时间最小值，已过期 504 |
+| traceparent | 可选 W3C 00，小写且 trace/span 非零；宿主注入，Java 建子传播 ID，响应和 AI HTTP 保留 traceId；缺省生成。不是认证证明 |
+
+不接受自称用户/租户的请求体字段；仅靠 kbIds 或 traceId 不能授权。每次还执行当前用户与原知识权限、启停、删除、代次和嵌入空间规则。认证头与必填元数据不得重复。默认内部能力关闭，启用后只允许配置的服务使用内部 POST 路径，服务 Bearer 不开放用户管理、问答或任意内部路径。
+
+用户先在原认证边界 `POST /api/rag/delegations`：`{"serviceId":"python-agent","agentSessionId":"宿主会话UUID","kbIds":["自有库UUID"],"documentIds":["可选文档UUID"]}`。省略 kbIds 按原默认范围政策解析，显式空集合不检索全库。响应 201 + Result data={delegationId,delegationToken,serviceId,agentSessionId,tenantId,userId,kbIds,documentIds,expiresAt}，token 只下发给可信宿主；DB 保存哈希。`DELETE /api/rag/delegations/{id}` 仅本人可用，返回 204，重复撤销幂等，其他用户/租户 404。默认 5m，配置上限 15m；撤销后不能再检索，进行中的请求也在返回前复查/监控取消。委托不代替当前知识授权。
+
+内部成功响应仍为 Result，data 包含 status、requestId、traceId、clarificationQuestion、degraded、strategy、rerankStatus、evidence（第 6 轮授权快照）、scores（局部 E 编号到 score/scoreType/fusionScore/rerankScore）、contextHash、versions（pipeline/context/queryPrompt/hash/已授权索引修订）。不返回完整 effectiveQuery/原始通道调试或内部 modelContext。下载地址是原相对授权文件路径，不能因工具拿到来源就绕过文件权限。
+
+READY 由主 Agent 使用证据回答或继续业务工具；NO_EVIDENCE 说明当前资料不足，或在原范围调整查询；NEEDS_CLARIFICATION 补充提问；UNAVAILABLE 表示依赖/完整性失败，按剩余预算决定是否重试，不能改说资料不存在。部分通道失败可为 READY+degraded=true。4xx/5xx 不转换成 NO_EVIDENCE；工作任务错误 data={status:UNAVAILABLE,requestId,traceId,retryable}，message 固定脱敏，身份/DTO 早期拒绝沿用标准错误 envelope。
+
+HTTP：401 服务/委托无效或过期，403 scope 超出委托，404 当前资源不可访问，409 requestId 重用/原索引约束，400 参数/元数据错误，503 容量或依赖不可用，504 deadline/外部超时；原检索 422/502 规则继续生效。Python 将权限错误标为 ACCESS_DENIED/retryable=false，其他故障使用受控分类，不把错误正文交给模型。
+
+`POST /internal/rag/requests/{requestId}/cancel` 无业务请求体，与主请求使用同一服务/委托，独立控制请求 deadline，返回 202。路径 requestId 为目标；控制请求 X-Request-Id 可省略，由标准过滤器生成，适配器显式生成新 ID。只取消该委托的目标请求；跨委托目标无效果，不披露存在性。取消先到留墓碑阻止同 requestId 开始；跨实例按控制记录传播。Python 取消当前 HTTP 后最多用 0.5s 通知，保留 CancelledError；通知失败由原 Java deadline 封顶，JDBC/供应商即时终止不保证。控制记录不保存问题或 Agent 消息；委托过期一天后分批清理并级联删除控制记录。
+
+Python 模型结果使用 `K{requestId去连字符}_E1` 等唯一引用，保留 localEvidenceId 和真实 doc/chunk/generation/hash/定位。每回合注册表只接受实际下发的证据，业务工具使用其他命名空间；裁剪标记 toolTruncated/toolContentHash，不改变 Java snapshotHash。图恢复前必须由宿主验证身份、清理旧敏感工具消息、注入新委托并重新确认当前权限/版本；适配器提供 reconfirm，无法精确确认则拒绝旧证据。Java 不修改 LangGraph 检查点，Python 不写知识表。当前只完成可运行适配器与跨语言 HTTP 契约验证，未完成真实主 Agent 决策、业务工具和图恢复联调。

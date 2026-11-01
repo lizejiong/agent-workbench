@@ -15,6 +15,7 @@ public final class EmbeddingStub implements AutoCloseable {
     public volatile java.util.function.Function<String,float[]> vectorizer;
     public volatile String revision="a".repeat(64);
     public final List<JsonNode> requests=new CopyOnWriteArrayList<>();
+    public final List<String> traceparents=new CopyOnWriteArrayList<>();
     public volatile String visionMode="GOOD";
     public volatile String chatMode="GOOD";
     public volatile Runnable beforeChat=()->{};
@@ -38,6 +39,7 @@ public final class EmbeddingStub implements AutoCloseable {
     public void reset(){mode="GOOD";requests.clear();visionMode="GOOD";visionRequests.clear();rerankMode="GOOD";rerankRequests.clear();chatMode="GOOD";chatRequests.clear();streamMode="GOOD";streamRequests.clear();streamClosed.set(0);beforeStreamTail=()->{};beforeChat=()->{};beforeRerank=()->{};beforeEmbed=()->{};vectorizer=null;revision="a".repeat(64);}
     private void reply(HttpExchange exchange)throws IOException {
         try(exchange){
+            if(exchange.getRequestHeaders().getFirst("traceparent")!=null)traceparents.add(exchange.getRequestHeaders().getFirst("traceparent"));
             Object data;
             if(exchange.getRequestURI().getPath().equals("/ai/chat/stream")) {
                 stream(exchange);return;

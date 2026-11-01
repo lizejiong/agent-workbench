@@ -1,0 +1,67 @@
+{
+  "stage": 9,
+  "date": "2026-11-01",
+  "scope": "Java 内部证据服务 + 可运行 Python 工具适配示例；无主 Agent 项目",
+  "python": "3.12.13",
+  "dependencies": {
+    "httpx": "0.28.1",
+    "fastapi": "0.143.3",
+    "pydantic": "2.14.1",
+    "pytest": "9.1.1",
+    "pytest-asyncio": "1.4.0"
+  },
+  "langgraphInstalled": false,
+  "javaTargetedTests": {
+    "passed": 9,
+    "skipped": 0,
+    "log": ".cache/rag-round9-java-verified.log"
+  },
+  "finalJavaIntegrationRecheck": {
+    "passed": 3,
+    "skipped": 0,
+    "log": ".cache/rag-round9-final.log"
+  },
+  "realCrossLanguageTest": {
+    "passed": 1,
+    "skipped": 0,
+    "log": ".cache/rag-round9-cross-language.log",
+    "receipt": {
+      "statuses": [
+        "READY",
+        "READY"
+      ],
+      "traceId": "2123456789abcdef0123456789abcdef",
+      "requestIds": [
+        "0d890ca3-e7ec-4c02-b1c8-3fffb3180cb0",
+        "fa215e82-b25e-4c75-9ea5-ca28635e9f1c"
+      ],
+      "uniqueCitationIds": [
+        "K0d890ca3e7ec4c02b1c83fffb3180cb0_E1",
+        "Kfa215e82b25e4c759ea5ca28635e9f1c_E1"
+      ],
+      "extractiveCitationValidated": true,
+      "note": "真实 Python→Java→PG/MinIO/模型HTTP桩；摘录渲染不等于 LangGraph 主 Agent 生成答案"
+    }
+  },
+  "pythonAdapterTests": {
+    "passed": 4,
+    "log": ".cache/rag-round9-python.log",
+    "transport": "httpx.MockTransport"
+  },
+  "fastapiLifespan": "通过：复用连接池，退出后 client 关闭且从 app.state 移除",
+  "realDependencies": [
+    "PG/pgvector 0.8.7-pg17 Testcontainers",
+    "MinIO Testcontainers",
+    "Java MVC 随机端口",
+    "Python httpx 真实 HTTP"
+  ],
+  "modelValidation": "嵌入/计数为本地 HTTP 协议桩，无真实供应商或语义质量评估",
+  "businessCombination": "仅只读业务结果桩与引用集合组合；无真实业务工具或 Agent 决策",
+  "restoreValidation": "适配器按身份/会话和当前 generation/hash 重新确认；尚未接入真实图恢复钩子",
+  "notExecuted": [
+    "真实 LangGraph 主循环与图检查点联调",
+    "真实 Agent 一次/多次工具决策和生成答案",
+    "真实业务工具联调",
+    "生产部署或全 reactor verify"
+  ]
+}

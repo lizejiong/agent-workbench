@@ -33,6 +33,7 @@ import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 /** Actual S3 uploads, parsing, HTTP query embeddings and pgvector SQL. Vectors are an explicit local topic fixture. */
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"kb.storage.enabled=true","kb.storage.bucket=kb-search-test","kb.storage.max-upload-bytes=4096",
         "kb.search.max-top-k=6","kb.search.max-kb-ids=2","kb.search.max-document-ids=3","kb.search.max-query-chars=256","kb.rag.context.neighbor-radius=1",
+        "kb.rag.internal.enabled=true","kb.rag.internal.service-token-hashes.agent-test=abababababababababababababababababababababababababababababababab",
         "kb.models.profiles.other.enabled=true","kb.models.profiles.other.model-id=other-embed","kb.models.profiles.other.provider=bailian",
         "kb.models.profiles.other.model-name=other-model","kb.models.profiles.other.dimension=1024","kb.models.profiles.other.embedding-space=other-space","kb.models.profiles.other.config-version=other-v1",
         "kb.models.profiles.next.enabled=true","kb.models.profiles.next.model-id=qwen-embed","kb.models.profiles.next.provider=bailian",
@@ -50,6 +51,7 @@ class KnowledgeSearchTest {
             .withEnv("MINIO_ROOT_USER","kb-test-access").withEnv("MINIO_ROOT_PASSWORD","kb-test-secret-password")
             .withCommand("server","/data").withExposedPorts(9000).waitingFor(Wait.forHttp("/minio/health/ready").forPort(9000));
     @DynamicPropertySource static void infrastructure(DynamicPropertyRegistry properties) {
+        properties.add("kb.rag.internal.service-token-hashes.agent-test",()->com.lzj.rag.backend.model.catalog.EmbeddingCatalog.sha256("service-test-token-1234567890-abcdef"));
         properties.add("spring.datasource.url",DATABASE::getJdbcUrl);properties.add("spring.datasource.username",DATABASE::getUsername);properties.add("spring.datasource.password",DATABASE::getPassword);
         properties.add("kb.storage.endpoint",()->"http://"+MINIO.getHost()+":"+MINIO.getMappedPort(9000));properties.add("kb.storage.path-style-access",()->true);
         properties.add("kb.ai.base-url",KnowledgeSearchTest::modelUrl);properties.add("kb.ai.call-timeout",()->"1s");
@@ -363,6 +365,83 @@ class KnowledgeSearchTest {
         }
         var orphan=answerLedger.begin(actor("alice"),null,"orphan","orphan-fixture",java.time.Instant.now().minusSeconds(1));
         awaitCondition(()->answerLedger.get(actor("alice"),orphan.id()).status().equals("TIMED_OUT"));
+    }
+    @Test void internalToolUsesUserDelegationCurrentScopeAndIndependentTraceAcrossHttp()throws Exception {
+        var data=dataset();UUID other=base("alice",null);var grant=grant(data.kb(),List.of(data.backup()));String token=grant.path("delegationToken").asText();
+        String trace="00-0123456789abcdef0123456789abcdef-0123456789abcdef-01";
+        try(var client=new InternalClient()) {
+            var response=client.call("/internal/rag/retrieve",Map.of("query","PostgreSQL backup","strategy","VECTOR"),token,trace,UUID.randomUUID().toString(),200);
+            assertThat(response.at("/data/status").asText()).isEqualTo("READY");assertThat(response.at("/data/evidence/0/documentId").asText()).isEqualTo(data.backup().toString());
+            assertThat(response.at("/data/traceId").asText()).isEqualTo("0123456789abcdef0123456789abcdef");
+            assertThat(model.traceparents).anyMatch(t->t.startsWith("00-0123456789abcdef0123456789abcdef-"));
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_conversation",Integer.class)).isZero();
+            assertThat(response.toString()).doesNotContain("modelContext","originalQuery","objectKey","providerUrl","allowedKbIds");
+            client.call("/internal/rag/retrieve",Map.of("query","backup","kbIds",List.of(other)),token,trace,UUID.randomUUID().toString(),403);
+            UUID bob=base("bob",null);
+            client.call("/internal/rag/retrieve",Map.of("query","backup","kbIds",List.of(bob)),token,trace,UUID.randomUUID().toString(),403);
+            client.call("/internal/rag/retrieve",Map.of("query","backup","documentIds",List.of(data.database())),token,trace,UUID.randomUUID().toString(),403);
+            client.call("/internal/rag/retrieve",Map.of("query","backup","conversationId",UUID.randomUUID()),token,trace,UUID.randomUUID().toString(),400);
+            client.call("/internal/rag/retrieve",Map.of("query","backup"),token,"00-"+"0".repeat(32)+"-0123456789abcdef-01",UUID.randomUUID().toString(),400);
+            jdbc.update("UPDATE kb_chunk SET enabled=false WHERE document_id=?",data.backup());
+            assertThat(client.call("/internal/rag/retrieve",Map.of("query","backup"),token,trace,UUID.randomUUID().toString(),200).at("/data/status").asText()).isEqualTo("NO_EVIDENCE");
+            mvc.perform(delete("/api/rag/delegations/"+grant.path("delegationId").asText()).with(auth("bob"))).andExpect(status().isNotFound());
+            mvc.perform(delete("/api/rag/delegations/"+grant.path("delegationId").asText()).with(auth("alice"))).andExpect(status().isNoContent());
+            client.call("/internal/rag/retrieve",Map.of("query","backup"),token,trace,UUID.randomUUID().toString(),401);
+        }
+        mvc.perform(post("/internal/rag/retrieve").with(auth("alice")).contentType("application/json").content("{\"query\":\"backup\"}")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/internal/rag/retrieve").header("X-Rag-Service","agent-test").header("Authorization","Bearer service-test-token-1234567890-abcdef")
+                .header("X-Request-Id",UUID.randomUUID()).contentType("application/json").content("{\"query\":\"backup\"}")).andExpect(status().isBadRequest());
+    }
+    @Test void internalToolCancellationBeforeAndDuringRecallNeverProducesEvidenceAndFailuresStayUnavailable()throws Exception {
+        var data=dataset();String token=grant(data.kb(),null).path("delegationToken").asText();String trace="00-1123456789abcdef0123456789abcdef-1123456789abcdef-01";
+        try(var client=new InternalClient()) {
+            String cancelled=UUID.randomUUID().toString();
+            client.call("/internal/rag/requests/"+cancelled+"/cancel",Map.of(),token,trace,UUID.randomUUID().toString(),202);
+            int count=model.requests.size();client.call("/internal/rag/retrieve",Map.of("query","backup"),token,trace,cancelled,409);assertThat(model.requests).hasSize(count);
+            model.mode="TIMEOUT";var entered=new java.util.concurrent.CountDownLatch(1);model.beforeEmbed=entered::countDown;
+            String active=UUID.randomUUID().toString();
+            var request=java.util.concurrent.CompletableFuture.supplyAsync(()->{try{return client.call("/internal/rag/retrieve",Map.of("query","backup"),token,trace,active,503);}catch(Exception e){throw new RuntimeException(e);}});
+            assertThat(entered.await(3,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            client.call("/internal/rag/requests/"+active+"/cancel",Map.of(),token,trace,UUID.randomUUID().toString(),202);
+            assertThat(request.get(3,java.util.concurrent.TimeUnit.SECONDS).at("/data/status").asText()).isEqualTo("UNAVAILABLE");
+            assertThat(jdbc.queryForObject("SELECT status FROM kb_rag_tool_request WHERE request_id=?",String.class,active)).isEqualTo("CANCELLED");
+            model.mode="RATE_LIMIT";model.beforeEmbed=()->{};
+            var failed=client.call("/internal/rag/retrieve",Map.of("query","backup"),token,trace,UUID.randomUUID().toString(),503);
+            assertThat(failed.at("/data/status").asText()).isEqualTo("UNAVAILABLE");assertThat(failed.toString()).doesNotContain("private upstream","jdbc:","SELECT ");
+        }
+    }
+    private JsonNode grant(UUID kb,List<UUID> docs)throws Exception {
+        var input=new LinkedHashMap<String,Object>();input.put("serviceId","agent-test");input.put("agentSessionId",UUID.randomUUID());input.put("kbIds",List.of(kb));if(docs!=null)input.put("documentIds",docs);
+        var response=mvc.perform(post("/api/rag/delegations").with(auth("alice")).contentType("application/json").content(json.writeValueAsString(input)))
+                .andExpect(status().isCreated()).andReturn().getResponse();return json.readTree(response.getContentAsByteArray()).path("data");
+    }
+    @Test @org.junit.jupiter.api.condition.EnabledIfSystemProperty(named="kb.test.python-exe",matches=".+")
+    void pythonAdapterCallsRunningJavaEvidenceServiceWithUniqueReferencesAndSharedTrace()throws Exception {
+        var data=dataset();var grant=grant(data.kb(),null);
+        String trace="2123456789abcdef0123456789abcdef";
+        var config=Map.of("origin","http://127.0.0.1:"+port,"serviceId","agent-test","serviceToken","service-test-token-1234567890-abcdef","grant",grant,"traceId",trace);
+        var process=new ProcessBuilder(System.getProperty("kb.test.python-exe"),"-X","utf8",System.getProperty("kb.test.rag-adapter"))
+                .redirectErrorStream(true).start();
+        try(var stdin=process.getOutputStream()){stdin.write(json.writeValueAsBytes(config));}
+        assertThat(process.waitFor(30,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+        String output=new String(process.getInputStream().readAllBytes(),StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as(output).isZero();JsonNode receipt=json.readTree(output);
+        assertThat(receipt.path("statuses").toString()).isEqualTo("[\"READY\",\"READY\"]");assertThat(receipt.path("traceId").asText()).isEqualTo(trace);
+        assertThat(receipt.path("uniqueCitationIds").get(0).asText()).isNotEqualTo(receipt.path("uniqueCitationIds").get(1).asText());
+        assertThat(receipt.path("extractiveCitationValidated").asBoolean()).isTrue();
+        assertThat(model.traceparents).anyMatch(value->value.startsWith("00-"+trace+"-"));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_conversation",Integer.class)).isZero();
+        Path receiptFile=Path.of("target/knowledge-base/agent-tool-contract.json");Files.createDirectories(receiptFile.getParent());Files.writeString(receiptFile,json.writerWithDefaultPrettyPrinter().writeValueAsString(receipt));
+    }
+    private final class InternalClient implements AutoCloseable {
+        final okhttp3.OkHttpClient client=new okhttp3.OkHttpClient.Builder().readTimeout(java.time.Duration.ofSeconds(8)).build();
+        JsonNode call(String path,Map<String,?> body,String token,String trace,String requestId,int expected)throws Exception {
+            var request=new okhttp3.Request.Builder().url("http://127.0.0.1:"+port+path).header("Authorization","Bearer service-test-token-1234567890-abcdef")
+                    .header("X-Rag-Service","agent-test").header("X-Rag-Delegation",token).header("X-Request-Id",requestId).header("traceparent",trace)
+                    .header("X-Rag-Deadline",java.time.Instant.now().plusSeconds(5).toString()).post(okhttp3.RequestBody.create(json.writeValueAsBytes(body),okhttp3.MediaType.get("application/json"))).build();
+            try(var response=client.newCall(request).execute()){String text=response.body().string();assertThat(response.code()).as(text).isEqualTo(expected);return json.readTree(text);}
+        }
+        public void close(){client.dispatcher().executorService().shutdownNow();client.connectionPool().evictAll();}
     }
     private void awaitCondition(java.util.function.BooleanSupplier condition)throws Exception {
         long end=System.nanoTime()+java.time.Duration.ofSeconds(5).toNanos();while(!condition.getAsBoolean() && System.nanoTime()<end)Thread.sleep(40);assertThat(condition.getAsBoolean()).isTrue();

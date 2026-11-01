@@ -95,6 +95,8 @@ Web Converter 只做字段转换；Data Converter 只做持久化对象与 BO �
 
 RAG 的 JSON 与 SSE 入口共用 AnswerPipeline 和检索门面；RagAnswerService 管理有界工作、取消与运行结算，Controller 只转换用户视图及发送协议事件。AiStreamChatClient 复用 AI 流式协议与并发预算，真实 Call.cancel 与任务线程中断同时传播；AnswerLedger 不在网络调用期间持有事务。中文模板在 resources/rag/prompts 集中按版本维护，不写入 Controller。
 
+内部 Agent HTTP 适配位于 `rag/controller/support/InternalRetrievalExecution`，管理 DeferredResult、截止与取消，并将共用 RagRetrievalService 的 BO 转为 Agent 白名单 VO；不复制召回或证据算法。`DelegationService` 和 `rag/repository` 管理当前用户签发的范围委托与控制元数据；独立服务认证链在 security/config，trace 传播在 security/context。Python 仅有 examples/integration/rag_agent 适配示例，agent-service 仍没有主 Agent。
+
 注释说明事务范围、锁顺序、执行权、重试或资源生命周期等约束，不重复变量名和代码表面行为。事务模板回调的参数是事务状态，不是异常；忽略异常时应说明保留哪个结果、由哪个流程恢复。
 
 从仓库根验证本服务及公共依赖：

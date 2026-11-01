@@ -115,6 +115,7 @@ public class HybridRetrievalServiceImpl implements HybridRetrievalService {
         executor.setMaxPoolSize(config.concurrency());
         executor.setQueueCapacity(0);
         executor.setThreadNamePrefix("kb-retrieval-");
+        executor.setTaskDecorator(com.lzj.rag.backend.security.context.RagTraceContext::decorate);
         executor.setWaitForTasksToCompleteOnShutdown(false);
         executor.initialize();
     }

@@ -2,7 +2,7 @@
 
 ## 当前执行顺序（2026-11-01 更新，按用户附件）
 
-用户已授权按附件第 2–8 轮顺序开发并分别提交。下表取代下文历史 R2–R5 的分组编号；每轮完成定向验收与提交后再进入下一轮。
+用户已授权并完成第 2–8 轮，本轮另行授权第 9 阶段 Agent 接入。下表取代下文历史 R2–R5 的分组编号；按当前轮次完成并结束，不自动扩大后续范围。
 
 | 轮次 | 范围 | 状态 |
 |---|---|---|
@@ -13,8 +13,19 @@
 | 6 | 证据选择、上下文预算与引用契约 | 已完成；预算/来源/邻居及授权快照，4 项定向验证通过 |
 | 7 | Java 独立问答与持久化引用 | 已完成；V9 运行/会话、中文模板、授权历史、引用校验与一次修复，3 项集成验证通过 |
 | 8 | MVC SSE、独立问答历史和取消 | 已完成；真实 HTTP 增量/取消/断连、运行恢复，10 项定向验收及断连复核通过 |
+| 9 | Java 内部证据契约与 Python Agent 适配 | 已完成工作区无 Agent 的备用交付：内部接口、短期委托/取消、可运行适配器和真实跨语言 HTTP；真实 LangGraph 待宿主集成 |
 
 各轮使用下文开发期验证节奏；不自动扩大到附件之外的 Agent 实现或生产部署。
+
+## 第 9 阶段映射（2026-11-01）
+
+仓库再次核对：agent-service 只有占位，python-common 有 FastAPI/httpx 约定而无 Agent 工具注册器或 LangGraph。新增 examples/integration/rag_agent，复用已锁定的依赖；不安装 LangChain/LangGraph、不实现 ReAct。Java `/internal/rag/retrieve` 只走原 RagRetrievalService 的 INDEPENDENT 模式与证据组装，Java 不读取/写入 Agent 历史或图检查点，Python 不直接访问知识表。
+
+独立安全链用服务 ID + Bearer 校验服务身份。用户通过原 Basic 边界签发限时 opaque 委托，绑定服务、tenant/owner、宿主 session、库/文档范围；DB 只存令牌 SHA-256。每次加载当前用户并复用原范围授权，不能由服务、模型或请求头自称任意租户。V10 只保存委托、撤销与检索请求取消元数据，不是第二套 Agent 会话。委托默认 5 分钟、最多 15 分钟，当前所有权/启停/代次仍由原检索引擎检查。
+
+调用元数据来自可信宿主运行上下文：独立 requestId、W3C traceparent、ISO deadline。trace 只用于关联；Java 在受控工作池传播 traceId 到 AI HTTP，deadline 取宿主、委托和服务器上限最小值。有界零队列内部工作池、DeferredResult 截止和显式取消接口传播 Future/HTTP 取消；DB 控制记录处理跨实例和取消先到。内部返回 Agent 白名单视图，不输出提示词、SQL、原始异常、内部地址或调试查询。
+
+Python lifespan 复用 AsyncClient，query 为唯一工具参数；宿主注入身份/范围/委托与预算。工具状态明确区分、结果按 UTF-8 guard 限长，不调用 /answer。每次检索把 E 编号映射为请求唯一 K 编号，并保存可重新确认的来源线索；图恢复须由宿主先清理旧敏感消息、注入新委托再精确确认。提供中文版本提示片段，实际 Agent 模型/图与业务工具仍由宿主管理。真实调用回执与未验证边界见 AGENT_INTEGRATION_VALIDATION.json。
 
 ## 第 7–8 轮技术映射（2026-11-01）
 

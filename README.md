@@ -48,4 +48,6 @@ Python 3.12+，从仓库根目录运行 `pip install -e "./packages/python-commo
 
 AI 服务的启动、模型配置、HTTP/SSE 和 Python 调用示例见 [AI 服务说明](services/ai-service/README.md)。无需供应商密钥时，可用 `AI_ENABLED=false` 启动健康检查与工具接口。
 
+RAG 普通/流式问答及内部证据接口见 [RAG 运行手册](docs/rag/RUNBOOK.md)。Python 主 Agent 的异步知识工具接入示例见 [rag_agent](examples/integration/rag_agent/README.md)，复用 Java 检索；`agent-service` 仍未实现主循环或 LangGraph 图，示例不是已部署的 Agent 服务。
+
 知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，当前阶段与验证结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 管理台启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173，使用已有账号登录，不新增用户管理。原 API 导航为`GET /api/knowledge/management`，HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`；`agent-service`仍为目录占位。

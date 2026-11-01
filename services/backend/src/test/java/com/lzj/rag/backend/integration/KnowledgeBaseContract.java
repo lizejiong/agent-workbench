@@ -46,7 +46,7 @@ abstract class KnowledgeBaseContract {
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         request(get(API + "/" + created.path("id").asText()), "alice", 200);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_flyway_schema_history WHERE success", Integer.class))
-                .isEqualTo(9);
+                .isEqualTo(10);
     }
 
     @Test void fullLifecyclePersistsVersionAndTombstone() throws Exception {

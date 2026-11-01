@@ -1,0 +1,9 @@
+# 复制为部署方受控 YAML，通过原 Spring Boot 配置流程加载；不提交明文服务令牌。
+kb:
+  rag:
+    internal:
+      enabled: true
+      service-token-hashes:
+        python-agent: ${RAG_AGENT_TOKEN_SHA256}
+      delegation-ttl: 5m
+      concurrency: 4

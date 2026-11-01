@@ -292,6 +292,8 @@ public class AiEmbeddingClient implements EmbeddingClient {
                                             : HttpRequest.BodyPublishers.ofByteArray(bytes(body)));
             if (config.token() != null && !config.token().isBlank())
                 request.header("Authorization", "Bearer " + config.token());
+            String trace=com.lzj.rag.backend.security.context.RagTraceContext.current();
+            if(trace!=null)request.header("traceparent",trace);
             // info：HTTP 响应状态和头信息，用于选择受字节上限约束的正文订阅器。
             // future：本次异步操作对应的可等待、可取消结果。
             var future =

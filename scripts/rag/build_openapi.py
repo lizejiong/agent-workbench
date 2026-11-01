@@ -88,5 +88,41 @@ cancel=operation('cancelRagRun','AnswerRequest','CancelResult')
 del cancel['requestBody']
 cancel['parameters']=[{'name':'id','in':'path','required':True,'schema':uuid}]
 document['paths']['/api/rag/runs/{id}/cancel']={'post':cancel}
+schemas['DelegationRequest']={'type':'object','additionalProperties':False,'required':['serviceId','agentSessionId'],
+    'properties':{'serviceId':dict(string,pattern='^[a-z0-9-]{1,80}$'),'agentSessionId':uuid,'kbIds':ids,'documentIds':dict(ids,minItems=1,maxItems=500)}}
+schemas['Delegation']={'type':'object','properties':{'delegationId':uuid,'delegationToken':dict(string,format='password',description='只返回一次，禁止进入模型或日志'),
+    'serviceId':string,'agentSessionId':uuid,'tenantId':string,'userId':string,'kbIds':ids,'documentIds':ids,'expiresAt':dict(string,format='date-time')}}
+schemas['InternalRetrieveRequest']=json.loads(json.dumps(search))
+del schemas['InternalRetrieveRequest']['properties']['conversationId']
+schemas['AgentEvidence']={'type':'object','properties':{
+    'status':dict(string,enum=['READY','NO_EVIDENCE','NEEDS_CLARIFICATION','UNAVAILABLE']),
+    'requestId':string,'traceId':dict(string,pattern='^[0-9a-f]{32}$'),'clarificationQuestion':dict(string,nullable=True),'degraded':{'type':'boolean'},
+    'strategy':string,'rerankStatus':string,'evidence':{'type':'array','items':{'$ref':'#/components/schemas/EvidenceSnapshot'}},
+    'scores':{'type':'object','additionalProperties':{'type':'object','properties':{'score':{'type':'number'},'scoreType':string,'fusionScore':{'type':'number','nullable':True},'rerankScore':{'type':'number','nullable':True}}}},
+    'contextHash':dict(string,nullable=True),'versions':{'type':'object','properties':{'pipeline':dict(string,nullable=True),'context':dict(string,nullable=True),
+        'queryPrompt':string,'queryPromptHash':string,'indexes':{'type':'array','items':{'type':'object','properties':{'kbId':uuid,'embeddingModelId':dict(string,nullable=True),'embeddingConfigRevision':dict(string,nullable=True),'aiConfigRevision':dict(string,nullable=True)}}}}}}}
+issue=operation('issueAgentDelegation','DelegationRequest','Delegation')
+issue['responses']['201']=issue['responses'].pop('200')
+document['paths']['/api/rag/delegations']={'post':issue}
+revoke=operation('revokeAgentDelegation','DelegationRequest','Delegation')
+del revoke['requestBody']
+revoke['parameters']=[{'name':'id','in':'path','required':True,'schema':uuid}]
+revoke['responses'].pop('200');revoke['responses']['204']={'description':'已撤销本人委托；重复撤销幂等'}
+document['paths']['/api/rag/delegations/{id}']={'delete':revoke}
+document['components']['securitySchemes'].update({'serviceBearer':{'type':'http','scheme':'bearer'},'userDelegation':{'type':'apiKey','in':'header','name':'X-Rag-Delegation'}})
+internal=operation('retrieveAgentEvidence','InternalRetrieveRequest','AgentEvidence')
+internal['security']=[{'serviceBearer':[],'userDelegation':[]}]
+internal['parameters']=[{'name':name,'in':'header','required':required,'schema':dict(string,**extra)} for name,required,extra in [
+    ('X-Rag-Service',True,{'pattern':'^[a-z0-9-]{1,80}$'}),('X-Request-Id',True,{'pattern':'^[A-Za-z0-9._:-]{1,128}$'}),
+    ('X-Rag-Deadline',True,{'format':'date-time'}),('traceparent',False,{'pattern':'^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$'})]]
+internal['responses']['403']={'description':'请求范围超出委托；不会扩大到其他知识库'}
+internal['responses']['200']['headers']['traceparent']={'schema':string}
+document['paths']['/internal/rag/retrieve']={'post':internal}
+tool_cancel=json.loads(json.dumps(internal));del tool_cancel['requestBody']
+tool_cancel['operationId']='cancelAgentRetrieval'
+tool_cancel['parameters'].append({'name':'requestId','in':'path','required':True,'schema':dict(string,pattern='^[A-Za-z0-9._:-]{1,128}$')})
+next(p for p in tool_cancel['parameters'] if p['name']=='X-Request-Id')['required']=False
+tool_cancel['responses'].pop('200');tool_cancel['responses']['202']={'description':'取消已登记；同一委托不能取消其他委托的请求；保留取消先到的墓碑'}
+document['paths']['/internal/rag/requests/{requestId}/cancel']={'post':tool_cancel}
 OUT.write_text(json.dumps(document, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
 print(f'Generated {len(document["paths"])} RAG paths')

@@ -1,0 +1,4 @@
+# 与 packages/python-common/uv.lock 中已验证版本一致；没有引入 LangGraph 主循环。
+httpx==0.28.1
+fastapi==0.143.3
+pydantic==2.14.1
