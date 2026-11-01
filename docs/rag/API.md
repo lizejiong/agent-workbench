@@ -1,6 +1,6 @@
 # RAG API
 
-本轮已实现 A；B/SSE 和 C 为后续设计约束，尚无这些新路由。可执行完整 OpenAPI 仍为现有 `/openapi/knowledge-base.yaml`，复用同一知识库服务和 Basic 认证。
+已实现 A 和 B 的非流式问答、运行及会话读取；SSE 和 C 尚待实施。契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`，复用知识库服务和 Basic 认证。
 
 ## A：结构化检索（已实现）
 
@@ -86,13 +86,23 @@ NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不
 
 示例请求：`{"query":"PostgreSQL 备份","kbIds":["已授权库的 UUID"],"strategy":"VECTOR","topK":5}`。真实入库后的完整证据回执保存在验证构建副本的 `target/knowledge-base/rag-retrieve-example.json`；其中 sourceContentHash/generation 可解释当次来源，引用编号合法性不能证明资料支持答案断言。
 
-## B：Java 独立问答与 SSE（后续，未实现）
+## B：Java 独立问答（第 7 轮已实现）
 
-拟由同一检索引擎取得证据，再经过权限复核、字符/token 预算裁剪，调用既有 Java AI chat。查询理解采用经过 Jackson schema/字段/类型/长度校验的结构化输出；模型不能赋予授权范围。错误或超时是否使用原 query 必须明确状态，并遵守总调用预算。
+`POST /api/rag/answer` 接受 `question`、可选 `conversationId`，其余知识范围、检索和精排字段同 retrieve。身份、USER 模式、模型和总耗时由服务端确定。新请求无 conversationId 时创建私有会话；未知或其他用户会话返回 404，同会话已有 RUNNING 返回 409/RAG_CONVERSATION_BUSY。
 
-模型可见上下文仅包含授权证据、局部引用 ID 及必要来源。系统规则明确文档为不可信资料，不执行其中指令。用户答案返回文本和可解析的引用映射，调试状态另行授权；引用存在、模型判断和分数阈值均不代表事实正确。
+```json
+{"question":"PostgreSQL 如何备份？","kbIds":["00000000-0000-0000-0000-000000000001"],"strategy":"VECTOR","topK":5}
+```
 
-待实现 SSE 事件：meta（请求和版本）、evidence（授权引用）、delta（答案片段）、done（结束状态与引用）、error（受控错误码）。事件 schema、最终路由、心跳间隔和断流重连在 R3 定稿；当前不能调用这些事件。SseEmitter completion/error/timeout 必须取消 Future 和上游流；流输出后不整体重试，超时不把部分输出标为完成答案。
+响应为 Result，data 包含 answerId、conversationId、requestId、status、answer、citations、sources、unavailableSources、degraded、citationValidation、usage、modelCalls、query、retrievalTrace、evidenceContextHash、repairAttempted、errorCode。sources 是服务端证据快照；citations 为 evidenceId→documentId/chunkId/generation/snapshotHash，不接受模型生成文件地址。正文使用 `[E1]` 标记。
+
+状态为 COMPLETED、NO_EVIDENCE、NEEDS_CLARIFICATION 或 CITATION_INVALID；无证据/澄清不调用生成模型。依赖不完整或失败按 5xx 返回，运行记录为 FAILED/TIMED_OUT，错误 data 带 answerId/conversationId/requestId。没有引用或未知编号最多用原证据修复一次，仍失败保留文本并标 CITATION_INVALID/degraded，不宣称成功引用。usage 只在单次生成调用且上游实际提供时汇总；多次调用逐条查看 modelCalls 的实际 usage，不伪造计数。
+
+`GET /api/rag/runs/{id}` 返回当前用户的运行，含 status、answer（失败可为部分文本）、result 和 errorCode。`GET /api/rag/conversations/{id}` 返回最近 20 条，按新到旧排列。未授权资源一律 404。历史保留用户问题、有效查询、答案、证据快照、模型和提示词版本；来源在读取时再验证，失效正文从 sources 移除，相关引用编号列入 unavailableSources。保留本人历史答案文本不赋予原文件的下载权限。用于新模型调用的近期历史最多 6 条/3000 字符，失效来源对应的助手文本不重新送模。
+
+中文模板和资料 JSON 分别放在 system/user 消息。所有消息纳入输入预算，生成前后重新检查证据权限、正文、来源元数据及有效版本。引用格式和编号校验不证明语义支持或事实正确。响应 no-store，不提供系统模板正文或内部模型消息。
+
+第 8 轮待实施 `POST /api/rag/answer/stream` 与 `POST /api/rag/runs/{id}/cancel`，事件拟定 meta→retrieval→sources→message→finish→done；当前无流式端点。
 
 ## C：Python Agent 检索工具（后续，未实现）
 

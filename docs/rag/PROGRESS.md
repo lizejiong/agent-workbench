@@ -96,3 +96,11 @@ RAG 门面共用 EvidenceAssembler，最终用户证据与模型材料均经过�
 计数复用 AI 文本工具 `/ai/utils/estimate-tokens`，每次非空上下文一次调用，加 25% 余量，并用包含问题、历史和定位元数据的 UTF-8 字节总额保守限制；系统/输出/安全储备另列。estimated 明确为粗估，不宣称目标模型精确计数。资料变更和预算不足明确报错，模型消息与系统提示词不出现在用户视图。
 
 最小验证：EvidenceAssemblerTest 3 项和 KnowledgeSearchTest 的 RAG 端到端场景 1 项最终通过，日志 `.cache/rag-round6-verified.log`。真实 PG/MinIO 上传入库、邻居补充、禁用邻居排除、跨用户来源拒绝与删除后 404；模型和计数工具为 HTTP 桩。修正了样例包含多个有效邻居时对固定返回条数的错误假设，改为检查禁用块不能出现。回执位于隔离副本 `services/backend/target/knowledge-base/rag-retrieve-example.json`。未跑全量 verify、真实模型效果或生产负载。
+
+## 附件第 7 轮：Java 独立问答（2026-11-01，完成）
+
+新增非流式 answer 和本人运行/会话读取，共用既有检索、证据、ChatClient 与计数工具。中文问答和一次引用修复模板集中在 PromptCatalog，版本和 SHA-256 随模型调用落库；UTF-8 无效编码拒绝加载。READY 才生成，无证据与澄清直接响应，检索故障不会冒充资料不足。正文引用只认可本次 E 编号，最多一次原证据修复；仍不合法保留文本并显式 CITATION_INVALID。
+
+Flyway V9 保存独立问答会话、运行和含来源哈希的结果；短事务与网络调用分开。私有会话 tenant+owner 校验，同会话并发 409；调用失败保留 FAILED/TIMED_OUT 和可用部分文本。历史来源重新授权并检查正文、元数据、代次，失效摘录不再次下发或进入模型；本人历史答案文本可见。Java 不接管 Agent 上下文。总 timeout、输出与上下文储备可配置；SSE/断连和主动取消留给第 8 轮。
+
+最小验证：KnowledgeSearchTest 的 3 个新增方法全部通过、0 跳过，日志 `.cache/rag-round7-verified.log`。真实 PG/MinIO、V9 迁移与上传入库；Chat/计数为本地 HTTP 桩。覆盖答案引用持久化、跨用户/租户会话拒绝、撤权后来源/模型历史过滤、无证据不生成、一次修复与未知引用、模型超时、同会话并发，以及生成中禁用资料导致失败。隔离副本曾残留已删除的空历史实现，已清理其源文件和 class 后验证通过；不影响工作区运行产物。没有真实供应商语义/注入效果评估，消息分离和编号校验不等于事实正确保证；未执行全量 verify。

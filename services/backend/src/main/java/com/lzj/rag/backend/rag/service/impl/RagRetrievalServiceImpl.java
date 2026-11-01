@@ -22,7 +22,7 @@ public class RagRetrievalServiceImpl implements RagRetrievalService {
     }
     public RagRetrievalBO retrieve(KnowledgeBasePrincipal actor,RagRetrieveBO request,String requestId,QueryMode mode,Instant deadline) {
         var scope=engine.prepare(actor,request.search(),deadline);
-        var messages=mode==QueryMode.USER ? history.recent(actor,request.conversationId()) : List.<Map<String,String>>of();
+        var messages=mode==QueryMode.USER ? history.recent(actor,request.conversationId(),deadline) : List.<Map<String,String>>of();
         var plan=understanding.understand(scope,messages,requestId,deadline);
         RetrievalDeadline.check(deadline);
         if(plan.needsClarification()) return new RagRetrievalBO("NEEDS_CLARIFICATION",plan,null);

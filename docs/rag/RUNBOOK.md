@@ -85,6 +85,14 @@ Invoke-RestMethod -Method Post -Uri ($env:KB_BASE_URL+'/api/knowledge/retrieve')
 
 ## 排障与验收边界
 
+第 7 轮启用 Flyway V9（kb_rag_conversation、kb_rag_answer_run）；沿用原数据库迁移流程。`kb.rag.answer` 默认 enabled=true、model=qwen-plus、timeout=60s（最多 2 分钟）、max-output-tokens=1024、max-answer-chars=16384、repair-citations=true。模型别名必须在 AI 服务实际存在；输出上限不得超过 context.output-reserve。不启用查询理解也可独立问答。
+
+中文模板选择：`kb.rag.prompts.answer-version=rag-answer-v1`、`repair-version=rag-citation-repair-v1`，与 query-version 共用受控 directory；部署目录须包含所有选中的模板。先增加新版本文件、再切换配置并重启。缺文件、非 UTF-8、空白或超大模板启动失败，不自动换模板。
+
+验收：用已入库自有库调用 `POST /api/rag/answer`，保存返回 answerId/conversationId；读取 `/api/rag/runs/{id}` 和 `/api/rag/conversations/{id}`。5xx 读取错误 data 的运行标识排障；NO_EVIDENCE 不等于依赖故障，CITATION_INVALID 不等于完整成功。历史失效来源不会返回正文，unavailableSources 提示原编号；文件下载始终执行当前权限。当前阶段 SSE/主动取消尚未上线。
+
+第 7 轮定向命令选择 `-Dtest=KnowledgeSearchTest#standaloneAnswersPersistReferencesAndNeverReadAnotherUsersConversation+answerNoEvidenceCitationRepairAndModelFailureHaveDifferentPersistentOutcomes+conversationConcurrencyAndRevocationDuringGenerationCannotProduceSuccessfulAnswers`，其余隔离构建参数沿用上文。3 项真实 PG/MinIO 集成回归已通过，Chat 为 HTTP 桩，无全量 verify。
+
 - 404：核对当前账号归属和请求范围；不要换成管理身份绕过检查。
 - 409/KB_SEARCH_MODEL_MISMATCH：按兼容嵌入空间分别请求；不能更换向量模型来规避错误。KB_SEARCH_SCOPE_CHANGED 表示请求期间绑定变化，重新读取并提交一个新请求。
 - DEGRADED/INDETERMINATE：看 channels.errorCode 与 rerankStatus，修复 ES 同步/精排依赖；不是“已证明无知识”。

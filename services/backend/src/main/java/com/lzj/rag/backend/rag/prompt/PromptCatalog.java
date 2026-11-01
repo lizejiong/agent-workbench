@@ -17,6 +17,8 @@ public class PromptCatalog {
     private final ConcurrentHashMap<String,Template> templates=new ConcurrentHashMap<>();
     public PromptCatalog(PromptProperties config) { this.config=config; }
     public Template query() { return get(config.queryVersion()); }
+    public String answerVersion(){return config.answerVersion();}
+    public String repairVersion(){return config.repairVersion();}
     public Template get(String version) {
         if(version==null || !version.matches("[a-z0-9-]{1,80}")) throw new IllegalArgumentException("Invalid prompt version");
         return templates.computeIfAbsent(version,this::load);
@@ -32,7 +34,8 @@ public class PromptCatalog {
             } else try(var input=new ClassPathResource("rag/prompts/"+version+".txt").getInputStream()) {
                 bytes=input.readNBytes(32769);
             }
-            String content=new String(bytes,StandardCharsets.UTF_8);
+            String content=StandardCharsets.UTF_8.newDecoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                    .decode(java.nio.ByteBuffer.wrap(bytes)).toString();
             if(bytes.length>32768 || content.isBlank()) throw new IllegalArgumentException("Invalid prompt content");
             return new Template(version,EmbeddingCatalog.sha256(content),content);
         } catch(java.io.IOException e) { throw new IllegalStateException("Cannot load prompt version "+version,e); }

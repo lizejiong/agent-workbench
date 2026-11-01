@@ -56,6 +56,7 @@ class KnowledgeSearchTest {
     }
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired IngestionKernel kernel;@Autowired UserDetailsService users;
     @Autowired DocumentUploadTest.FaultStorage storage;
+    @Autowired com.lzj.rag.backend.rag.repository.AnswerLedger answerLedger;
     @BeforeEach void clear(){model.reset();model.vectorizer=KnowledgeSearchTest::topicVector;storage.reset();TestDatabaseCleanup.clear(jdbc);}
     public static float[] topicVector(String text) {
         String value=text.toLowerCase(Locale.ROOT);float[] vector=new float[1024];
@@ -158,6 +159,52 @@ class KnowledgeSearchTest {
         jdbc.update("UPDATE kb_document SET deleted_at=clock_timestamp() WHERE id=?",doc);
         mvc.perform(get(neighbor.path("fileUrl").asText()).with(auth("alice"))).andExpect(status().isNotFound());
         Path out=Path.of("target/knowledge-base/rag-retrieve-example.json");Files.createDirectories(out.getParent());Files.writeString(out,json.writerWithDefaultPrettyPrinter().writeValueAsString(context));
+    }
+    @Test void standaloneAnswersPersistReferencesAndNeverReadAnotherUsersConversation()throws Exception {
+        var data=dataset();
+        var request=new LinkedHashMap<String,Object>();request.put("question","database backup");request.put("kbIds",List.of(data.kb()));
+        var answer=answer(request,"alice",200).path("data");assertThat(answer.path("status").asText()).isEqualTo("COMPLETED");
+        assertThat(answer.path("citationValidation").asText()).isEqualTo("VALID");assertThat(answer.at("/modelCalls/0/promptVersion").asText()).isEqualTo("rag-answer-v1");
+        assertThat(answer.at("/modelCalls/0/promptHash").asText()).matches("[0-9a-f]{64}");assertThat(answer.path("citations")).hasSize(1);
+        UUID id=UUID.fromString(answer.path("answerId").asText()),conversation=UUID.fromString(answer.path("conversationId").asText());
+        assertThat(jdbc.queryForObject("SELECT result_json->>'status' FROM kb_rag_answer_run WHERE id=?",String.class,id)).isEqualTo("COMPLETED");
+        for(String user:List.of("bob","carol")) {
+            mvc.perform(get("/api/rag/runs/"+id).with(auth(user))).andExpect(status().isNotFound());
+            request.put("conversationId",conversation);answer(request,user,404);
+        }
+        mvc.perform(get("/api/rag/conversations/"+conversation).with(auth("alice"))).andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(1));
+        var modelInput=json.readTree(model.chatRequests.get(0).at("/messages/1/content").asText());
+        assertThat(modelInput.path("evidence").isArray()).isTrue();assertThat(model.chatRequests.get(0).at("/messages/0/content").asText()).contains("资料","数据").doesNotContain("pg_dump 备份说明");
+        UUID cited=UUID.fromString(answer.at("/citations/0/chunkId").asText());jdbc.update("UPDATE kb_chunk SET enabled=false WHERE id=?",cited);
+        mvc.perform(get("/api/rag/runs/"+id).with(auth("alice"))).andExpect(status().isOk()).andExpect(jsonPath("$.data.result.unavailableSources[0]").value("E1"));
+        request.put("conversationId",conversation);answer(request,"alice",200);
+        var followup=json.readTree(model.chatRequests.get(model.chatRequests.size()-1).at("/messages/1/content").asText());
+        for(var message:followup.path("authorizedHistory"))assertThat(message.path("role").asText()).isNotEqualTo("assistant");
+    }
+    @Test void answerNoEvidenceCitationRepairAndModelFailureHaveDifferentPersistentOutcomes()throws Exception {
+        var data=dataset();
+        var request=Map.of("question","astronomy","kbIds",List.of(data.kb()),"minScore",.9,"strategy","VECTOR");
+        assertThat(answer(request,"alice",200).at("/data/status").asText()).isEqualTo("NO_EVIDENCE");assertThat(model.chatRequests).isEmpty();
+        var good=Map.of("question","database backup","kbIds",List.of(data.kb()));
+        model.chatMode="REPAIRABLE";var fixed=answer(good,"alice",200).path("data");assertThat(fixed.path("repairAttempted").asBoolean()).isTrue();
+        assertThat(fixed.path("status").asText()).isEqualTo("COMPLETED");assertThat(model.chatRequests).hasSize(2);
+        model.chatRequests.clear();model.chatMode="INVALID_CITATIONS";var bad=answer(good,"alice",200).path("data");
+        assertThat(bad.path("status").asText()).isEqualTo("CITATION_INVALID");assertThat(bad.path("sources")).isNotEmpty();assertThat(bad.path("citations")).isEmpty();assertThat(model.chatRequests).hasSize(2);
+        model.chatMode="TIMEOUT";var failed=answer(good,"alice",504).path("data");
+        mvc.perform(get("/api/rag/runs/"+failed.path("answerId").asText()).with(auth("alice")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("TIMED_OUT"));
+    }
+    @Test void conversationConcurrencyAndRevocationDuringGenerationCannotProduceSuccessfulAnswers()throws Exception {
+        var data=dataset();var active=answerLedger.begin(actor("alice"),null,"pending","busy-test",java.time.Instant.now().plusSeconds(30));
+        answer(Map.of("question","database backup","kbIds",List.of(data.kb()),"conversationId",active.conversationId()),"alice",409);assertThat(model.chatRequests).isEmpty();
+        answerLedger.fail(actor("alice"),active.id(),"FAILED","TEST_END","");
+        model.beforeChat=()->jdbc.update("UPDATE kb_document SET enabled=false WHERE kb_id=?",data.kb());
+        var failed=answer(Map.of("question","database backup","kbIds",List.of(data.kb())),"alice",409).path("data");
+        assertThat(jdbc.queryForObject("SELECT status FROM kb_rag_answer_run WHERE id=?",String.class,UUID.fromString(failed.path("answerId").asText()))).isEqualTo("FAILED");
+    }
+    private JsonNode answer(Map<String,?> request,String user,int expected)throws Exception {
+        var response=mvc.perform(post("/api/rag/answer").with(auth(user)).contentType("application/json").content(json.writeValueAsBytes(request)))
+                .andExpect(status().is(expected)).andReturn().getResponse();return json.readTree(response.getContentAsByteArray());
     }
     @Test void oneQueryVectorServesCompatibleBasesAndDocumentScopePrecedesRanking()throws Exception {
         var data=dataset();UUID other=base("alice",null);UUID doc=document(other,"database-other.md",fixture("database.md"),"alice");

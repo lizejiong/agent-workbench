@@ -100,7 +100,8 @@ public class EvidenceAssembler {
         for(var snapshot:snapshots) {
             var live=current.get(snapshot.chunkId());
             if(live==null || !live.kbId().equals(snapshot.kbId()) || !live.documentId().equals(snapshot.documentId())
-                    || live.generation()!=snapshot.generation() || !EmbeddingCatalog.sha256(live.content()).equals(snapshot.sourceContentHash()))
+                    || live.generation()!=snapshot.generation() || !EmbeddingCatalog.sha256(live.content()).equals(snapshot.sourceContentHash())
+                    || !json.valueToTree(live.sourceMetadata()).equals(json.valueToTree(snapshot.sourceMetadata())))
                 throw new KnowledgeBaseException(409,"RAG_EVIDENCE_CHANGED","Evidence changed or became unavailable; retrieve again");
         }
         RetrievalDeadline.check(deadline);

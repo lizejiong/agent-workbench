@@ -16,6 +16,9 @@ public final class EmbeddingStub implements AutoCloseable {
     public volatile String revision="a".repeat(64);
     public final List<JsonNode> requests=new CopyOnWriteArrayList<>();
     public volatile String visionMode="GOOD";
+    public volatile String chatMode="GOOD";
+    public volatile Runnable beforeChat=()->{};
+    public final List<JsonNode> chatRequests=new CopyOnWriteArrayList<>();
     public final List<JsonNode> visionRequests=new CopyOnWriteArrayList<>();
     public volatile String rerankMode="GOOD";
     public volatile Runnable beforeRerank=()->{};
@@ -28,7 +31,7 @@ public final class EmbeddingStub implements AutoCloseable {
         server.setExecutor(executor);server.createContext("/ai/",this::reply);server.start();
     }
     public String url(){return "http://127.0.0.1:"+server.getAddress().getPort();}
-    public void reset(){mode="GOOD";requests.clear();visionMode="GOOD";visionRequests.clear();rerankMode="GOOD";rerankRequests.clear();beforeRerank=()->{};beforeEmbed=()->{};vectorizer=null;revision="a".repeat(64);}
+    public void reset(){mode="GOOD";requests.clear();visionMode="GOOD";visionRequests.clear();rerankMode="GOOD";rerankRequests.clear();chatMode="GOOD";chatRequests.clear();beforeChat=()->{};beforeRerank=()->{};beforeEmbed=()->{};vectorizer=null;revision="a".repeat(64);}
     private void reply(HttpExchange exchange)throws IOException {
         try(exchange){
             Object data;
@@ -43,6 +46,17 @@ public final class EmbeddingStub implements AutoCloseable {
                 }
                 if(rerankMode.equals("SHORT") && !results.isEmpty())results.remove(0);
                 data=Map.of("results",results,"model",rerankMode.equals("WRONG_MODEL")?"other-rerank":"qwen-rerank");
+            }else if(exchange.getRequestURI().getPath().equals("/ai/chat")) {
+                var request=json.readTree(exchange.getRequestBody());chatRequests.add(request);beforeChat.run();
+                if(chatMode.equals("TIMEOUT"))sleep(2000);
+                String content="备份可使用 pg_dump。[E1]";
+                if(chatMode.equals("INVALID_CITATIONS"))content="资料内容 [E999]";
+                if(chatMode.equals("REPAIRABLE") && !request.at("/messages/0/content").asText().contains("修复"))content="备份可使用 pg_dump。";
+                if(request.path("json").asBoolean()) {
+                    var input=json.readTree(request.path("messages").get(1).path("content").asText());
+                    content=json.writeValueAsString(Map.of("effectiveQuery",input.path("query").asText(),"subQueries",List.of(input.path("query").asText()),"needsClarification",false,"clarificationQuestion","","kbIds",input.path("allowedKbIds")));
+                }
+                data=Map.of("content",content,"model","qwen-plus-fixture","finishReason","stop","usage",Map.of("inputTokens",30,"outputTokens",12,"totalTokens",42));
             }else if(exchange.getRequestURI().getPath().equals("/ai/utils/estimate-tokens")) {
                 String text=json.readTree(exchange.getRequestBody()).path("text").asText();
                 long wide=text.codePoints().filter(c->Character.UnicodeScript.of(c)==Character.UnicodeScript.HAN).count();

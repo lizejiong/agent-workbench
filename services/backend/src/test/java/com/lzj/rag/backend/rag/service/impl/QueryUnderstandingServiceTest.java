@@ -64,11 +64,11 @@ class QueryUnderstandingServiceTest {
         assertThatThrownBy(()->facade.retrieve(actor,input,"test",com.lzj.rag.backend.rag.service.RagRetrievalService.QueryMode.USER,deadline)).isSameAs(denied);
         org.mockito.Mockito.verifyNoInteractions(understanding,history);
         org.mockito.Mockito.doReturn(input.search()).when(engine).prepare(actor,input.search(),deadline);
-        org.mockito.Mockito.when(history.recent(actor,input.conversationId())).thenThrow(denied);
+        org.mockito.Mockito.when(history.recent(actor,input.conversationId(),deadline)).thenThrow(denied);
         assertThatThrownBy(()->facade.retrieve(actor,input,"test",com.lzj.rag.backend.rag.service.RagRetrievalService.QueryMode.USER,deadline)).isSameAs(denied);
         org.mockito.Mockito.verifyNoInteractions(understanding);
         org.mockito.Mockito.when(understanding.understand(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq(List.of()),org.mockito.ArgumentMatchers.anyString(),org.mockito.ArgumentMatchers.any())).thenThrow(new IllegalStateException("reached independent query"));
         assertThatThrownBy(()->facade.retrieve(actor,input,"test",com.lzj.rag.backend.rag.service.RagRetrievalService.QueryMode.INDEPENDENT,deadline)).hasMessage("reached independent query");
-        org.mockito.Mockito.verify(history,org.mockito.Mockito.times(1)).recent(actor,input.conversationId());
+        org.mockito.Mockito.verify(history,org.mockito.Mockito.times(1)).recent(actor,input.conversationId(),deadline);
     }
 }

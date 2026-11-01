@@ -24,7 +24,7 @@ def operation(name, request, response):
     result = {'operationId': name, 'requestBody': {'required': True, 'content': {'application/json': {'schema': {'$ref': '#/components/schemas/'+request}}}},
         'responses': {'200': {'description': '成功；结果携带实际状态、授权证据和降级信息', 'headers': {'Cache-Control': {'schema': {'type':'string','enum':['no-store']}}},
             'content': {'application/json': {'schema': {'type': 'object', 'properties': {'code': string, 'message': string, 'requestId': string, 'data': {'$ref': '#/components/schemas/'+response}}}}}}}}
-    for status in ['400','401','404','409','429','502','503','504']:
+    for status in ['400','401','404','409','422','429','500','502','503','504']:
         result['responses'][status] = {'description': '脱敏业务错误；故障不会伪装为无证据', 'content': {'application/json': {'schema': {'$ref':'knowledge-base.yaml#/components/schemas/Envelope'}}}}
     return result
 document = {'openapi': '3.0.3', 'info': {'title': 'Java RAG API', 'version': '2026-10-31'},
@@ -41,5 +41,29 @@ context = {'type':'object','properties':{'evidence':{'type':'array','maxItems':5
     'truncated':{'type':'boolean'},'strategyVersion':string,'contentHash':string}}
 document['components']['schemas'].update({'EvidenceSnapshot':snapshot,'EvidenceContext':context})
 retrieval['properties']['context']={'nullable':True,'allOf':[{'$ref':'#/components/schemas/EvidenceContext'}]}
+schemas = document['components']['schemas']
+answer_request = json.loads(json.dumps(search))
+answer_request['required'] = ['question']
+answer_request['properties']['question'] = answer_request['properties'].pop('query')
+statuses = ['RUNNING','COMPLETED','NO_EVIDENCE','NEEDS_CLARIFICATION','CITATION_INVALID','CANCELLED','TIMED_OUT','FAILED']
+schemas.update({'AnswerRequest':answer_request,
+    'Answer':{'type':'object','properties':{
+        'answerId':uuid,'conversationId':uuid,'requestId':string,'status':dict(string,enum=statuses),'answer':string,
+        'citations':{'type':'array','items':{'type':'object','properties':{'evidenceId':string,'documentId':uuid,'chunkId':uuid,'generation':{'type':'integer','format':'int64'},'snapshotHash':string}}},
+        'sources':{'type':'array','items':{'$ref':'#/components/schemas/EvidenceSnapshot'}},
+        'unavailableSources':{'type':'array','items':string},'degraded':{'type':'boolean'},'citationValidation':dict(string,enum=['VALID','MISSING_REFERENCE','UNKNOWN_REFERENCE','NOT_APPLICABLE']),
+        'usage':{'type':'object','nullable':True},'modelCalls':{'type':'array','items':{'type':'object','properties':{'purpose':string,'model':string,'promptVersion':string,'promptHash':string,'usage':{'type':'object','nullable':True}}}},
+        'query':{'$ref':'#/components/schemas/QueryPlan'},'retrievalTrace':{'$ref':'knowledge-base.yaml#/components/schemas/RetrievalTrace'},
+        'evidenceContextHash':dict(string,nullable=True),'repairAttempted':{'type':'boolean'},'errorCode':dict(string,nullable=True)}},
+    'AnswerRun':{'type':'object','properties':{'answerId':uuid,'conversationId':uuid,'question':string,'status':dict(string,enum=statuses),'answer':string,
+        'result':{'nullable':True,'allOf':[{'$ref':'#/components/schemas/Answer'}]},'errorCode':dict(string,nullable=True),'createdAt':dict(string,format='date-time'),'updatedAt':dict(string,format='date-time')}},
+    'Conversation':{'type':'array','maxItems':20,'items':{'$ref':'#/components/schemas/AnswerRun'}}})
+document['info']['version']='2026-11-01'
+document['paths']['/api/rag/answer']={'post':operation('answerRag','AnswerRequest','Answer')}
+for path,name,response in [('/api/rag/runs/{id}','getRagRun','AnswerRun'),('/api/rag/conversations/{id}','getRagConversation','Conversation')]:
+    op=operation(name,'AnswerRequest',response)
+    del op['requestBody']
+    op['parameters']=[{'name':'id','in':'path','required':True,'schema':uuid}]
+    document['paths'][path]={'get':op}
 OUT.write_text(json.dumps(document, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
 print(f'Generated {len(document["paths"])} RAG paths')
