@@ -242,6 +242,18 @@ public class AiEmbeddingClient implements EmbeddingClient {
         return call("POST", "/ai/utils/estimate-tokens", Map.of("text",text), requestId, deadline);
     }
 
+    /** SSE 与现有 JSON 调用共享 AI 并发预算。 */
+    public AutoCloseable reserve(Instant deadline) {
+        com.lzj.rag.backend.search.budget.RetrievalDeadline.check(deadline);
+        try {
+            if (!permits.tryAcquire(Math.max(1, Duration.between(Instant.now(), deadline).toMillis()), TimeUnit.MILLISECONDS)) throw timeout();
+            return permits::release;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw com.lzj.rag.backend.search.budget.RetrievalDeadline.cancelled();
+        }
+    }
+
     /**
      * 在调用截止时间和响应字节限制内请求 AI 服务，并归一化响应或错误。
      *

@@ -1,6 +1,6 @@
 # RAG 运行手册
 
-本轮交付 R1 检索基础，运行依赖、账号、对象存储与入库流程继续使用 [知识库运行手册](../knowledge-base/RUNBOOK.md)。当前没有独立问答或 Python Agent 服务可启动。
+已交付共享检索及 Java 普通/流式独立问答；依赖、账号、对象存储与入库流程继续使用 [知识库运行手册](../knowledge-base/RUNBOOK.md)。问答随原 backend 启动，Python Agent 尚未实施。
 
 ## 构建与验证
 
@@ -89,9 +89,29 @@ Invoke-RestMethod -Method Post -Uri ($env:KB_BASE_URL+'/api/knowledge/retrieve')
 
 中文模板选择：`kb.rag.prompts.answer-version=rag-answer-v1`、`repair-version=rag-citation-repair-v1`，与 query-version 共用受控 directory；部署目录须包含所有选中的模板。先增加新版本文件、再切换配置并重启。缺文件、非 UTF-8、空白或超大模板启动失败，不自动换模板。
 
-验收：用已入库自有库调用 `POST /api/rag/answer`，保存返回 answerId/conversationId；读取 `/api/rag/runs/{id}` 和 `/api/rag/conversations/{id}`。5xx 读取错误 data 的运行标识排障；NO_EVIDENCE 不等于依赖故障，CITATION_INVALID 不等于完整成功。历史失效来源不会返回正文，unavailableSources 提示原编号；文件下载始终执行当前权限。当前阶段 SSE/主动取消尚未上线。
+验收：用已入库自有库调用 `POST /api/rag/answer`，保存返回 answerId/conversationId；读取 `/api/rag/runs/{id}` 和 `/api/rag/conversations/{id}`。5xx 读取错误 data 的运行标识排障；NO_EVIDENCE 不等于依赖故障，CITATION_INVALID 不等于完整成功。历史失效来源不会返回正文，unavailableSources 提示原编号；文件下载始终执行当前权限。
 
 第 7 轮定向命令选择 `-Dtest=KnowledgeSearchTest#standaloneAnswersPersistReferencesAndNeverReadAnotherUsersConversation+answerNoEvidenceCitationRepairAndModelFailureHaveDifferentPersistentOutcomes+conversationConcurrencyAndRevocationDuringGenerationCannotProduceSuccessfulAnswers`，其余隔离构建参数沿用上文。3 项真实 PG/MinIO 集成回归已通过，Chat 为 HTTP 桩，无全量 verify。
+
+## SSE 验收与取消
+
+沿用 V9，无新外部服务。`kb.rag.execution.concurrency=4` 控制每实例问答工作池及 SSE 写池，各自零队列；AI 流与普通调用共用 `kb.ai.concurrency`。单流缓存 32 事件，写线程空闲每秒发心跳；慢连接不会无限积压。HTTP connect-timeout 沿用 kb.ai，流的读写空闲上限为 kb.ai.call-timeout（默认 30s），整流 Call timeout 取 answer.timeout 剩余量。SseEmitter timeout 为 answer.timeout+2s，给正常终态发送留少量时间；不能依赖该余量继续生成。
+
+示例请求文件用 UTF-8 保存 `{"question":"PostgreSQL 如何备份？","kbIds":["实际已授权库UUID"],"strategy":"VECTOR"}`，用已有认证配置环境变量验收：
+
+```powershell
+curl.exe --no-buffer --user "$($env:KB_SMOKE_USER):$($env:KB_SMOKE_PASSWORD)" -H "Content-Type: application/json" --data-binary '@answer-request.json' http://localhost:8080/api/rag/answer/stream
+curl.exe --user "$($env:KB_SMOKE_USER):$($env:KB_SMOKE_PASSWORD)" -X POST http://localhost:8080/api/rag/runs/实际runId/cancel
+curl.exe --user "$($env:KB_SMOKE_USER):$($env:KB_SMOKE_PASSWORD)" http://localhost:8080/api/rag/runs/实际runId
+```
+
+反向代理关闭该路径缓冲，连接空闲超时须允许心跳和总预算，客户端按空行分帧，逐个解析 data JSON。done 只表示结束，依据 finish.status/persisted 决定结果；连接断开后 GET 查终态，不能整流自动重放。无证据/澄清没有模型 usage，多个增量可共同组成一个引用。
+
+主动取消应得到 CANCELLED 和部分文本；关闭真实客户端连接后，下一次写/心跳检测断连并取消。下游 OkHttp Call.cancel 与线程中断都执行，HTTP 超时/缺 done 不能成功落库。每秒监控也消费其他实例写入的取消状态并保存部分文本；旧进程 RUNNING 最迟在持久 deadline 到期后的清扫中标 TIMED_OUT。JDBC/Servlet 底层 I/O 的即时停止仍受原驱动、socket、statement_timeout 和容器限制，未做生产慢客户端/容量压测。
+
+排障查看 requestId/runId、状态、errorCode、模型/提示词哈希及证据版本；不记录完整资料或供应商错误正文。RAG_RUN_PERSISTENCE_UNAVAILABLE/UNKNOWN 表示数据库结算未确认，恢复依赖后重读运行；未过期 RUNNING 等截止清扫。不要手工将部分答案改成 COMPLETED。
+
+第 8 轮定向方法：`KnowledgeSearchTest#realSseDeliversIncrementalTextAndPersistsOnlyTheCompletedReferenceSet+realSseDistinguishesNoEvidenceInvalidCitationsBrokenUpstreamsAndTimeouts+realSseCancelAndDisconnectCloseUpstreamAndExpiredRunsRecoverWithoutReplay`，同时复用上面的 3 项普通问答回归和 QueryUnderstandingServiceTest。真实网络验证使用 Spring MVC 随机端口、OkHttp 客户端、PG/MinIO 与本地 HTTP 模型桩，不依赖现有运行实例。
 
 - 404：核对当前账号归属和请求范围；不要换成管理身份绕过检查。
 - 409/KB_SEARCH_MODEL_MISMATCH：按兼容嵌入空间分别请求；不能更换向量模型来规避错误。KB_SEARCH_SCOPE_CHANGED 表示请求期间绑定变化，重新读取并提交一个新请求。

@@ -65,5 +65,28 @@ for path,name,response in [('/api/rag/runs/{id}','getRagRun','AnswerRun'),('/api
     del op['requestBody']
     op['parameters']=[{'name':'id','in':'path','required':True,'schema':uuid}]
     document['paths'][path]={'get':op}
+schemas.update({
+    'StreamMeta':{'type':'object','required':['requestId','runId','answerId','conversationId','deadline'],'properties':{
+        'requestId':string,'runId':uuid,'answerId':uuid,'conversationId':uuid,'deadline':dict(string,format='date-time')}},
+    'StreamRetrieval':{'type':'object','properties':{'phase':dict(string,enum=['COMPLETED','FAILED']),
+        'status':dict(string,enum=['READY','NO_EVIDENCE','NEEDS_CLARIFICATION','UNAVAILABLE']),'degraded':{'type':'boolean'},'strategy':string}},
+    'StreamMessage':{'type':'object','required':['text'],'properties':{'text':string}},
+    'StreamError':{'type':'object','properties':{'requestId':string,'code':string,'message':string}},
+    'StreamFinish':{'type':'object','required':['status','persisted','run'],'properties':{'status':dict(string,enum=statuses+['UNKNOWN']),
+        'persisted':{'type':'boolean'},'run':{'$ref':'#/components/schemas/AnswerRun'}}},
+    'StreamDone':{'type':'object','properties':{'requestId':string}},
+    'CancelResult':{'type':'object','properties':{'runId':uuid,'conversationId':uuid,'status':dict(string,enum=statuses)}}})
+stream=operation('streamRagAnswer','AnswerRequest','Answer')
+stream['responses']['200']['description']='SSE：meta → retrieval → sources → message* → error? → finish → done；done 只表示流结束。断连不保证尾事件送达，读取运行状态确认。'
+stream['responses']['200']['content']={'text/event-stream':{'schema':{'type':'string'}}}
+stream['x-sse-events']={name:{'$ref':'#/components/schemas/'+schema} for name,schema in {
+    'meta':'StreamMeta','retrieval':'StreamRetrieval','sources':'EvidenceContext','message':'StreamMessage',
+    'error':'StreamError','finish':'StreamFinish','done':'StreamDone'}.items()}
+stream['x-sse-events']['sources']['description']='无上下文时为 {evidence:[]}；其余同 EvidenceContext'
+document['paths']['/api/rag/answer/stream']={'post':stream}
+cancel=operation('cancelRagRun','AnswerRequest','CancelResult')
+del cancel['requestBody']
+cancel['parameters']=[{'name':'id','in':'path','required':True,'schema':uuid}]
+document['paths']['/api/rag/runs/{id}/cancel']={'post':cancel}
 OUT.write_text(json.dumps(document, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
 print(f'Generated {len(document["paths"])} RAG paths')

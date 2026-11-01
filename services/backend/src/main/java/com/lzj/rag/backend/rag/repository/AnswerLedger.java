@@ -66,9 +66,35 @@ public class AnswerLedger {
         jdbc.update("UPDATE kb_rag_answer_run SET status='TIMED_OUT',error_code='RAG_RUN_EXPIRED',updated_at=clock_timestamp() "
                 +"WHERE conversation_id=? AND status='RUNNING' AND deadline_at<=clock_timestamp()",conversation);
     }
+    /** 全局截止时间清扫也恢复进程崩溃后遗留的 RUNNING；不会重放生成。 */
+    public void expireAll() {
+        jdbc.update("UPDATE kb_rag_answer_run SET status='TIMED_OUT',error_code='RAG_RUN_EXPIRED',updated_at=clock_timestamp() "
+                +"WHERE status='RUNNING' AND deadline_at<=clock_timestamp()");
+    }
+    public AnswerRunBO cancel(KnowledgeBasePrincipal actor,UUID id,String status,String code) {
+        get(actor,id);
+        jdbc.update("UPDATE kb_rag_answer_run SET status=?,error_code=?,updated_at=clock_timestamp() WHERE id=? AND tenant_id=? AND owner_id=? AND status='RUNNING'",
+                status,code,id,actor.tenantId(),actor.userId());
+        return get(actor,id);
+    }
+    public void partial(KnowledgeBasePrincipal actor,UUID id,String text) {
+        jdbc.update("UPDATE kb_rag_answer_run SET answer_text=?,updated_at=clock_timestamp() WHERE id=? AND tenant_id=? AND owner_id=? "
+                +"AND status IN ('RUNNING','CANCELLED','TIMED_OUT')",text,id,actor.tenantId(),actor.userId());
+    }
+    public void checkpoint(KnowledgeBasePrincipal actor,UUID id,RagAnswerBO snapshot) {
+        jdbc.update("UPDATE kb_rag_answer_run SET result_json=?::jsonb,updated_at=clock_timestamp() WHERE id=? AND tenant_id=? AND owner_id=? AND status='RUNNING'",
+                encode(snapshot),id,actor.tenantId(),actor.userId());
+    }
     private AnswerRunBO row(java.sql.ResultSet rs,int row)throws java.sql.SQLException {
         String value=rs.getString("result_json");RagAnswerBO result=null;
         if(value!=null) try{result=json.readValue(value,RagAnswerBO.class);}catch(java.io.IOException e){throw new IllegalStateException("Invalid saved answer",e);}
+        // 列状态是 CAS 结算依据；失败/取消和周期性部分文本沿用最后一次已落库的证据快照。
+        if(result!=null) {
+            String status=rs.getString("status");boolean complete=Set.of("COMPLETED","CITATION_INVALID","NO_EVIDENCE","NEEDS_CLARIFICATION").contains(status);
+            var r=result;
+            result=new RagAnswerBO(r.answerId(),r.conversationId(),r.requestId(),status,rs.getString("answer_text"),complete?r.citations():List.of(),r.sources(),
+                    r.degraded() || !complete,complete?r.citationValidation():"NOT_APPLICABLE",r.usage(),r.modelCalls(),r.query(),r.retrievalTrace(),r.evidenceContextHash(),r.repairAttempted(),rs.getString("error_code"));
+        }
         return new AnswerRunBO(rs.getObject("id",UUID.class),rs.getObject("conversation_id",UUID.class),rs.getString("request_id"),rs.getString("question"),rs.getString("status"),
                 rs.getTimestamp("deadline_at").toInstant(),rs.getString("answer_text"),result,rs.getString("error_code"),rs.getTimestamp("created_at").toInstant(),rs.getTimestamp("updated_at").toInstant());
     }

@@ -615,6 +615,319 @@
           }
         ]
       }
+    },
+    "/api/rag/answer/stream": {
+      "post": {
+        "operationId": "streamRagAnswer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SSE：meta → retrieval → sources → message* → error? → finish → done；done 只表示流结束。断连不保证尾事件送达，读取运行状态确认。",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        },
+        "x-sse-events": {
+          "meta": {
+            "$ref": "#/components/schemas/StreamMeta"
+          },
+          "retrieval": {
+            "$ref": "#/components/schemas/StreamRetrieval"
+          },
+          "sources": {
+            "$ref": "#/components/schemas/EvidenceContext",
+            "description": "无上下文时为 {evidence:[]}；其余同 EvidenceContext"
+          },
+          "message": {
+            "$ref": "#/components/schemas/StreamMessage"
+          },
+          "error": {
+            "$ref": "#/components/schemas/StreamError"
+          },
+          "finish": {
+            "$ref": "#/components/schemas/StreamFinish"
+          },
+          "done": {
+            "$ref": "#/components/schemas/StreamDone"
+          }
+        }
+      }
+    },
+    "/api/rag/runs/{id}/cancel": {
+      "post": {
+        "operationId": "cancelRagRun",
+        "responses": {
+          "200": {
+            "description": "成功；结果携带实际状态、授权证据和降级信息",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CancelResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "脱敏业务错误；故障不会伪装为无证据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "knowledge-base.yaml#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1130,6 +1443,153 @@
         "maxItems": 20,
         "items": {
           "$ref": "#/components/schemas/AnswerRun"
+        }
+      },
+      "StreamMeta": {
+        "type": "object",
+        "required": [
+          "requestId",
+          "runId",
+          "answerId",
+          "conversationId",
+          "deadline"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "answerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StreamRetrieval": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "FAILED"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "NO_EVIDENCE",
+              "NEEDS_CLARIFICATION",
+              "UNAVAILABLE"
+            ]
+          },
+          "degraded": {
+            "type": "boolean"
+          },
+          "strategy": {
+            "type": "string"
+          }
+        }
+      },
+      "StreamMessage": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "StreamError": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "StreamFinish": {
+        "type": "object",
+        "required": [
+          "status",
+          "persisted",
+          "run"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "COMPLETED",
+              "NO_EVIDENCE",
+              "NEEDS_CLARIFICATION",
+              "CITATION_INVALID",
+              "CANCELLED",
+              "TIMED_OUT",
+              "FAILED",
+              "UNKNOWN"
+            ]
+          },
+          "persisted": {
+            "type": "boolean"
+          },
+          "run": {
+            "$ref": "#/components/schemas/AnswerRun"
+          }
+        }
+      },
+      "StreamDone": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CancelResult": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "COMPLETED",
+              "NO_EVIDENCE",
+              "NEEDS_CLARIFICATION",
+              "CITATION_INVALID",
+              "CANCELLED",
+              "TIMED_OUT",
+              "FAILED"
+            ]
+          }
         }
       }
     }

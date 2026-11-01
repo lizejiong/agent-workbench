@@ -1,6 +1,6 @@
 # RAG API
 
-已实现 A 和 B 的非流式问答、运行及会话读取；SSE 和 C 尚待实施。契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`，复用知识库服务和 Basic 认证。
+已实现 A 和 B 的普通/流式问答、取消、运行及会话读取；C 尚待实施。契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`，复用知识库服务和 Basic 认证。
 
 ## A：结构化检索（已实现）
 
@@ -42,7 +42,7 @@ trace.indexes 为本次已授权库的 {kbId,embeddingModelId,embeddingConfigRev
 
 NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不保证资料或未来答案事实正确。
 
-`POST /api/knowledge/search` 使用相同请求和引擎，继续返回 `data: Evidence[]`。保留原三项状态头，新增 `X-KB-Retrieval-Status`、`X-KB-Retrieval-Outcome`；两个接口证据响应均 `Cache-Control: no-store`。新客户端优先使用 retrieve 读取完整状态。`GET /api/knowledge/search-capabilities` 继续仅说明配置能力，answerEnabled=false。
+`POST /api/knowledge/search` 使用相同请求和引擎，继续返回 `data: Evidence[]`。保留原三项状态头，新增 `X-KB-Retrieval-Status`、`X-KB-Retrieval-Outcome`；两个接口证据响应均 `Cache-Control: no-store`。新客户端优先使用 retrieve 读取完整状态。`GET /api/knowledge/search-capabilities` 继续描述原知识检索接口，answerEnabled=false；该接口只返回证据，独立问答走下文 B 的 RAG 路径。
 
 | HTTP | 语义 |
 |---|---|
@@ -102,7 +102,52 @@ NO_EVIDENCE 不保证没有相关资料；EVIDENCE、分数和来源定位也不
 
 中文模板和资料 JSON 分别放在 system/user 消息。所有消息纳入输入预算，生成前后重新检查证据权限、正文、来源元数据及有效版本。引用格式和编号校验不证明语义支持或事实正确。响应 no-store，不提供系统模板正文或内部模型消息。
 
-第 8 轮待实施 `POST /api/rag/answer/stream` 与 `POST /api/rag/runs/{id}/cancel`，事件拟定 meta→retrieval→sources→message→finish→done；当前无流式端点。
+## 第 8 轮：MVC SSE、取消与终态
+
+`POST /api/rag/answer/stream` 接受同一个 AnswerRequest，返回 text/event-stream、Cache-Control:no-store、X-Accel-Buffering:no。POST 客户端使用 fetch/readable stream 或同等 SSE 解码器；每个 data 是独立 JSON，无 Result 外层。流开始前的认证、请求格式、未知会话、同会话并发和容量拒绝按 HTTP 返回；meta 发出后的检索/生成故障通过 SSE 收尾。
+
+| event | data |
+|---|---|
+| meta | requestId、runId=answerId、conversationId、deadline |
+| retrieval | phase=COMPLETED/FAILED、status=READY/NEEDS_CLARIFICATION/NO_EVIDENCE/UNAVAILABLE、degraded，正常检索时含实际 strategy |
+| sources | 服务器选择的 EvidenceContext（含 evidence 和 contentHash）；无上下文为 {evidence:[]} |
+| message | {text:答案增量}；一个引用可能跨多条增量 |
+| error | requestId、受控 code 和通用 message，不透传上游正文 |
+| finish | status、persisted、run；run 格式同运行 GET，result 含最终引用/模型/版本/usage |
+| done | {requestId}，仅表示本次流结束 |
+
+正常顺序为 meta→retrieval→sources→message*→finish→done。引用不合法或生成失败在 finish 前增加 error；检索失败为 meta→retrieval(FAILED)→error→finish→done，不发伪造无证据。澄清/无证据各发静态 message，随后以对应状态 finish，不调用生成模型。空闲写 SSE 注释心跳，不属于业务事件。
+
+```text
+event: meta
+data: {"requestId":"req-example","runId":"00000000-0000-0000-0000-000000000007","answerId":"00000000-0000-0000-0000-000000000007","conversationId":"00000000-0000-0000-0000-000000000008","deadline":"2026-11-01T12:01:00Z"}
+
+event: retrieval
+data: {"phase":"COMPLETED","status":"READY","degraded":false,"strategy":"VECTOR"}
+
+event: sources
+data: {"evidence":[{"evidenceId":"E1","documentName":"备份说明","content":"使用 pg_dump 备份。","generation":1,"snapshotHash":"当次展示正文的SHA256"}],"contentHash":"当次上下文的SHA256"}
+
+event: message
+data: {"text":"可使用 pg_dump 备份。[E"}
+
+event: message
+data: {"text":"1]"}
+
+event: finish
+data: {"status":"COMPLETED","persisted":true,"run":{"answerId":"00000000-0000-0000-0000-000000000007","conversationId":"00000000-0000-0000-0000-000000000008","question":"如何备份？","status":"COMPLETED","answer":"可使用 pg_dump 备份。[E1]","result":{"status":"COMPLETED","citationValidation":"VALID","citations":[{"evidenceId":"E1","generation":1,"snapshotHash":"当次展示正文的SHA256"}]}}}
+
+event: done
+data: {"requestId":"req-example"}
+```
+
+示例为展示事件关系而省略其余来源/运行字段，完整结构以 OpenAPI 为准。客户端等完整正文后读取 finish.run.result.citationValidation；半个 `[E` 不提前判定。流式不执行引用修复，未知或未闭合 E 标记会得到 CITATION_INVALID/error；已收到的原文无法回滚。上游 EOF、error 或非 stop 不会结算为成功，隐藏推理不作为 message。
+
+`POST /api/rag/runs/{id}/cancel` 无请求体，仅本人可用，返回 Result data={runId,conversationId,status}。重复取消返回已有终态；已完成的运行保持完成。取消写入持久状态，关闭本机流式 HTTP 并中断工作线程；另一实例收到取消时由每秒状态监控传播。取消/断连保存部分答案为 CANCELLED，截止或 HTTP 超时为 TIMED_OUT，均不会覆盖为完整成功。GET 运行/历史接口沿用第 7 轮权限与失效来源政策；失败或取消的 result 也保留可用的有效查询、证据哈希和模型请求/已开始信息。
+
+finish.persisted=true 表示已读取数据库终态；持久化依赖失败会发 RAG_RUN_PERSISTENCE_UNAVAILABLE，finish.status=UNKNOWN/persisted=false，不声称保存成功。数据库 CAS 保证一次终态，不保证尾事件送达一次。断连可能收不到 error/finish/done，客户端用 runId 查询；默认断连即取消，不支持 Last-Event-ID 恢复或事件重放，不自动重发整个流式请求。崩溃遗留 RUNNING 在其持久 deadline 到期后清扫为 TIMED_OUT，不恢复生成。
+
+运行 result 的 modelCalls.purpose=ANSWER_REQUESTED 表示配置模型已请求，ANSWER_STARTED 表示上游 start 已报告实际模型；两者不代表成功或已有 usage。成功结果为 ANSWER（必要时另有 CITATION_REPAIR）。运行列状态与 answer 部分正文优先于持久 result_json 检查点。来源/引用/模型版本可追踪不代表事实正确。
 
 ## C：Python Agent 检索工具（后续，未实现）
 

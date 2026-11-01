@@ -31,7 +31,7 @@ import com.lzj.rag.backend.model.client.EmbeddingStub;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 
 /** Actual S3 uploads, parsing, HTTP query embeddings and pgvector SQL. Vectors are an explicit local topic fixture. */
-@SpringBootTest(properties={"kb.storage.enabled=true","kb.storage.bucket=kb-search-test","kb.storage.max-upload-bytes=4096",
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"kb.storage.enabled=true","kb.storage.bucket=kb-search-test","kb.storage.max-upload-bytes=4096",
         "kb.search.max-top-k=6","kb.search.max-kb-ids=2","kb.search.max-document-ids=3","kb.search.max-query-chars=256","kb.rag.context.neighbor-radius=1",
         "kb.models.profiles.other.enabled=true","kb.models.profiles.other.model-id=other-embed","kb.models.profiles.other.provider=bailian",
         "kb.models.profiles.other.model-name=other-model","kb.models.profiles.other.dimension=1024","kb.models.profiles.other.embedding-space=other-space","kb.models.profiles.other.config-version=other-v1",
@@ -57,6 +57,7 @@ class KnowledgeSearchTest {
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired IngestionKernel kernel;@Autowired UserDetailsService users;
     @Autowired DocumentUploadTest.FaultStorage storage;
     @Autowired com.lzj.rag.backend.rag.repository.AnswerLedger answerLedger;
+    @org.springframework.boot.test.web.server.LocalServerPort int port;
     @BeforeEach void clear(){model.reset();model.vectorizer=KnowledgeSearchTest::topicVector;storage.reset();TestDatabaseCleanup.clear(jdbc);}
     public static float[] topicVector(String text) {
         String value=text.toLowerCase(Locale.ROOT);float[] vector=new float[1024];
@@ -290,6 +291,103 @@ class KnowledgeSearchTest {
         var response=search(Map.of("query","database","kbIds",List.of(data.kb()),"documentIds",List.of(data.database())),"alice",200);
         assertThat(response.toString()).doesNotContain("private-object-key","private-provider","private-credential","accessKey","objectKey");
         assertThat(response.at("/data/0/sourceMetadata/sourceBlocks/0/lineStart").asInt()).isEqualTo(5);
+    }
+    @Test void realSseDeliversIncrementalTextAndPersistsOnlyTheCompletedReferenceSet()throws Exception {
+        var data=dataset();var release=new java.util.concurrent.CountDownLatch(1);
+        model.beforeStreamTail=()->{try{if(!release.await(4,java.util.concurrent.TimeUnit.SECONDS))throw new IllegalStateException("fixture gate timed out");}catch(InterruptedException e){Thread.currentThread().interrupt();}};
+        try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(data.kb()),"strategy","VECTOR"))) {
+            var meta=stream.next();assertThat(meta.name()).isEqualTo("meta");UUID run=UUID.fromString(meta.data().path("runId").asText());
+            assertThat(stream.next().name()).isEqualTo("retrieval");var sources=stream.next();assertThat(sources.name()).isEqualTo("sources");
+            assertThat(sources.data().at("/evidence/0/evidenceId").asText()).isEqualTo("E1");
+            var first=stream.next();assertThat(first.name()).isEqualTo("message");assertThat(first.data().path("text").asText()).contains("pg_dump");
+            assertThat(answerLedger.get(actor("alice"),run).status()).isEqualTo("RUNNING");release.countDown();
+            var events=stream.rest();assertThat(events.stream().map(SseEvent::name).toList()).containsExactly("message","message","finish","done");
+            var finish=events.get(2).data();assertThat(finish.path("persisted").asBoolean()).isTrue();assertThat(finish.path("status").asText()).isEqualTo("COMPLETED");
+            assertThat(finish.at("/run/result/citationValidation").asText()).isEqualTo("VALID");assertThat(finish.at("/run/result/citations/0/evidenceId").asText()).isEqualTo("E1");
+            assertThat(finish.at("/run/result/usage/totalTokens").asInt()).isEqualTo(42);
+            assertThat(answerLedger.get(actor("alice"),run).answerText()).isEqualTo("备份可使用 pg_dump。[E1]");
+            assertThat(events.toString()).doesNotContain("private reasoning","private upstream endpoint");
+        } finally {release.countDown();}
+    }
+    @Test void realSseDistinguishesNoEvidenceInvalidCitationsBrokenUpstreamsAndTimeouts()throws Exception {
+        var data=dataset();
+        try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(),"strategy","VECTOR"))) {
+            var events=stream.rest();assertThat(events.stream().map(SseEvent::name).toList()).containsExactly("meta","retrieval","sources","message","finish","done");
+            assertThat(events.get(4).data().path("status").asText()).isEqualTo("NO_EVIDENCE");assertThat(model.streamRequests).isEmpty();
+        }
+        model.mode="RATE_LIMIT";
+        try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(data.kb()),"strategy","VECTOR"))) {
+            var events=stream.rest();assertThat(events.stream().map(SseEvent::name).toList()).containsExactly("meta","retrieval","error","finish","done");
+            assertThat(events.get(1).data().path("status").asText()).isEqualTo("UNAVAILABLE");assertThat(events.get(3).data().path("status").asText()).isEqualTo("FAILED");assertThat(model.streamRequests).isEmpty();
+        } finally {model.mode="GOOD";}
+        for(String scenario:List.of("INVALID_REFERENCE","DANGLING_REFERENCE","INCOMPLETE","ERROR","IDLE")) {
+            model.streamMode=scenario;int before=model.streamRequests.size();
+            try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(data.kb()),"strategy","VECTOR"))) {
+                var events=stream.rest();var names=events.stream().map(SseEvent::name).toList();assertThat(names.subList(names.size()-3,names.size())).containsExactly("error","finish","done");
+                var finish=events.get(events.size()-2).data();String expected=scenario.endsWith("REFERENCE")?"CITATION_INVALID":scenario.equals("IDLE")?"TIMED_OUT":"FAILED";
+                assertThat(finish.path("status").asText()).isEqualTo(expected);assertThat(finish.path("persisted").asBoolean()).isTrue();
+                UUID run=UUID.fromString(finish.at("/run/answerId").asText());assertThat(answerLedger.get(actor("alice"),run).status()).isEqualTo(expected);
+                assertThat(finish.at("/run/answer").asText()).contains("pg_dump");assertThat(finish.at("/run/result/repairAttempted").asBoolean()).isFalse();
+                assertThat(events.toString()).doesNotContain("private upstream endpoint","private reasoning");
+            }
+            assertThat(model.streamRequests).hasSize(before+1);
+        }
+    }
+    @Test void realSseCancelAndDisconnectCloseUpstreamAndExpiredRunsRecoverWithoutReplay()throws Exception {
+        var data=dataset();model.streamMode="HANG";
+        try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(data.kb()),"strategy","VECTOR"))) {
+            var meta=stream.next().data();UUID run=UUID.fromString(meta.path("runId").asText());UUID conversation=UUID.fromString(meta.path("conversationId").asText());
+            while(!stream.next().name().equals("message")){}
+            for(String user:List.of("bob","carol"))mvc.perform(post("/api/rag/runs/"+run+"/cancel").with(auth(user))).andExpect(status().isNotFound());
+            mvc.perform(post("/api/rag/answer").with(auth("alice")).contentType("application/json").content(json.writeValueAsString(Map.of("question","backup","conversationId",conversation,"kbIds",List.of(data.kb()))))).andExpect(status().isConflict());
+            mvc.perform(post("/api/rag/runs/"+run+"/cancel").with(auth("alice"))).andExpect(status().isOk());
+            var events=stream.rest();assertThat(events.stream().filter(e->e.name().equals("finish")).toList()).hasSize(1);
+            assertThat(events.stream().filter(e->e.name().equals("finish")).findFirst().orElseThrow().data().path("status").asText()).isEqualTo("CANCELLED");
+            awaitCondition(()->model.streamClosed.get()>=1);assertThat(answerLedger.get(actor("alice"),run).answerText()).contains("pg_dump");
+            assertThat(answerLedger.get(actor("alice"),run).result().query().effectiveQuery()).contains("PostgreSQL");
+            assertThat(answerLedger.get(actor("alice"),run).result().modelCalls().get(0).model()).isEqualTo("qwen-plus-fixture");
+            mvc.perform(post("/api/rag/runs/"+run+"/cancel").with(auth("alice"))).andExpect(status().isOk());
+        }
+        int before=model.streamClosed.get();UUID disconnected;
+        try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(data.kb()),"strategy","VECTOR"))) {
+            disconnected=UUID.fromString(stream.next().data().path("runId").asText());while(!stream.next().name().equals("message")){}
+        }
+        awaitCondition(()->answerLedger.get(actor("alice"),disconnected).status().equals("CANCELLED"));awaitCondition(()->model.streamClosed.get()>before);
+        assertThat(answerLedger.get(actor("alice"),disconnected).answerText()).contains("pg_dump");
+        int closedBefore=model.streamClosed.get();
+        try(var stream=stream(Map.of("question","PostgreSQL backup","kbIds",List.of(data.kb()),"strategy","VECTOR"))) {
+            UUID expired=UUID.fromString(stream.next().data().path("runId").asText());while(!stream.next().name().equals("message")){}
+            jdbc.update("UPDATE kb_rag_answer_run SET deadline_at=clock_timestamp()-interval '1 second' WHERE id=?",expired);
+            var events=stream.rest();assertThat(events.stream().filter(e->e.name().equals("finish")).findFirst().orElseThrow().data().path("status").asText()).isEqualTo("TIMED_OUT");
+            awaitCondition(()->model.streamClosed.get()>closedBefore);assertThat(answerLedger.get(actor("alice"),expired).answerText()).contains("pg_dump");
+        }
+        var orphan=answerLedger.begin(actor("alice"),null,"orphan","orphan-fixture",java.time.Instant.now().minusSeconds(1));
+        awaitCondition(()->answerLedger.get(actor("alice"),orphan.id()).status().equals("TIMED_OUT"));
+    }
+    private void awaitCondition(java.util.function.BooleanSupplier condition)throws Exception {
+        long end=System.nanoTime()+java.time.Duration.ofSeconds(5).toNanos();while(!condition.getAsBoolean() && System.nanoTime()<end)Thread.sleep(40);assertThat(condition.getAsBoolean()).isTrue();
+    }
+    private record SseEvent(String name,JsonNode data) {}
+    private SseSession stream(Map<String,?> body)throws Exception {
+        var client=new okhttp3.OkHttpClient.Builder().readTimeout(java.time.Duration.ofSeconds(10)).build();
+        var call=client.newCall(new okhttp3.Request.Builder().url("http://127.0.0.1:"+port+"/api/rag/answer/stream")
+                .header("Authorization",okhttp3.Credentials.basic("alice","alice-local-test-password"))
+                .post(okhttp3.RequestBody.create(json.writeValueAsBytes(body),okhttp3.MediaType.get("application/json"))).build());
+        var response=call.execute();assertThat(response.code()).isEqualTo(200);assertThat(response.header("Cache-Control")).isEqualTo("no-store");return new SseSession(client,call,response);
+    }
+    private final class SseSession implements AutoCloseable {
+        final okhttp3.OkHttpClient client;final okhttp3.Call call;final okhttp3.Response response;
+        SseSession(okhttp3.OkHttpClient client,okhttp3.Call call,okhttp3.Response response){this.client=client;this.call=call;this.response=response;}
+        SseEvent next()throws Exception {
+            String type=null;StringBuilder data=new StringBuilder();String line;
+            while((line=response.body().source().readUtf8Line())!=null) {
+                if(line.isEmpty() && type!=null)return new SseEvent(type,json.readTree(data.toString()));
+                if(line.startsWith("event:"))type=line.substring(6).strip();else if(line.startsWith("data:"))data.append(line.substring(5).stripLeading());
+            }
+            throw new AssertionError("SSE ended before done");
+        }
+        List<SseEvent> rest()throws Exception {var events=new ArrayList<SseEvent>();SseEvent event;do{event=next();events.add(event);}while(!event.name().equals("done"));return events;}
+        public void close(){call.cancel();response.close();client.dispatcher().executorService().shutdownNow();client.connectionPool().evictAll();}
     }
     private UUID base(String user,String profile)throws Exception {
         var body=new LinkedHashMap<String,Object>();body.put("name","Search "+UUID.randomUUID());if(profile!=null)body.put("embeddingProfileId",profile);

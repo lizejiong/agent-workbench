@@ -19,6 +19,10 @@ public final class EmbeddingStub implements AutoCloseable {
     public volatile String chatMode="GOOD";
     public volatile Runnable beforeChat=()->{};
     public final List<JsonNode> chatRequests=new CopyOnWriteArrayList<>();
+    public volatile String streamMode="GOOD";
+    public final List<JsonNode> streamRequests=new CopyOnWriteArrayList<>();
+    public final java.util.concurrent.atomic.AtomicInteger streamClosed=new java.util.concurrent.atomic.AtomicInteger();
+    public volatile Runnable beforeStreamTail=()->{};
     public final List<JsonNode> visionRequests=new CopyOnWriteArrayList<>();
     public volatile String rerankMode="GOOD";
     public volatile Runnable beforeRerank=()->{};
@@ -31,11 +35,13 @@ public final class EmbeddingStub implements AutoCloseable {
         server.setExecutor(executor);server.createContext("/ai/",this::reply);server.start();
     }
     public String url(){return "http://127.0.0.1:"+server.getAddress().getPort();}
-    public void reset(){mode="GOOD";requests.clear();visionMode="GOOD";visionRequests.clear();rerankMode="GOOD";rerankRequests.clear();chatMode="GOOD";chatRequests.clear();beforeChat=()->{};beforeRerank=()->{};beforeEmbed=()->{};vectorizer=null;revision="a".repeat(64);}
+    public void reset(){mode="GOOD";requests.clear();visionMode="GOOD";visionRequests.clear();rerankMode="GOOD";rerankRequests.clear();chatMode="GOOD";chatRequests.clear();streamMode="GOOD";streamRequests.clear();streamClosed.set(0);beforeStreamTail=()->{};beforeChat=()->{};beforeRerank=()->{};beforeEmbed=()->{};vectorizer=null;revision="a".repeat(64);}
     private void reply(HttpExchange exchange)throws IOException {
         try(exchange){
             Object data;
-            if(exchange.getRequestURI().getPath().equals("/ai/rerank")) {
+            if(exchange.getRequestURI().getPath().equals("/ai/chat/stream")) {
+                stream(exchange);return;
+            }else if(exchange.getRequestURI().getPath().equals("/ai/rerank")) {
                 var request=json.readTree(exchange.getRequestBody());rerankRequests.add(request);beforeRerank.run();
                 if(rerankMode.equals("TIMEOUT"))sleep(2000);
                 var results=new ArrayList<Map<String,Object>>();int size=request.path("documents").size();
@@ -101,6 +107,32 @@ public final class EmbeddingStub implements AutoCloseable {
             if(mode.equals("SLOW_BODY")){exchange.getResponseBody().write(body,0,1);exchange.getResponseBody().flush();sleep(2000);exchange.getResponseBody().write(body,1,body.length-1);}
             else exchange.getResponseBody().write(body);
         }catch(IOException ignored){ /* Timed-out clients intentionally close responses. */ }
+    }
+    private void stream(HttpExchange exchange)throws IOException {
+        String scenario=streamMode;var request=json.readTree(exchange.getRequestBody());streamRequests.add(request);
+        String requestId=exchange.getRequestHeaders().getFirst("X-Request-Id");
+        exchange.getResponseHeaders().set("Content-Type","text/event-stream");exchange.sendResponseHeaders(200,0);
+        var out=exchange.getResponseBody();
+        try {
+            frame(out,"start",requestId,Map.of("attempt",1));
+            frame(out,"reasoning",requestId,Map.of("text","private reasoning must not escape"));
+            frame(out,"content",requestId,Map.of("text","备份可使用 pg_dump。"));
+            beforeStreamTail.run();
+            if(scenario.equals("HANG")) {
+                for(int i=0;i<100;i++){sleep(100);out.write(": upstream-heartbeat\n\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));out.flush();}return;
+            }
+            if(scenario.equals("IDLE"))sleep(1800);
+            if(scenario.equals("INCOMPLETE"))return;
+            if(scenario.equals("ERROR")){frame(out,"error",requestId,Map.of("code","UNAVAILABLE","message","private upstream endpoint"));return;}
+            frame(out,"content",requestId,Map.of("text",scenario.equals("INVALID_REFERENCE")?"[E999]":scenario.equals("DANGLING_REFERENCE")?"[E1] [E2":"[E"));sleep(40);
+            if(!Set.of("INVALID_REFERENCE","DANGLING_REFERENCE").contains(scenario))frame(out,"content",requestId,Map.of("text","1]"));
+            frame(out,"usage",requestId,Map.of("inputTokens",30,"outputTokens",12,"totalTokens",42));
+            frame(out,"done",requestId,Map.of("finishReason","stop","metrics",Map.of()));
+        } catch(IOException closed){streamClosed.incrementAndGet();throw closed;}
+    }
+    private void frame(OutputStream out,String type,String requestId,Object payload)throws IOException {
+        String event="event: "+type+"\ndata: "+json.writeValueAsString(Map.of("requestId",requestId,"model","qwen-plus-fixture","payload",payload))+"\n\n";
+        out.write(event.getBytes(java.nio.charset.StandardCharsets.UTF_8));out.flush();
     }
     private static void sleep(long millis){try{Thread.sleep(millis);}catch(InterruptedException e){Thread.currentThread().interrupt();}}
     public void close(){server.stop(0);executor.shutdownNow();}

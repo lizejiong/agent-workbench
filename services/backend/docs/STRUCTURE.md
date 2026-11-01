@@ -52,10 +52,12 @@ src/main/java/com/lzj/rag/backend/
 ├── operations/                      管理导航、审计及业务指标
 │   ├── controller/、service/、converter/
 │   └── config/、metrics/、logging/
-├── rag/                             查询理解与共用证据上下文
+├── rag/                             查询理解、证据与独立问答
 │   ├── controller/request/、controller/vo/
 │   ├── service/、service/impl/、service/bo/
 │   ├── config/                     查询、配额和模型窗口预算
+│   ├── repository/                 独立问答会话、运行和快照短事务
+│   ├── citation/                   本次证据编号合法性校验
 │   └── prompt/                     中文模板按版本及哈希加载
 ├── security/                        认证身份和业务访问规则
 │   └── config/、model/
@@ -90,6 +92,8 @@ Web Converter 只做字段转换；Data Converter 只做持久化对象与 BO �
 单元测试包跟随生产包，例如 `chunk/splitting`、`document/upload`、`model/client`、`search/service/impl`。跨业务 HTTP、数据库与存储场景归 `integration`，测试数据仍使用现有资源目录。
 
 新增功能先选择归属业务，再按实际边界增加 Request、BO、VO、DO 或 Converter；不创建空目录，不复制公共能力，也不为目录示例引入中间件。结构迁移后的首次构建需要清理旧包遗留的编译类，避免 Spring 扫描到新旧两套组件。
+
+RAG 的 JSON 与 SSE 入口共用 AnswerPipeline 和检索门面；RagAnswerService 管理有界工作、取消与运行结算，Controller 只转换用户视图及发送协议事件。AiStreamChatClient 复用 AI 流式协议与并发预算，真实 Call.cancel 与任务线程中断同时传播；AnswerLedger 不在网络调用期间持有事务。中文模板在 resources/rag/prompts 集中按版本维护，不写入 Controller。
 
 注释说明事务范围、锁顺序、执行权、重试或资源生命周期等约束，不重复变量名和代码表面行为。事务模板回调的参数是事务状态，不是异常；忽略异常时应说明保留哪个结果、由哪个流程恢复。
 

@@ -104,3 +104,15 @@ RAG 门面共用 EvidenceAssembler，最终用户证据与模型材料均经过�
 Flyway V9 保存独立问答会话、运行和含来源哈希的结果；短事务与网络调用分开。私有会话 tenant+owner 校验，同会话并发 409；调用失败保留 FAILED/TIMED_OUT 和可用部分文本。历史来源重新授权并检查正文、元数据、代次，失效摘录不再次下发或进入模型；本人历史答案文本可见。Java 不接管 Agent 上下文。总 timeout、输出与上下文储备可配置；SSE/断连和主动取消留给第 8 轮。
 
 最小验证：KnowledgeSearchTest 的 3 个新增方法全部通过、0 跳过，日志 `.cache/rag-round7-verified.log`。真实 PG/MinIO、V9 迁移与上传入库；Chat/计数为本地 HTTP 桩。覆盖答案引用持久化、跨用户/租户会话拒绝、撤权后来源/模型历史过滤、无证据不生成、一次修复与未知引用、模型超时、同会话并发，以及生成中禁用资料导致失败。隔离副本曾残留已删除的空历史实现，已清理其源文件和 class 后验证通过；不影响工作区运行产物。没有真实供应商语义/注入效果评估，消息分离和编号校验不等于事实正确保证；未执行全量 verify。
+
+## 附件第 8 轮：MVC 流式问答、取消和恢复（2026-11-01，完成）
+
+普通和流式问答共用 AnswerPipeline、检索与证据服务，新增 MVC SseEmitter 端点和本人运行取消。实际适配仓库 AI 的 start/content/usage/done/error SSE，使用已有 OkHttp 依赖、共享 AI 并发许可、读写空闲超时、总 Call timeout 及 Call.cancel。正文增量实时发送，推理内容不转发；缺失 done/stop 或上游错误保存失败，流式引用完整后校验，不修复或重放已发送文本。事件与来源哈希、模型/提示词版本、持久化终态均已文档化。
+
+有界零队列问答池及独立写池默认各 4，单流 32 事件缓存、空闲每秒心跳。取消/断连中断检索等待和 HTTP；保存部分文本并以 CANCELLED/TIMED_OUT 结束。数据库 RUNNING 条件写回防止旧任务覆盖终态，每秒消费跨实例取消状态与持久截止时间，清扫崩溃遗留运行，不恢复生成。失败也保存已获得的有效查询、来源与请求/已开始模型信息。数据库结算未确认时 UNKNOWN/persisted=false，不将 done 当作成功。
+
+最小验证：隔离构建 `.cache/rag-development-20261031` 的最终组合 10 项通过、0 失败/错误/跳过，日志 `.cache/rag-round8-verified.log`（KnowledgeSearchTest 新增 3 项流式场景、复用 3 项普通问答，QueryUnderstandingServiceTest 4 项）。真实 PG/MinIO、Spring MVC 随机端口、OkHttp socket 和本地模型 HTTP 桩：首个增量时运行仍未完成，跨帧 `[E1]` 合法，坏/未闭合编号显式失败，无证据不生成，检索依赖失败不假装空结果，上游 EOF/error/空闲超时不成功，跨用户取消拒绝、本人取消/断连真实关闭上游连接，持久截止传播和遗留清扫保留部分文本。
+
+日志检查发现断连时既有 JSON 全局异常处理器会再次写 SSE 响应；已在流式 Controller 局部处理已提交 SSE 的 IOException，随后仅重跑受影响断连方法 1 项通过，日志 `.cache/rag-round8-disconnect.log`，不再出现重复写 JSON/Servlet 异常。另统一执行器拒绝为 503，并确保已建立运行先发 meta。OpenAPI 生成器输出 6 个 RAG 路径，两个契约文件 512 个引用解析通过，`git diff --check` 通过。测试结束关闭容器时的连接池清理告警不作为业务调用失败。
+
+没有运行全 reactor verify、付费供应商、事实/注入语义效果评估或生产负载/慢客户端容量测试；未部署或覆盖本地运行 JAR。附件第 2–8 轮范围到此结束，不自动实施第 9 轮 Python Agent 或后续评估阶段。

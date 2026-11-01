@@ -1821,6 +1821,16 @@ openapi: 3.0.3
       "description": "One total deadline includes authorization, recall, reranking, assembly and final scope/version validation. Channel deadlines and model HTTP calls use the remaining budget; timeout and interruption cancel outstanding futures. COMPLETE/DEGRADED and EVIDENCE/NO_EVIDENCE/INDETERMINATE distinguish empty evidence from incomplete retrieval. Trace contains only authorized model/index fingerprints and requestId; a changed binding returns 409. All channels failed returns 503; total deadline returns 504. Evidence and source liveness are checked before and after reranking. No generated answer."
   "/api/rag/retrieve":
     "$ref": "rag.json#/paths/~1api~1rag~1retrieve"
+  "/api/rag/answer":
+    "$ref": "rag.json#/paths/~1api~1rag~1answer"
+  "/api/rag/answer/stream":
+    "$ref": "rag.json#/paths/~1api~1rag~1answer~1stream"
+  "/api/rag/runs/{id}":
+    "$ref": "rag.json#/paths/~1api~1rag~1runs~1{id}"
+  "/api/rag/runs/{id}/cancel":
+    "$ref": "rag.json#/paths/~1api~1rag~1runs~1{id}~1cancel"
+  "/api/rag/conversations/{id}":
+    "$ref": "rag.json#/paths/~1api~1rag~1conversations~1{id}"
   "/api/knowledge/search-capabilities":
     "get":
       "operationId": "getSearchCapabilities"
