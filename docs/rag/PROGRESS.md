@@ -132,3 +132,19 @@ Python 使用共享 httpx 连接池和可信上下文，工具参数仅 query；
 最后将 DeferredResult/HTTP 生命周期协调移到 controller/support，保持业务服务只处理原检索 BO；增加工作开始前的持久取消状态检查，覆盖任务登记与句柄注册间隙，委托预检查询也兼容最小查询长度配置。受影响的 3 项集成场景（含真实 Python 调用）复核全部通过、0 跳过，日志 `.cache/rag-round9-final.log`。OpenAPI 的两个文件共 561 个引用解析通过。
 
 联调脱敏回执与依赖版本在 AGENT_INTEGRATION_VALIDATION.json；实际虚拟环境 Python 3.12.13、httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1。真实连续两次检索、来源渲染和引用映射已验证，业务工具仅只读结果桩；没有真实主 Agent 回答、LangGraph 工具注册/图恢复、业务系统或付费模型联调，未部署。宿主项目到位后按示例接入其既有工具/图，不将本次备用交付宣称为完整 Agent 上线。
+
+## 主 Agent 接入补充：Java/Python 边界与正式入口（2026-11-02，完成）
+
+用户另行授权明确模块边界，并把知识适配器接入真实 Python 主 Agent。重新核对工作区仍没有主循环，因此在原 services/agent-service 占位内落地 FastAPI 入口、官方 LangChain create_agent / LangGraph 与 AsyncSqliteSaver，不手写 ReAct；使用 Python ChatOpenAI 调支持 tools 的原生协议，不调用 Java /answer。Java 的知识管理、入库、检索、精排和独立问答实现保持原职责，生产 Java 源码和迁移未变；只增加一项跨语言契约测试。架构、目录、接口和上下文表已经更新。
+
+知识适配器与中文提示片段提升到正式服务，examples 只做兼容导入，避免两份逻辑/提示词。工具 Schema 只暴露 query，可信 ToolRuntime.context 注入用户/租户/会话、范围、委托、deadline 和本轮引用表。每轮转交当前 Basic 账号给 Java 申请短期委托，由 Java 解析实际身份和范围；Python 验证持久会话归属与固定范围，再取得同会话运行租约。完成、失败或取消后尽力撤销委托；服务令牌不自动获得数据权限。
+
+Python 自有 SQLite 管理会话和检查点，不访问 Java 知识表，也不将密码/服务令牌/用户委托放入检查点。会话重启先重新授权，送模前替换旧消息，仅保留至多 4 条、8000 字节近期用户问题；旧 ToolMessage/助手答案和未完成工具调用不会进入新请求或自动重放，所需资料重新检索。当前没有自动复用旧助手结论、摘要或人工中断恢复 API。
+
+默认 60 秒总预算、每进程并发 4 且不排队、同会话租约、8 次模型/6 次工具、工具 4096 UTF-8 字节和输入消息+提示词/协议预留 60000 字节。共享 HTTP 池由 lifespan 创建/关闭，SDK 重试关闭，断连和超时取消图/HTTP并尽力通知 Java；未知/未闭合引用失败关闭，不重放整轮。主模型与 Java 调用传播同 traceId，用户仅返回受控状态与实际引用来源。API 使用严格请求/响应模型，动态 OpenAPI 与 Java 契约分开。
+
+最小验证：Python 正式服务 6 项 + 原适配器 4 项合并执行，10 通过、0 失败/跳过，日志 `.cache/agent-runtime-python-20261102.log`；覆盖真实图工具调用、多次引用、四种状态、错误脱敏、身份/范围/会话、重启上下文、池关闭、同会话并发、deadline 和 HTTP 断连取消。Windows 默认 pytest 临时目录无访问权限，改用工作区 .cache 的独立 basetemp。ruff 和 uv 锁文件检查通过；uv build 的源码包/wheel 成功，确认两个中文提示模板已包含在 wheel 中。
+
+Java 隔离副本仅运行新增 `pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources`，1 通过、0 跳过，日志 `.cache/agent-runtime-java-20261102.log`。真实 Uvicorn TCP → Python 图 → Java MVC → PG/pgvector/MinIO；两次检索 READY、最终来源编号互不冲突、trace 跨 Python/Java/模型 HTTP 关联，委托已撤销，Java 独立问答表未新增记录。主模型和向量模型仍为明确 HTTP 协议桩，未调用真实供应商。回执和锁定版本见 AGENT_RUNTIME_VALIDATION.json；未运行全量 verify，没有覆盖运行 JAR。
+
+当前范围到此结束：已实现真实框架和运行入口，不等于真实供应商模型效果、MCP 业务工具、Agent 前端/SSE、多主机图存储或生产部署已完成。后续接入具体供应商、业务工具与上线按新范围执行，不自动开展。

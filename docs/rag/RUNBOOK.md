@@ -1,6 +1,28 @@
 # RAG 运行手册
 
-已交付共享检索及 Java 普通/流式独立问答；依赖、账号、对象存储与入库流程继续使用 [知识库运行手册](../knowledge-base/RUNBOOK.md)。问答随原 backend 启动，Python Agent 尚未实施。
+已交付共享检索、Java 普通/流式独立问答及 Python 主 Agent 正式入口。依赖、账号、对象存储与入库流程继续使用 [知识库运行手册](../knowledge-base/RUNBOOK.md)。Java 问答随 backend 启动；Python 是独立进程，启动、配置与调用见 [Agent README](../../services/agent-service/README.md)。
+
+## Python 主 Agent 正式入口（2026-11-02）
+
+先运行支持 V10 且启用 internal 的 Java；配置服务令牌哈希，原始令牌只注入 Python。执行 `uv sync --project services/agent-service --locked`，按 `.env.example` 注入 Java origin、服务 ID/令牌、原生主模型地址/名称/密钥及受保护状态目录，再执行：
+
+```powershell
+uv run --project services/agent-service --locked uvicorn agent_service.app:app --host 127.0.0.1 --port 8090
+```
+
+接口为 Python 的 `POST /api/agent/chat`，沿用原账号 Basic；不要给它匿名代理、任意 origin 或万能用户。默认 60 秒、每进程 4 回合、无等待队列；同会话由 SQLite 租约拒绝并发。状态目录保存 Python 会话与敏感检查点，生产按私有目录保护并持久挂载；当前没有多主机图存储和自动保留/删除调度。主模型直接使用支持 tools 的原生 Chat Completions 协议，不填 Java `/ai/chat` 地址。
+
+排障只看受控 code、requestId/runId/traceId 和版本：401 重新认证；404 检查本人会话/当前知识范围；409 等待同会话回合结束，崩溃后由 lease_until 过期释放；503 区分 Java 身份服务、工具检索、主模型及本地容量；504 检查总预算，不盲目重放。工具 UNAVAILABLE 与 NO_EVIDENCE 分开，不把原始异常发给模型。SDK 自动重试关闭，取消会中断图和 HTTP，Java 取消通知/委托撤销各最多另用 0.5 秒，进程崩溃依赖 Java deadline/TTL 和 Python 租约过期。
+
+正式图入口的跨语言验收仍使用隔离 Java 构建目录和现有 dataset；增加一项方法，不默认重跑全部 Java：
+
+```powershell
+.\mvnw.cmd -B -ntp -f .cache/rag-development-20261031/pom.xml '-Dmaven.repo.local=C:/Users/lzj/Documents/ChatGPT/rag/.cache/maven/repository' -pl services/backend -am '-Dtest=KnowledgeSearchTest#pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources' '-Dkb.test.agent-python=C:/Users/lzj/Documents/ChatGPT/rag/services/agent-service/.venv/Scripts/python.exe' '-Dkb.test.agent-smoke=C:/Users/lzj/Documents/ChatGPT/rag/services/agent-service/tests/java_runtime_smoke.py' '-Dsurefire.failIfNoSpecifiedTests=false' test
+```
+
+路径按实际工作区替换，并先同步源到独立构建目录；不要覆盖本地运行 JAR。只有显式提供 agent-python 时才执行该方法，跳过不算通过。测试 stdin 注入临时配置，启动真实 Uvicorn TCP，走官方图循环、两次 Java 检索和答案来源返回，并确认委托已撤销、Java 未创建独立问答会话。receipt 在隔离副本 `services/backend/target/knowledge-base/agent-runtime-contract.json`；脱敏汇总见 `AGENT_RUNTIME_VALIDATION.json`。模型是原生协议桩，不算真实供应商效果或部署。
+
+Python 仅运行服务 tests 的定向检查与原适配器 4 项回归，命令见 README；新增检查点/会话状态由 Python 管理，Java 不做迁移。没有新增业务 MCP 或前端页面，也未部署。
 
 ## 构建与验证
 
@@ -115,7 +137,7 @@ curl.exe --user "$($env:KB_SMOKE_USER):$($env:KB_SMOKE_PASSWORD)" http://localho
 
 ## 第 9 阶段：内部证据与 Python 适配
 
-当前没有 Python 主 Agent 可部署。可运行示例及中文接入说明见 `examples/integration/rag_agent/README.md`，依赖固定 httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1，Python 3.12+。Java 沿用原服务启动，Flyway V10 新建委托/取消控制表，不改变索引或 Agent 图数据。
+以下为第 9 阶段原备用交付的适配记录，正式主 Agent 以本页开头为准。直接取证示例见 `examples/integration/rag_agent/README.md`，依赖固定 httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1，Python 3.12+。Java 沿用原服务启动，Flyway V10 新建委托/取消控制表，不改变索引或 Agent 图数据。
 
 `kb.rag.internal.enabled=false` 默认关闭。启用时通过受控 YAML 配置 `service-token-hashes.<service-id>` 为安全随机服务令牌的 SHA-256（64 位小写十六进制）；不要配置原始用户/租户代替授权。示例配置位于 `backend-agent.yml.example`，复制后按原 Spring 配置机制加载。原始令牌只在 Python/部署秘密管理，用户在原 Basic 认证边界签发范围委托；服务令牌单独不能查数据。委托默认 delegation-ttl=5m（最多 15m），concurrency=4 的内部零队列工作池复用原检索门面。跨主机使用 HTTPS，内部路径不应映射为匿名浏览器代理。
 

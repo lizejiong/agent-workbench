@@ -1,5 +1,17 @@
 # RAG 评估记录
 
+## Python 主 Agent 接入验证（2026-11-02）
+
+新增官方 LangChain create_agent / LangGraph 运行入口；协议与安全行为验证不计作答案质量分数。Python `tests/protocol_fixture.py` 用原生 Chat Completions HTTP 协议固定工具调用/最终回答，只验证真实框架是否按协议执行，不能据此声称模型会自主选择正确工具。
+
+沿用 Java `database.md/backup.md/cooking.md` 数据集、1024 维 topic-vector HTTP 桩与真实 PG/pgvector/MinIO。新增 Java 定向联调从真实 Uvicorn TCP `/api/agent/chat` 开始，Python 向真实 Java 签发本人的范围委托、执行两次检索，模型协议桩得到带唯一 K 编号的工具结果后返回最终引用，Java 委托撤销和未写独立问答历史均有断言。
+
+主 Agent 参数：并发 4、总预算 60s、最多 8 次模型/6 次工具、工具结果 4096 UTF-8 字节、消息+提示词+协议预留 60000 字节、输出上限 1024 模型 token、SDK 重试 0。会话重启复核归属，旧 ToolMessage/助手答案被清理，只保留至多 4 条、8000 字节近期用户问题。测试按需缩短预算或限制并发，不把测试设置当生产推荐。
+
+真实框架检查覆盖多次工具调用、唯一引用、四种状态、越权会话/撤权、错误脱敏、取消关闭、连接池复用/关闭和重启上下文清理；记录见 `AGENT_RUNTIME_VALIDATION.json`。未验证真实供应商选工具/语义正确性、业务工具组合、人工中断恢复、生产负载或上线效果。本次没有 Recall/MRR/faithfulness 等可报告效果指标；引用归属合法与提示词隔离均不构成事实或注入安全保证。
+
+以下保留各轮历史验证基线。
+
 2026-10-28，R1。当前验证结构化检索和失败/权限语义，不存在已测的 RAG 答案质量分数。
 
 本轮独立用例合计 269 项，257 通过、12 个可选独立数据库用例跳过，0 失败/错误；包含真实 Testcontainers 集成。完整命令、打包与本地运行包恢复边界见 [进度](PROGRESS.md) 和 [机器回执](R1_VALIDATION.json)。测试通过率不作为业务检索效果指标。

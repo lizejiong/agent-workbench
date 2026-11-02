@@ -1,8 +1,10 @@
 # Python Agent 知识工具接入示例
 
-工作区的 `services/agent-service` 只有 `.gitkeep`，没有主 Agent、LangGraph 图或工具注册器；因此本目录提供可运行适配器及集成边界，不创建新 ReAct。Java 继续负责查询理解、召回、融合、精排、权限与证据组装。实际记录见 [联调回执](../../../docs/rag/AGENT_INTEGRATION_VALIDATION.json)。
+2026-11-02：主 Agent 已接入 [services/agent-service](../../../services/agent-service/README.md)，使用正式 FastAPI 入口和官方 LangGraph 循环。知识适配器已提升至该服务，本目录的 knowledge_tool.py 仅保留兼容导入，不复制算法。以下 demo.py 仍是直接取证示例，不是主 Agent 入口；正式启动和会话调用以 Agent 服务说明为准。
 
-Python 3.12+；本轮实际验证的虚拟环境为 Python 3.12.13、httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1，与现有 python-common lock 一致。没有安装或选择 LangChain/LangGraph 版本，不声称已完成其真实工具注册与图恢复联调。
+Java 继续负责查询理解、召回、融合、精排、权限与证据组装。原第 9 阶段的回执见 [适配联调](../../../docs/rag/AGENT_INTEGRATION_VALIDATION.json)，新增真实图入口联调见 [Agent 联调](../../../docs/rag/AGENT_RUNTIME_VALIDATION.json)。
+
+直接适配示例仍兼容 Python 3.12+、httpx 0.28.1、FastAPI 0.143.3、Pydantic 2.14.1，无需安装 LangGraph。正式主 Agent 使用自己的 uv.lock，实际版本见服务说明；不要用本示例 requirements.txt 替代主 Agent 锁文件。
 
 ## 运行真实调用示例
 
@@ -43,7 +45,7 @@ result = await search_knowledge("某产品在禁止外网环境下如何备份�
 
 用户/租户/会话来自签发结果和宿主认证上下文；知识范围来自用户委托，Java 每次重新授权。agentSessionId 是宿主管理的稳定 UUID；若既有会话标识是其他格式，由宿主建立映射。模型不能传入 tenant、user、会话、kbIds、令牌、queryMode、模型或 deadline。`bind` 闭包不得跨用户缓存，引用表也拒绝跨用户、租户或会话复用。
 
-宿主系统提示可按其已有版本管理方式引用 [中文片段](prompts/agent-knowledge-v1.txt)，记录实际选用版本/哈希。这里没有修改宿主 Agent 的提示词或编排；工具中的 guidance 仅解释状态。
+宿主系统提示可按其已有版本管理方式引用唯一的 [中文片段](../../../services/agent-service/src/agent_service/prompts/agent-knowledge-v1.txt)，记录实际选用版本/哈希。正式主 Agent 已加载该片段；本目录不再维护另一份提示词。
 
 ## 状态、引用与预算
 
@@ -64,4 +66,4 @@ packages/python-common/.venv/Scripts/python.exe -m pytest examples/integration/r
 packages/python-common/.venv/Scripts/python.exe -m ruff check examples/integration/rag_agent
 ```
 
-4 项测试使用 httpx.MockTransport，覆盖工具参数边界、状态/故障、取消关闭、唯一引用、预算、恢复版本与身份。另有 Java 随机端口的真实 Python HTTP 联调，命令见 [RAG RUNBOOK](../../../docs/rag/RUNBOOK.md)。`contract_smoke.py` 通过 stdin 接收受控配置，不把秘密放在命令行，输出脱敏回执。真实 LangGraph、真实业务工具及 Agent 生成答案均未完成联调，也未部署。
+4 项适配测试使用 httpx.MockTransport，覆盖工具参数边界、状态/故障、取消关闭、唯一引用、预算、恢复版本与身份。另有 Java 随机端口的真实 Python HTTP 联调，命令见 [RAG RUNBOOK](../../../docs/rag/RUNBOOK.md)。`contract_smoke.py` 通过 stdin 接收受控配置，不把秘密放在命令行，输出脱敏回执。新增正式 Agent 已验证真实 LangGraph 工具循环、检查点恢复策略和 Uvicorn→Java 调用；模型仍为协议桩，真实业务工具、供应商效果及生产部署未验收。

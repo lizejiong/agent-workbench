@@ -1,0 +1,115 @@
+{
+  "recordedAt": "2026-11-02T19:57:58+08:00",
+  "scope": "Python 主 Agent 正式入口、模块边界、身份委托、工具循环和来源引用",
+  "versions": {
+    "python": "3.12.13",
+    "langchain": "1.4.7",
+    "langgraph": "1.2.19",
+    "langchain-openai": "1.7.3",
+    "langgraph-checkpoint-sqlite": "3.1.3",
+    "httpx": "0.28.1",
+    "fastapi": "0.162.0",
+    "pydantic": "2.14.2",
+    "uvicorn": "0.54.0",
+    "rag-common": "0.1.0"
+  },
+  "verification": {
+    "python": {
+      "command": "python -m pytest -c services/agent-service/pyproject.toml services/agent-service/tests examples/integration/rag_agent/test_knowledge_tool.py -q --basetemp=.cache/agent-final-20261102",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "log": ".cache/agent-runtime-python-20261102.log",
+      "kind": "真实 FastAPI/LangGraph/SQLite；模型与 Java HTTP 为 MockTransport 协议桩"
+    },
+    "crossLanguage": {
+      "method": "KnowledgeSearchTest#pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "log": ".cache/agent-runtime-java-20261102.log",
+      "kind": "真实 Uvicorn TCP/Python 图/Java MVC/PG-pgvector/MinIO，主模型及向量模型仍为明确协议桩",
+      "receipt": {
+        "status": "COMPLETED",
+        "traceId": "3123456789abcdef0123456789abcdef",
+        "retrievalStatuses": [
+          "READY",
+          "READY"
+        ],
+        "requestIds": [
+          "16ba79fb-097d-4aef-8ca0-580d980f7f33",
+          "62f03201-fac1-424e-b886-163efc0dc385"
+        ],
+        "uniqueCitationIds": [
+          "K62f03201fac1424eb886163efc0dc385_E1",
+          "K62f03201fac1424eb886163efc0dc385_E2",
+          "K62f03201fac1424eb886163efc0dc385_E3",
+          "K16ba79fb097d4aef8ca0580d980f7f33_E1",
+          "K16ba79fb097d4aef8ca0580d980f7f33_E2",
+          "K16ba79fb097d4aef8ca0580d980f7f33_E3"
+        ],
+        "modelRequests": 2,
+        "entrypoint": "POST /api/agent/chat over Uvicorn TCP",
+        "graph": "langchain.create_agent / LangGraph / AsyncSqliteSaver",
+        "note": "真实 Python 入口→图工具循环→Java→PG/MinIO；主模型和向量模型为协议桩，非语义效果评估"
+      }
+    },
+    "lint": "ruff 通过",
+    "lock": "uv lock --check 通过",
+    "package": {
+      "kind": "uv build 源码包和 wheel 通过",
+      "promptFiles": [
+        "agent_service/prompts/agent-knowledge-v1.txt",
+        "agent_service/prompts/agent-system-v1.txt"
+      ],
+      "sha256": "24142ac5ec51e4777fbba271c7361366e2561d8cfda703721cec24af512a2831"
+    }
+  },
+  "covered": [
+    "query-only 工具 Schema 与可信运行上下文",
+    "用户委托签发及完成/失败/取消后的尽力撤销",
+    "多次检索的唯一引用与真实来源映射",
+    "READY/NO_EVIDENCE/NEEDS_CLARIFICATION/UNAVAILABLE",
+    "未知或未闭合引用失败关闭",
+    "跨用户会话及撤权拒绝",
+    "重启后重新授权和清理旧工具/助手消息",
+    "同会话运行租约、每进程无队列容量限制",
+    "deadline 与 HTTP 断连取消关闭上游并通知 Java",
+    "共享连接池复用/关闭",
+    "凭据未写检查点或模型消息",
+    "traceId 在主模型/Python/Java/Java模型调用中关联",
+    "未创建 Java 独立问答历史"
+  ],
+  "notValidated": [
+    "真实供应商选工具/回答质量与提示注入语义效果",
+    "真实 MCP 或其他业务工具",
+    "人工中断恢复及多主机检查点存储",
+    "生产部署、负载/SLO、Agent SSE 与前端聊天"
+  ],
+  "sourceHashes": {
+    "algorithm": "SHA-256 of UTF-8 text with LF newlines and no BOM",
+    "files": {
+      "services/agent-service/src/agent_service/__init__.py": "9f9f447f1500d7a2907b19aad7e63f298fbb2a3a5d4826fb4a8ce94eebfe258b",
+      "services/agent-service/src/agent_service/app.py": "129d827b3fbfb1daccdc19c3dc19e025e62c33f98ee10927068ce5bc94feac84",
+      "services/agent-service/src/agent_service/config.py": "71d9ae3b67ecb7949361e19fe7da4a21c7d88882a14b1995e4863591ae2e8bd9",
+      "services/agent-service/src/agent_service/contracts.py": "7f9bbf808d31a615f8e150ada9176244eec96059fb4d41085233ce0b5aa77269",
+      "services/agent-service/src/agent_service/graph.py": "2164e35050df63784d4e17bf6b58944689f7ed286dd0a163a5dafd8833e9de48",
+      "services/agent-service/src/agent_service/knowledge/__init__.py": "820f9313d2adcdce8a364d0e30b9aeecf04a7802990e83e48ba9313b621198e6",
+      "services/agent-service/src/agent_service/knowledge/adapter.py": "961d1a0f36afea42ab169b9cd65c77c7d738cfaf9a41f38841acc179ab252a29",
+      "services/agent-service/src/agent_service/knowledge/delegation.py": "009368261ae21fd4f6192bf48bc6b46adb836acb43d4cc47cd81820010b1997d",
+      "services/agent-service/src/agent_service/runtime.py": "3169c5a6023c977c21ad4196b682cdf3a25cbcd2f865248cb91964e89e20eb44",
+      "services/agent-service/src/agent_service/sessions.py": "2f567148a23e5fa2388c2cd12e67b6d0a26113c2816f5418e4cc4e3b7c92938f",
+      "services/agent-service/src/agent_service/prompts/agent-knowledge-v1.txt": "e9d7891a4e55fa502d72202847b0045a713b52505c92aefac1857b6b4924b19f",
+      "services/agent-service/src/agent_service/prompts/agent-system-v1.txt": "339284f82cb6d9191065f8f4ad4c2295907bf3e204828ab765b1e1179bd47e34",
+      "services/agent-service/uv.lock": "74e20700f65f896dc39747ee21d8c0a21484d4294cc108b6684269a6ee93f3f9",
+      "services/agent-service/pyproject.toml": "40f812236cbcc78a74cda263034f73451c3a24a9523a2cb9a79114184542171f",
+      "services/backend/src/test/java/com/lzj/rag/backend/integration/KnowledgeSearchTest.java": "4f58fc26c1096b75af932f110ac02f8d7767fab3553518ce28607ec8241244c3"
+    }
+  },
+  "notes": [
+    "Python 用官方 create_agent 管理循环，没有手写 ReAct 或迁移 Java 检索算法。",
+    "只保存本机脱敏回执；本地日志/构建目录不是部署依赖。",
+    "引用编号和提示词校验不构成事实正确性保证。",
+    "未执行全量 Maven verify，未覆盖运行中的 Java JAR。"
+  ]
+}

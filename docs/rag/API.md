@@ -1,6 +1,45 @@
 # RAG API
 
-已实现 A、B 及 C 的 Java 内部证据接口和 Python 适配示例；工作区没有真实主 Agent，LangGraph 联调待宿主完成。契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`。
+已实现 A、B、C 的 Java 内部证据接口，以及 Python 主 Agent 的正式 FastAPI/LangGraph 入口。Java 契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`；Python 的 `/openapi.json` 独立生成，不在 Java 注册 Python 路由。
+
+## Python 主 Agent（2026-11-02 新增）
+
+`POST /api/agent/chat` 部署在 agent-service，使用原 Java Basic 账号，经 Python 转交给 Java `/api/rag/delegations` 完成当前用户认证和范围授权。只允许以下字段，额外字段或错误类型返回 422：
+
+```json
+{
+  "question": "PostgreSQL 如何备份？",
+  "kbIds": ["00000000-0000-0000-0000-000000000001"]
+}
+```
+
+question 为非空、无 NUL、最长 4000 字符的字符串；首次不传 sessionId，服务端生成 UUID。kbIds 可省略/null/空数组，语义沿用 Java 检索；最多 64 个，Java 部署可更严格。documentIds 可选、非空、最多 500 个。它们只是期望范围，实际授权范围来自 Java 签发结果。后续请求为 `{"sessionId":"服务生成的UUID","question":"如何恢复？"}`，禁止同时指定 kbIds/documentIds，返回 400/SESSION_SCOPE_FIXED；改范围时新建会话。
+
+返回统一 Result：
+
+| data 字段 | 契约 |
+|---|---|
+| sessionId / runId / traceId | 服务会话、回合与跨语言关联标识；不能作为授权证明 |
+| status / answer | COMPLETED 与模型最终正文；不是事实正确保证 |
+| citations | 仅最终正文实际引用且本轮获得的来源，含唯一 evidenceId、kbId/documentId/chunkId/generation、documentName/sourceMetadata/snapshotHash/fileUrl 与裁剪标志 |
+| retrievals | 各次受控工具摘要：status/requestId/traceId、可选 degraded/strategy/toolTruncated/errorCode/retryable，不含资料正文或原始异常 |
+| model / promptVersion / promptHash | 主模型与中文提示词版本、哈希 |
+
+fileUrl 属于 Java 原授权文件接口；Python 不代理下载、不访问结果里的 URL。模型可见工具结果含按预算裁剪的当前授权正文；用户响应来源只包含上述白名单映射；管理员不通过该 API 获取原始图、模型响应或凭据。成功响应 `Cache-Control:no-store`、`X-Trace-Id`，请求 ID 仍按 rag-common 头及 Result 字段关联。
+
+| HTTP | code 示例与处理 |
+|---|---|
+| 401 | AUTHENTICATION_REQUIRED，当前 Java 账号无效或缺失 |
+| 404 | SESSION_NOT_FOUND / SCOPE_NOT_ACCESSIBLE，跨用户、撤权或范围不可访问，不改用其他身份兜底 |
+| 409 | SESSION_BUSY / SCOPE_INVALID，同会话并发或 Java 范围变化 |
+| 413 / 429 | CONTEXT_BUDGET / MODEL_CALL_BUDGET / TOOL_CALL_BUDGET，停止本轮，缩小问题或重新发起 |
+| 499 | CLIENT_DISCONNECTED，仅服务端可观测，断开的客户端可能无法收到 |
+| 502 | INVALID_GRANT / AGENT_INCOMPLETE / AGENT_EMPTY_ANSWER / CITATION_INVALID，不透传未校验正文 |
+| 503 / 504 | AGENT_CAPACITY / JAVA_UNAVAILABLE / MODEL_UNAVAILABLE / AGENT_TIMEOUT，不代表知识不存在 |
+
+主 Agent 无 SSE，本接口返回本轮最终结果；Java 独立问答 SSE 仍按下文契约运行。每个 Agent 回合重新签发/尽力撤销委托，凭据仅在请求内存及可信工具上下文；图检查点不保存凭据。旧助手/工具消息在恢复后、送模前清除，近期用户问题受数量与字节预算约束；不提供原始 `Command(resume=...)` 接口。
+
+工具协议仍是本文件 C 部分：`search_knowledge(query)` 返回 READY/NO_EVIDENCE/NEEDS_CLARIFICATION/UNAVAILABLE，Agent 可回答、澄清或在预算内继续调用，最终只允许引用实际获得的 K 编号。模型的状态处理、引用语义仍需效果评估，不能用格式校验替代。实际依赖、启动和调用例子见 [Agent README](../../services/agent-service/README.md)。
 
 ## A：结构化检索（已实现）
 

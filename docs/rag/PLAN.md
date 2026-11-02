@@ -1,8 +1,8 @@
 # RAG 服务计划
 
-## 当前执行顺序（2026-11-01 更新，按用户附件）
+## 当前执行顺序（2026-11-02 更新，按用户附件）
 
-用户已授权并完成第 2–8 轮，本轮另行授权第 9 阶段 Agent 接入。下表取代下文历史 R2–R5 的分组编号；按当前轮次完成并结束，不自动扩大后续范围。
+用户已完成第 2–9 轮，并于 2026-11-01 另行授权明确模块边界、接入真实 Python 主 Agent。本次将第 9 阶段适配示例提升为正式运行入口；不扩展业务 MCP、前端聊天或生产部署。下表取代下文历史 R2–R5 的分组编号。
 
 | 轮次 | 范围 | 状态 |
 |---|---|---|
@@ -13,11 +13,21 @@
 | 6 | 证据选择、上下文预算与引用契约 | 已完成；预算/来源/邻居及授权快照，4 项定向验证通过 |
 | 7 | Java 独立问答与持久化引用 | 已完成；V9 运行/会话、中文模板、授权历史、引用校验与一次修复，3 项集成验证通过 |
 | 8 | MVC SSE、独立问答历史和取消 | 已完成；真实 HTTP 增量/取消/断连、运行恢复，10 项定向验收及断连复核通过 |
-| 9 | Java 内部证据契约与 Python Agent 适配 | 已完成工作区无 Agent 的备用交付：内部接口、短期委托/取消、可运行适配器和真实跨语言 HTTP；真实 LangGraph 待宿主集成 |
+| 9 | Java 内部证据契约与 Python Agent 适配 | 原备用交付完成；新增正式 FastAPI/LangGraph 主 Agent 已接入，真实 Uvicorn→Java→PG/MinIO 联调通过，模型为协议桩 |
 
-各轮使用下文开发期验证节奏；不自动扩大到附件之外的 Agent 实现或生产部署。
+各轮使用下文开发期验证节奏；本次另行授权的主 Agent 接入范围见下一节，不自动扩大到生产部署。
 
-## 第 9 阶段映射（2026-11-01）
+## 主 Agent 接入补充（2026-11-02，当前）
+
+新授权下在原占位 `services/agent-service` 实现 `agent_service.app:app` 和 `POST /api/agent/chat`。Python 复用 rag-common/FastAPI/httpx，使用官方 LangChain create_agent 创建 LangGraph 循环与 AsyncSqliteSaver；没有自行实现 ReAct。主模型由 Python 通过 ChatOpenAI 调原生工具调用协议，Java 继续提供知识、统一检索和独立问答。目录/接口/上下文边界见 `docs/ARCHITECTURE.md` 与服务 README。
+
+现有适配器提升至 `agent_service/knowledge/adapter.py`，examples 只做兼容转发；中文知识提示片段也提升为唯一文件。工具 Schema 仅 query，身份/范围/短期委托/deadline/引用表在 ToolRuntime.context 注入，不进入模型或图检查点。会话首次由服务生成 ID，实际范围由 Java 委托结果绑定；每轮转交当前用户认证、重新签发委托，复核 Python 会话归属，完成/失败/取消后尽力撤销。
+
+Python 自有 SQLite 保存会话归属/固定范围/运行租约，另由 LangGraph 保存图状态，不访问 Java 知识表。恢复输入先删除旧工具/助手消息，只保留至多 4 条、8000 UTF-8 字节的近期用户问题；敏感证据重新检索，不自动续跑取消的工具节点或复用旧答案。默认 60 秒、并发 4 且不排队、8 次模型/6 次工具、工具 4096 字节、输入消息+提示词与协议预留 60000 字节；SDK 重试关闭。
+
+当前交付是可运行服务与真实图/Java 集成，不宣称真实模型效果、业务 MCP、人工暂停恢复、多主机检查点存储、Agent SSE、前端聊天或生产上线。后续必须另行授权。
+
+## 第 9 阶段映射（2026-11-01，原备用交付记录）
 
 仓库再次核对：agent-service 只有占位，python-common 有 FastAPI/httpx 约定而无 Agent 工具注册器或 LangGraph。新增 examples/integration/rag_agent，复用已锁定的依赖；不安装 LangChain/LangGraph、不实现 ReAct。Java `/internal/rag/retrieve` 只走原 RagRetrievalService 的 INDEPENDENT 模式与证据组装，Java 不读取/写入 Agent 历史或图检查点，Python 不直接访问知识表。
 

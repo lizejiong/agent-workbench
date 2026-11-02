@@ -433,6 +433,33 @@ class KnowledgeSearchTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_conversation",Integer.class)).isZero();
         Path receiptFile=Path.of("target/knowledge-base/agent-tool-contract.json");Files.createDirectories(receiptFile.getParent());Files.writeString(receiptFile,json.writerWithDefaultPrettyPrinter().writeValueAsString(receipt));
     }
+    @Test @org.junit.jupiter.api.condition.EnabledIfSystemProperty(named="kb.test.agent-python",matches=".+")
+    void pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources()throws Exception {
+        var data=dataset();String trace="3123456789abcdef0123456789abcdef";
+        var config=new LinkedHashMap<String,Object>();
+        config.put("origin","http://127.0.0.1:"+port);config.put("serviceId","agent-test");
+        config.put("serviceToken","service-test-token-1234567890-abcdef");
+        config.put("username","alice");config.put("password","alice-local-test-password");
+        config.put("kbIds",List.of(data.kb()));config.put("traceId",trace);
+        config.put("stateDir",Path.of("target/knowledge-base/agent-state-"+UUID.randomUUID()).toAbsolutePath().toString());
+        var process=new ProcessBuilder(System.getProperty("kb.test.agent-python"),"-X","utf8",System.getProperty("kb.test.agent-smoke"))
+                .redirectErrorStream(false).redirectError(ProcessBuilder.Redirect.INHERIT).start();
+        try {
+            try(var stdin=process.getOutputStream()){stdin.write(json.writeValueAsBytes(config));}
+            assertThat(process.waitFor(45,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            String output=new String(process.getInputStream().readAllBytes(),StandardCharsets.UTF_8);
+            assertThat(process.exitValue()).as(output).isZero();JsonNode receipt=json.readTree(output);
+            assertThat(receipt.path("status").asText()).isEqualTo("COMPLETED");
+            assertThat(receipt.path("retrievalStatuses").toString()).isEqualTo("[\"READY\",\"READY\"]");
+            assertThat(receipt.path("traceId").asText()).isEqualTo(trace);
+            assertThat(receipt.path("modelRequests").asInt()).isEqualTo(2);
+            assertThat(model.traceparents).anyMatch(value->value.startsWith("00-"+trace+"-"));
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_conversation",Integer.class)).isZero();
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_delegation WHERE revoked_at IS NOT NULL",Integer.class)).isEqualTo(1);
+            Path receiptFile=Path.of("target/knowledge-base/agent-runtime-contract.json");Files.createDirectories(receiptFile.getParent());
+            Files.writeString(receiptFile,json.writerWithDefaultPrettyPrinter().writeValueAsString(receipt));
+        } finally {if(process.isAlive())process.destroyForcibly();}
+    }
     private final class InternalClient implements AutoCloseable {
         final okhttp3.OkHttpClient client=new okhttp3.OkHttpClient.Builder().readTimeout(java.time.Duration.ofSeconds(8)).build();
         JsonNode call(String path,Map<String,?> body,String token,String trace,String requestId,int expected)throws Exception {

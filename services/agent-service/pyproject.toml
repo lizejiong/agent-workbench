@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling>=1.32,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-service"
+version = "0.1.0"
+description = "Python 主 Agent、工具调度和对话编排；知识检索由 Java 提供"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "rag-common",
+  "httpx>=0.28,<1",
+  "uvicorn>=0.38,<1",
+  "langchain>=1,<2",
+  "langgraph>=1,<2",
+  "langchain-openai>=1,<2",
+  "langgraph-checkpoint-sqlite>=3,<4",
+  "aiosqlite>=0.22,<1",
+  "langsmith>=0.14,<1",
+]
+
+[tool.uv.sources]
+rag-common = { path = "../../packages/python-common", editable = true }
+
+[dependency-groups]
+dev = ["pytest>=9,<10", "pytest-asyncio>=1.4,<2", "ruff>=0.17,<1"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_service"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]

@@ -2,9 +2,9 @@
 
 面向智能体应用的工作台，规划涵盖模型接入、知识检索、Agent 编排、工具调用与任务执行。RAG 是其中的知识能力模块。
 
-当前已实现可独立运行的 AI 服务、知识库后端和 Web 管理台，并提供 Java/Python 公共组件。Agent 运行时与编排尚未实现，`services/agent-service` 为后续扩展预留目录。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
+当前已实现 AI 服务、知识库后端、Java 独立 RAG 问答、Web 管理台，以及 Python 主 Agent 的 FastAPI/LangGraph 运行入口，并提供 Java/Python 公共组件。主 Agent 复用 Java 证据服务，实际供应商模型、业务 MCP 工具和生产部署仍需分别验收。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
 
-后续采用 Python / LangGraph 承载 Agent 执行与主模型调用，Java 承载知识业务、检索、业务工具及平台能力，具体职责见 [项目架构边界](docs/ARCHITECTURE.md)。
+Python / LangGraph 承载 Agent 执行、会话检查点与主模型调用，Java 承载知识业务、检索、独立问答及平台能力；业务工具按需扩展。目录、接口和上下文边界见 [项目架构边界](docs/ARCHITECTURE.md)。
 
 ```text
 packages/
@@ -13,7 +13,7 @@ packages/
 services/
   ai-service/          WebFlux AI 服务（对话、视觉、向量、重排与流式响应）
   backend/             Spring MVC 业务后端（知识库、S3上传、可靠入库、检索、人工维护与持久化删除、pgvector/Flyway）
-  agent-service/       FastAPI + LangGraph 服务目录
+  agent-service/       FastAPI + LangGraph 主 Agent、知识工具与 Python 会话检查点
 web/                   React + Ant Design + Vite 知识库管理台
 ```
 
@@ -48,6 +48,6 @@ Python 3.12+，从仓库根目录运行 `pip install -e "./packages/python-commo
 
 AI 服务的启动、模型配置、HTTP/SSE 和 Python 调用示例见 [AI 服务说明](services/ai-service/README.md)。无需供应商密钥时，可用 `AI_ENABLED=false` 启动健康检查与工具接口。
 
-RAG 普通/流式问答及内部证据接口见 [RAG 运行手册](docs/rag/RUNBOOK.md)。Python 主 Agent 的异步知识工具接入示例见 [rag_agent](examples/integration/rag_agent/README.md)，复用 Java 检索；`agent-service` 仍未实现主循环或 LangGraph 图，示例不是已部署的 Agent 服务。
+RAG 普通/流式问答及内部证据接口见 [RAG 运行手册](docs/rag/RUNBOOK.md)。Python 主 Agent 的启动入口、`POST /api/agent/chat`、身份委托、会话与引用见 [Agent 服务说明](services/agent-service/README.md)。原 [rag_agent 示例](examples/integration/rag_agent/README.md) 通过兼容入口复用正式工具实现，没有第二套检索算法。
 
-知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，当前阶段与验证结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 管理台启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173，使用已有账号登录，不新增用户管理。原 API 导航为`GET /api/knowledge/management`，HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`；`agent-service`仍为目录占位。
+知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，当前阶段与验证结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 管理台启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173，使用已有账号登录，不新增用户管理。原 API 导航为`GET /api/knowledge/management`，HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`。当前 Web 仍为知识管理台，没有新增 Agent 聊天页面。
