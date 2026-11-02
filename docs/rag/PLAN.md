@@ -19,6 +19,8 @@
 
 ## 主 Agent 接入补充（2026-11-02，当前）
 
+同日用户另行授权首版 Web：登录默认 chat、ChatGPT 风格交互、后台往返及接口缺口核对。已复用 Python JSON 问答和 Java 知识列表/下载，未扩大服务端会话/图范围；本次登录内的前端列表不宣称是持久历史。范围见 `docs/web/CHAT.md`，后续会话 API、流式与生产部署须另行执行。
+
 新授权下在原占位 `services/agent-service` 实现 `agent_service.app:app` 和 `POST /api/agent/chat`。Python 复用 rag-common/FastAPI/httpx，使用官方 LangChain create_agent 创建 LangGraph 循环与 AsyncSqliteSaver；没有自行实现 ReAct。主模型由 Python 通过 ChatOpenAI 调原生工具调用协议，Java 继续提供知识、统一检索和独立问答。目录/接口/上下文边界见 `docs/ARCHITECTURE.md` 与服务 README。
 
 现有适配器提升至 `agent_service/knowledge/adapter.py`，examples 只做兼容转发；中文知识提示片段也提升为唯一文件。工具 Schema 仅 query，身份/范围/短期委托/deadline/引用表在 ToolRuntime.context 注入，不进入模型或图检查点。会话首次由服务生成 ID，实际范围由 Java 委托结果绑定；每轮转交当前用户认证、重新签发委托，复核 Python 会话归属，完成/失败/取消后尽力撤销。

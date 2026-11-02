@@ -1,5 +1,9 @@
 # RAG 评估记录
 
+## 首版 Web 聊天验证（2026-11-02）
+
+页面复用现有 Python Agent；只验证交互、引用展示、代理和取消，不新增检索或模型效果指标。`npm run build` 与 21 项前端检查通过（原 19 项 + 2 项引用展示边界）。真实浏览器/Vite/Uvicorn/FastAPI/LangGraph/SQLite 链路，Java 和主模型采用明确协议桩；未把前序真实 Java/PG/MinIO 验收重算成本轮验证。检查了四种检索状态、同一局部编号的不同来源、授权下载、HTML/外部图片过滤、范围固定、手机布局、IME 与退出清理；取消确实关闭 Python 工具 HTTP 并调用 Java 取消通知。回执见 `../web/CHAT_VALIDATION.json`。没有供应商语义效果或生产 Nginx/负载结论。
+
 ## Python 主 Agent 接入验证（2026-11-02）
 
 新增官方 LangChain create_agent / LangGraph 运行入口；协议与安全行为验证不计作答案质量分数。Python `tests/protocol_fixture.py` 用原生 Chat Completions HTTP 协议固定工具调用/最终回答，只验证真实框架是否按协议执行，不能据此声称模型会自主选择正确工具。

@@ -4,6 +4,8 @@
 
 ## Python 主 Agent（2026-11-02 新增）
 
+Web 已复用本接口：登录进入 `/#/chat`，首轮提交 question/可选 kbIds，后续只提交 question/sessionId；后台往返保持本次登录内的显示状态。没有新增或伪造历史/SSE API。浏览器同源代理和缺口列表见 [Web 聊天契约](../web/CHAT.md)。
+
 `POST /api/agent/chat` 部署在 agent-service，使用原 Java Basic 账号，经 Python 转交给 Java `/api/rag/delegations` 完成当前用户认证和范围授权。只允许以下字段，额外字段或错误类型返回 422：
 
 ```json

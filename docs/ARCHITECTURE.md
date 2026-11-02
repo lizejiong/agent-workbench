@@ -39,9 +39,11 @@ Java 持有知识业务、入库任务和检索链路。Python Agent 调用 Java
 | services/ai-service/ | 当前 Java 模型服务；承接上述保留的 infra-ai 能力，继续服务 Java 模型任务 |
 | packages/java-starters/ | 已有 Java 公共组件，业务服务按需复用 |
 | packages/python-common/ | 已有 Python 公共包，Agent 服务按需复用 |
-| web/ | 现有 React / Ant Design / Vite 管理台，后续按实现范围增加 Agent 入口 |
+| web/ | React / Ant Design / Vite；登录默认聊天页调用 Python Agent，后台保留 Java 知识管理/检索测试，通过同源代理分流 |
 
 ## 接口与上下文传递
+
+Web 只管理交互和本次登录内的显示状态，不在浏览器实现 Agent 循环或向模型补传旧证据。`/api/agent/*` 发往 Python，其余知识接口发往 Java；会话/历史/流式缺口见 [Web 聊天契约](web/CHAT.md)。登录后台按钮不改变任何知识权限。
 
 | 调用方 → 接收方 | 接口 | 可信数据与职责 |
 |---|---|---|

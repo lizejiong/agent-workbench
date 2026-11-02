@@ -50,4 +50,4 @@ AI 服务的启动、模型配置、HTTP/SSE 和 Python 调用示例见 [AI 服�
 
 RAG 普通/流式问答及内部证据接口见 [RAG 运行手册](docs/rag/RUNBOOK.md)。Python 主 Agent 的启动入口、`POST /api/agent/chat`、身份委托、会话与引用见 [Agent 服务说明](services/agent-service/README.md)。原 [rag_agent 示例](examples/integration/rag_agent/README.md) 通过兼容入口复用正式工具实现，没有第二套检索算法。
 
-知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，当前阶段与验证结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 管理台启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173，使用已有账号登录，不新增用户管理。原 API 导航为`GET /api/knowledge/management`，HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`。当前 Web 仍为知识管理台，没有新增 Agent 聊天页面。
+知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，阶段结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173；已有账号登录后先进入聊天页，通过按钮进入原知识后台，不新增用户管理。聊天复用 Python Agent，只保留本次登录内的前端会话列表；跨刷新历史和流式等缺口见 [Web 接入说明](docs/web/CHAT.md)。原导航为`GET /api/knowledge/management`，知识管理 HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`。

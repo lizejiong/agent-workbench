@@ -1,0 +1,158 @@
+{
+  "recordedAt": "2026-11-02T22:32:30+08:00",
+  "scope": "登录默认 Chat、ChatGPT 风格 Web、后台往返和已有 Agent 接入；不新增后端业务 API",
+  "reference": {
+    "url": "https://chatgpt.com/",
+    "view": "2026-11-02 公开未登录页面",
+    "brand": "Workbench，非 ChatGPT 产品"
+  },
+  "verification": {
+    "build": {
+      "command": "npm run build",
+      "result": "PASS",
+      "log": ".cache/web-chat-build-20261102.log"
+    },
+    "unit": {
+      "command": "npm test -- --reporter=dot",
+      "passed": 21,
+      "failed": 0,
+      "newTests": 2,
+      "log": ".cache/web-chat-unit-20261102.log"
+    },
+    "browser": {
+      "tool": "Playwright Chromium",
+      "real": [
+        "Browser",
+        "Vite same-origin proxy",
+        "Uvicorn TCP",
+        "existing Python FastAPI/LangGraph/SQLite/httpx"
+      ],
+      "fixtures": [
+        "Java management/knowledge/file APIs",
+        "Java internal retrieval",
+        "OpenAI-compatible model protocol"
+      ],
+      "checks": [
+        {
+          "name": "原 Basic 登录后默认 /#/chat；后台管理 /#/kbs 往返保留对话",
+          "result": "PASS"
+        },
+        {
+          "name": "首轮 question/kbIds，选定库 00000000-0000-0000-0000-00000000000b",
+          "result": "PASS"
+        },
+        {
+          "name": "后续 body 只有 question/sessionId，范围固定",
+          "result": "PASS"
+        },
+        {
+          "name": "两次工具检索的两个局部 E1 显示为不同来源；Markdown 表格/代码",
+          "result": "PASS"
+        },
+        {
+          "name": "来源抽屉展示真实页码并通过 Java 授权路径下载 backup.md",
+          "result": "PASS"
+        },
+        {
+          "name": "READY/NO_EVIDENCE/NEEDS_CLARIFICATION/UNAVAILABLE 的答案与提示区分",
+          "result": "PASS"
+        },
+        {
+          "name": "停止浏览器请求，Vite 销毁上游，Python 工具 HTTP 关闭并发出 Java cancel",
+          "result": "PASS",
+          "cancelledToolHttp": true,
+          "cancelNotice": true,
+          "lateAnswerVisible": false
+        },
+        {
+          "name": "中文 IME Enter 不提交；Shift+Enter 保留换行",
+          "result": "PASS",
+          "detail": "模拟 Chromium isComposing/keyCode229，Shift+Enter 插入换行"
+        },
+        {
+          "name": "1440/1536 桌面、390 手机无页面水平溢出，输入框在视口内",
+          "result": "PASS"
+        },
+        {
+          "name": "手机侧栏隐藏/模态焦点和 Enter 操作",
+          "result": "PASS"
+        },
+        {
+          "name": "原始 HTML 未执行，外部图片请求为零",
+          "result": "PASS",
+          "remoteImages": [],
+          "xssExecuted": false
+        },
+        {
+          "name": "LocalStorage/SessionStorage 均为零，退出重登后旧会话列表为零",
+          "result": "PASS"
+        },
+        {
+          "name": "完整回复后保留答案开头，首轮 scrollTop=0",
+          "result": "PASS"
+        },
+        {
+          "name": "手机模态打开后焦点在侧栏，Escape 关闭并还原主按钮焦点",
+          "result": "PASS"
+        },
+        {
+          "name": "桌面侧栏 248px/64px 切换与复制回答成功反馈",
+          "result": "PASS"
+        }
+      ],
+      "console": {
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    "nginxCompose": "配置已更新；本轮未执行应用镜像或生产 Nginx 代理验收"
+  },
+  "observedProxy": {
+    "javaBackendPaths": [
+      "/api/documents/00000000-0000-0000-0000-000000000014/file",
+      "/api/kbs",
+      "/api/knowledge/management"
+    ],
+    "agentToolRequests": 9,
+    "noAgentPathReachedJavaManagement": true
+  },
+  "knownInterfaceGaps": [
+    "稳定身份查询",
+    "服务端会话列表/历史",
+    "会话重命名/删除",
+    "Python Agent SSE",
+    "运行查询/显式取消及首轮早期运行 ID",
+    "能力发现与当前授权证据摘录"
+  ],
+  "notValidated": [
+    "真实 Java/PG/MinIO/ES 的本轮复测",
+    "真实模型供应商效果",
+    "生产应用镜像/Nginx/负载",
+    "跨刷新历史同步和流式接口（尚未实现）"
+  ],
+  "screenshots": [
+    "output/playwright/chat-desktop-empty.png",
+    "output/playwright/chat-desktop-answer.png",
+    "output/playwright/chat-mobile-empty.png",
+    "output/playwright/chat-mobile-answer.png",
+    "output/playwright/chat-mobile-sidebar.png"
+  ],
+  "sourceHashes": {
+    "algorithm": "SHA-256 of UTF-8/LF text without BOM",
+    "files": {
+      "web/src/App.tsx": "a80c1e71d59fd8b8b23b8eb4f363d0650072dfd75bcca6f6dc1d854b44e5888d",
+      "web/src/api.ts": "9f6b10b812a408d67e7a773334ae7bf171b3ad8fde25f1f930a320cc0c0d0b37",
+      "web/vite.config.ts": "3911fe6dd6b0884af6358f919435b9a2ce45bd5480cc92ca5bfc7b9433df638f",
+      "web/nginx.conf": "c684cc9d0577a3c90d53fd66924363acdf5f1f9789639f6b57960d8a7b9f0b58",
+      "web/Dockerfile": "e5b2e18af45629e2291f7f8cf03281655154d55333990b6c303bf603ace2e5b5",
+      "web/package-lock.json": "6f9e2681e0aa4531eb292118d88a03e02d8d51e99376f33abbb052898e7cd25b",
+      "web/src/chat/Answer.tsx": "1d5c4522e8397b569cfa08a2d27b74a43c175d2b8c6cd597a787aaecdf221acc",
+      "web/src/chat/chat.css": "2897c7b77ff3ccebea84a85da977487699309b3d9b20f4c490abe6ce9f927473",
+      "web/src/chat/Chat.tsx": "203045086f752d2c15b9fdd73fcbc32072a5845a89d7aa36959d4f961a2ffebc",
+      "web/src/chat/format.test.ts": "0cc271a495ac242ef44048daff80c4c707c8c3513299649d3bc4b1a4b52f4654",
+      "web/src/chat/format.ts": "60b497bfad91207ea282b3716fef7ee90c43f853ab30dd83ce46b4faf8cc0e61",
+      "web/src/chat/state.tsx": "8e3f6dc1ec1f278e9b692a2d8d433a9947cdda21ae174b7f59534e22a947b912",
+      "web/src/chat/types.ts": "e14ad1bfdef50c83fa2741455de2df8d70f73b4fbd7c079408e44fff2a3c1feb"
+    }
+  }
+}

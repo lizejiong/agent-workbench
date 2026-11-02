@@ -4,6 +4,8 @@
 
 ## Python 主 Agent 正式入口（2026-11-02）
 
+Web 已接入：先启动原 Java 和 Python Agent，再在 web 目录设置 `KB_BACKEND_ORIGIN` / `KB_AGENT_ORIGIN` 并运行 `npm run dev`，默认分别为 8080/8090；登录进入聊天页。生产 Nginx 使用 `KB_AGENT_UPSTREAM`，与 Vite 配置分开，原知识库 Compose 不自动增加 Agent。接口缺口、模板配置和限制见 [Web 说明](../../web/README.md) 及 [聊天契约](../web/CHAT.md)。
+
 先运行支持 V10 且启用 internal 的 Java；配置服务令牌哈希，原始令牌只注入 Python。执行 `uv sync --project services/agent-service --locked`，按 `.env.example` 注入 Java origin、服务 ID/令牌、原生主模型地址/名称/密钥及受保护状态目录，再执行：
 
 ```powershell

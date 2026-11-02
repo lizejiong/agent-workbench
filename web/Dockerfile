@@ -7,6 +7,7 @@ RUN npm ci --registry=https://registry.npmjs.org --no-fund
 COPY . .
 RUN npm run build
 FROM ${WEB_NGINX_IMAGE}
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+ENV KB_AGENT_UPSTREAM=http://agent-service:8090
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80

@@ -7,6 +7,15 @@ export class ApiError extends Error {
 }
 export function friendlyError(code: string, status = 0): string {
   const messages: Record<string, string> = {
+    AGENT_CAPACITY: '助手当前繁忙，请稍后再发送。', AGENT_TIMEOUT: '本轮处理超时，可缩小问题范围后重新发送。',
+    JAVA_UNAVAILABLE: '知识授权服务暂不可用，请稍后重试。', MODEL_UNAVAILABLE: '助手模型暂不可用，请稍后重试。',
+    SESSION_NOT_FOUND: '对话已不可访问，请新建对话。', SCOPE_NOT_ACCESSIBLE: '当前对话或知识范围已不可访问，请重新选择知识库。',
+    SESSION_SCOPE_FIXED: '已有对话不能更换知识范围，请新建对话。', SESSION_BUSY: '该对话上一轮仍在结束，请稍后继续。',
+    SCOPE_INVALID: '知识范围已变化，请新建对话并重新选择。', CITATION_INVALID: '回答的来源引用未通过校验，请调整问题后重试。',
+    AGENT_EMPTY_ANSWER: '助手没有返回有效回答，请稍后重试。', AGENT_INCOMPLETE: '未收到完整回答，请稍后重试。',
+    CONTEXT_BUDGET: '本轮上下文过长，请缩小问题范围或新建对话。', MODEL_CALL_BUDGET: '本轮处理步骤已达上限，请拆分问题后重试。',
+    TOOL_CALL_BUDGET: '本轮检索次数已达上限，请拆分问题后重试。',
+    KB_SEARCH_SCOPE_LIMIT: '知识库范围过大，请先选择本次需要使用的知识库。',
     KB_NAME_EXISTS: '名称已存在，请使用其他名称。', KB_VERSION_CONFLICT: '内容已变化，请刷新后重新操作。',
     KB_NOT_EMPTY: '请先删除文档并等待资源清理完成，再删除知识库。', KB_JOB_ACTIVE: '该文档已有入库任务，请查看任务状态。',
     KB_REFRESH_ACTIVE: '该文档正在刷新，请等待任务结束。', KB_DOCUMENT_DISABLED: '请先启用文档。',

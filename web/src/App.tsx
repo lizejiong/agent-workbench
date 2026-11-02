@@ -2,10 +2,11 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Navigate, Route, Routes, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Card, Drawer, Dropdown, Form, Grid, Input, Layout, Menu, Typography } from 'antd';
 import type { InputRef } from 'antd';
-import { DatabaseOutlined, DoubleLeftOutlined, DoubleRightOutlined, DownOutlined, GithubOutlined, MenuOutlined, SearchOutlined } from '@ant-design/icons';
+import { CommentOutlined, DatabaseOutlined, DoubleLeftOutlined, DoubleRightOutlined, DownOutlined, GithubOutlined, MenuOutlined, SearchOutlined } from '@ant-design/icons';
 import { ApiClient, basicAuthorization, query } from './api';
 import { useSession } from './state';
 import { ErrorPanel, Loading, useOperation } from './components';
+import { ChatProvider } from './chat/state';
 
 declare const __LOGIN_DEFAULTS__: { username: string; password: string };
 
@@ -13,6 +14,7 @@ const KnowledgeBases = lazy(() => import('./pages/KnowledgeBases'));
 const Documents = lazy(() => import('./pages/Documents'));
 const DocumentDetail = lazy(() => import('./pages/DocumentDetail'));
 const Search = lazy(() => import('./pages/Search'));
+const Chat = lazy(() => import('./chat/Chat'));
 const repository = 'https://github.com/lizejiong/agent-workbench';
 
 function Brand({ compact = false }: { compact?: boolean }) {
@@ -21,10 +23,12 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
 function Login() {
   const session = useSession(); const op = useOperation();
+  const navigate = useNavigate();
   const submit = (values: { username: string; password: string }) => op.run(async () => {
     const client = new ApiClient(basicAuthorization(values.username, values.password), () => session.expire(client));
     await client.get('/api/knowledge/management');
     session.login(values.username.trim(), client);
+    navigate('/chat', { replace: true });
   });
   return <div className="login">
     <section className="login-story">
@@ -58,6 +62,7 @@ function Workspace() {
   const navigation = <div className="navigation-inner">
     <Link to="/kbs" className="brand" aria-label="Agent Workbench 首页" onClick={() => setNavOpen(false)}><Brand compact={compact} /></Link>
     <Menu theme="dark" mode="inline" selectedKeys={[location.pathname === '/search' ? 'search' : 'kbs']} inlineCollapsed={compact} onClick={() => setNavOpen(false)} items={[
+      { key: 'chat', icon: <CommentOutlined />, label: <Link to="/chat">返回聊天</Link> },
       { key: 'kbs', icon: <DatabaseOutlined />, label: <Link to="/kbs">知识库管理</Link> },
       { key: 'search', icon: <SearchOutlined />, label: <Link to="/search">检索测试</Link> },
     ]} />
@@ -78,10 +83,16 @@ function Workspace() {
       </div>
     </Layout.Header>
       <Layout.Content className="content"><Suspense fallback={<Loading loading>{null}</Loading>}><Routes>
-        <Route path="/kbs" element={<KnowledgeBases />} /><Route path="/kbs/:kbId" element={<Documents />} /><Route path="/documents/:documentId" element={<DocumentDetail />} /><Route path="/search" element={<Search />} /><Route path="*" element={<Navigate to="/kbs" replace />} />
+        <Route path="/kbs" element={<KnowledgeBases />} /><Route path="/kbs/:kbId" element={<Documents />} /><Route path="/documents/:documentId" element={<DocumentDetail />} /><Route path="/search" element={<Search />} /><Route path="*" element={<Navigate to="/chat" replace />} />
       </Routes></Suspense></Layout.Content>
     </Layout>
   </Layout>;
 }
 
-export default function App() { return useSession().api ? <Workspace /> : <Login />; }
+export default function App() {
+  return useSession().api ? <ChatProvider><Suspense fallback={<Loading loading>{null}</Loading>}><Routes>
+    <Route path="/chat" element={<Chat />} />
+    <Route path="/" element={<Navigate to="/chat" replace />} />
+    <Route path="/*" element={<Workspace />} />
+  </Routes></Suspense></ChatProvider> : <Login />;
+}

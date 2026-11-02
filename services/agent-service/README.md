@@ -41,6 +41,8 @@ uv run --project services/agent-service --locked uvicorn agent_service.app:app -
 
 ## 调用与身份
 
+Web 已接入本服务：已有账号登录后进入 `/#/chat`，通过同源 `/api/agent/*` 代理调用，页面不持有服务令牌或用户委托。启动参数见 [Web README](../../web/README.md)，当前历史列表/流式等缺口见 [聊天契约](../../docs/web/CHAT.md)。前端显示旧消息不代表 Agent 会将这些消息重新送模，仍执行下述受限上下文策略。
+
 使用现有 Java Basic 账号认证；Python 在每轮工具调用前将当前账号认证传给 Java 的委托签发接口。不配置万能用户，不接受请求中的 tenantId/userId，不保存用户密码。浏览器/客户端应在 HTTPS 内存会话中处理认证，不在请求示例提交真实值。
 
 ```python

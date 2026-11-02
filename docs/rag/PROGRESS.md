@@ -148,3 +148,17 @@ Python 自有 SQLite 管理会话和检查点，不访问 Java 知识表，也�
 Java 隔离副本仅运行新增 `pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources`，1 通过、0 跳过，日志 `.cache/agent-runtime-java-20261102.log`。真实 Uvicorn TCP → Python 图 → Java MVC → PG/pgvector/MinIO；两次检索 READY、最终来源编号互不冲突、trace 跨 Python/Java/模型 HTTP 关联，委托已撤销，Java 独立问答表未新增记录。主模型和向量模型仍为明确 HTTP 协议桩，未调用真实供应商。回执和锁定版本见 AGENT_RUNTIME_VALIDATION.json；未运行全量 verify，没有覆盖运行 JAR。
 
 当前范围到此结束：已实现真实框架和运行入口，不等于真实供应商模型效果、MCP 业务工具、Agent 前端/SSE、多主机图存储或生产部署已完成。后续接入具体供应商、业务工具与上线按新范围执行，不自动开展。
+
+## Web 首版：默认聊天、后台入口与接口核对（2026-11-02，完成）
+
+按新授权实现 React 聊天页，登录成功统一进入 /#/chat；右上角和侧栏进入原知识后台，后台可返回聊天。参考 ChatGPT 当日公开访客页的浅色侧栏、留白与圆角输入区，采用独立样式及中性主题，不覆盖后台布局，也不展示未实现的附件/语音等按钮。
+
+复用现有 Python POST /api/agent/chat、Java 知识列表和文件下载。支持本次登录的会话/草稿、新建与搜索、知识范围、中文输入法/换行、等待/停止、Markdown/表格/代码、真实引用来源和复制。首轮传 question/可选 kbIds，后续仅 question/sessionId；不上传旧答案/证据，不改变 Python 图上下文策略。显示状态区分资料不足、澄清、依赖失败及降级；原始 HTML/外部图片不执行或加载，下载由 documentId 构造原授权路径。
+
+开发和 preview 将 /api/agent 优先分流到 KB_AGENT_ORIGIN，其余 API 仍去 Java。浏览器响应关闭显式销毁 Python 上游；真实浏览器取消已关闭 Python 工具 HTTP，并调用 Java 取消通知。Nginx 改用运行时 KB_AGENT_UPSTREAM 模板和延迟 Docker DNS，Agent 不存在时不会阻止后台启动；保留断连、SNI/CA 校验及安全响应头。没有自动部署 Agent 或放开 CORS。
+
+本轮只新增 2 项引用展示边界检查，连同原 API 19 项共 21 通过；TypeScript/生产构建通过，日志 .cache/web-chat-{build,unit}-20261102.log。Playwright 实查默认路由、后台往返、多次引用/授权下载、固定范围与续聊、四种检索状态、取消传播、IME/Shift+Enter、桌面/390px 手机布局、HTML/外部图片过滤、零浏览器持久存储与重新登录清理。修正完整答案返回时自动跳到末尾的问题，并补充手机侧栏焦点/隐藏与输入框高度处理。回执见 docs/web/CHAT_VALIDATION.json。
+
+验证使用真实 Chromium/Vite/Uvicorn/FastAPI/LangGraph/SQLite，Java API 和主模型是明确 HTTP 协议桩；未重跑真实 Java/PG/MinIO 或供应商，未运行 Maven verify，未覆盖原运行 JAR。Nginx 应用镜像/生产网络未实跑，不把 Vite 联调当作生产代理验收。
+
+接口缺口已按代码列于 docs/web/CHAT.md：稳定身份查询、服务端会话列表/历史、重命名/删除、Python Agent SSE、运行状态/显式取消，以及能力发现/授权证据预览。当前前端列表仅覆盖本次登录，退出/刷新不等于删除 Python 检查点；没有伪造持久历史或流式文本。本轮到此结束，后续接口另行实施。
