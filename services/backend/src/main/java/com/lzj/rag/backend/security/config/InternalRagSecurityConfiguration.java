@@ -57,7 +57,11 @@ public class InternalRagSecurityConfiguration {
                 .addFilterBefore(authentication,BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(a->a.dispatcherTypeMatchers(DispatcherType.ASYNC,DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST,"/internal/rag/retrieve","/internal/rag/requests/*/cancel")
-                        .hasRole("INTERNAL_RAG").anyRequest().denyAll())
+                        .hasRole("INTERNAL_RAG")
+                        .requestMatchers(HttpMethod.POST,"/internal/agent/conversations/*/runs").hasRole("INTERNAL_RAG")
+                        .requestMatchers(HttpMethod.GET,"/internal/agent/conversations/*/history","/internal/agent/conversations/*/runs/*").hasRole("INTERNAL_RAG")
+                        .requestMatchers(HttpMethod.PATCH,"/internal/agent/conversations/*/runs/*").hasRole("INTERNAL_RAG")
+                        .anyRequest().denyAll())
                 .build();
     }
 }

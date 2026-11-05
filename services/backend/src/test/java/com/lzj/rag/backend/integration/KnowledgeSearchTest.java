@@ -455,10 +455,100 @@ class KnowledgeSearchTest {
             assertThat(receipt.path("modelRequests").asInt()).isEqualTo(2);
             assertThat(model.traceparents).anyMatch(value->value.startsWith("00-"+trace+"-"));
             assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_conversation",Integer.class)).isZero();
-            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_delegation WHERE revoked_at IS NOT NULL",Integer.class)).isEqualTo(1);
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_rag_delegation WHERE revoked_at IS NOT NULL",Integer.class)).isGreaterThanOrEqualTo(4);
+            assertThat(receipt.at("/conversationPersistence/partialSavedWhileRunning").asBoolean()).isTrue();
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_message",Integer.class)).isEqualTo(6);
             Path receiptFile=Path.of("target/knowledge-base/agent-runtime-contract.json");Files.createDirectories(receiptFile.getParent());
             Files.writeString(receiptFile,json.writerWithDefaultPrettyPrinter().writeValueAsString(receipt));
         } finally {if(process.isAlive())process.destroyForcibly();}
+    }
+    @Test void agentConversationHistoryIsOwnedOrderedIdempotentAndNeverReexecutes()throws Exception {
+        var create=Map.of("requestId",UUID.randomUUID());
+        var c=agentPublic("POST","/api/conversations",create,"alice",201).path("data");String id=c.path("id").asText();
+        assertThat(agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/nextBeforeSequence").asLong()).isZero();
+        assertThat(agentPublic("POST","/api/conversations",create,"alice",201).at("/data/id").asText()).isEqualTo(id);
+        for(String user:List.of("bob","carol")) {
+            assertThat(agentPublic("GET","/api/conversations",null,user,200).at("/data/total").asInt()).isZero();
+            agentPublic("GET","/api/conversations/"+id+"/messages",null,user,404);
+            agentPublic("PATCH","/api/conversations/"+id,Map.of("title","入侵"),user,404);
+            agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),user,404);
+        }
+        String grant=agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
+        String root="/internal/agent/conversations/"+id;
+        var begin=Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","测试问题","deadline",java.time.Instant.now().plusSeconds(30));
+        agentInternal("POST",root+"/runs",begin,null,401);
+        var run=agentInternal("POST",root+"/runs",begin,grant,200).path("data");String runId=run.path("runId").asText();
+        assertThat(run.path("created").asBoolean()).isTrue();
+        var repeat=agentInternal("POST",root+"/runs",begin,grant,200).path("data");
+        assertThat(repeat.path("created").asBoolean()).isFalse();assertThat(repeat.path("runId").asText()).isEqualTo(runId);
+        var wrong=new LinkedHashMap<String,Object>(begin);wrong.put("question","其他问题");agentInternal("POST",root+"/runs",wrong,grant,409);
+        wrong.put("requestId",UUID.randomUUID());wrong.put("messageId",UUID.randomUUID());agentInternal("POST",root+"/runs",wrong,grant,409);
+        var partial=agentSnapshot(1,"RUNNING","已生成的部分内容",List.of(),List.of());
+        agentInternal("PATCH",root+"/runs/"+runId,partial,grant,200);
+        agentInternal("PATCH",root+"/runs/"+runId,partial,grant,200);
+        agentInternal("PATCH",root+"/runs/"+runId,agentSnapshot(1,"RUNNING","冲突文本",List.of(),List.of()),grant,409);
+        agentPublic("POST","/api/conversations/"+id+"/runs/"+runId+"/cancel",Map.of(),"bob",404);
+        agentPublic("POST","/api/conversations/"+id+"/runs/"+runId+"/cancel",Map.of(),"alice",200);
+        var late=agentInternal("PATCH",root+"/runs/"+runId,agentSnapshot(2,"COMPLETED","已生成的部分内容。",List.of(),List.of()),grant,200);
+        assertThat(late.at("/data/status").asText()).isEqualTo("CANCELLED");
+        var latest=agentPublic("GET","/api/conversations/"+id+"/messages?size=1",null,"alice",200).path("data");
+        assertThat(latest.path("records").get(0).path("content").asText()).isEqualTo("已生成的部分内容。");assertThat(latest.path("hasMore").asBoolean()).isTrue();
+        var older=agentPublic("GET","/api/conversations/"+id+"/messages?size=1&beforeSequence="+latest.path("nextBeforeSequence").asLong(),null,"alice",200);
+        assertThat(older.at("/data/records/0/role").asText()).isEqualTo("user");
+        var next=agentInternal("POST",root+"/runs",wrong,grant,200).path("data");
+        var abandoned=new LinkedHashMap<String,Object>(agentSnapshot(1,"RUNNING","等待工具",List.of(),List.of()));
+        abandoned.put("tools",List.of(Map.of("toolCallId","call-abandoned","name","search_knowledge","status","RUNNING")));
+        agentInternal("PATCH",root+"/runs/"+next.path("runId").asText(),abandoned,grant,200);
+        jdbc.update("UPDATE kb_agent_run SET deadline_at=clock_timestamp()-interval '1 second' WHERE id=?",UUID.fromString(next.path("runId").asText()));
+        assertThat(agentPublic("GET","/api/conversations/"+id+"/runs/"+next.path("runId").asText(),null,"alice",200).at("/data/run/status").asText()).isEqualTo("TIMED_OUT");
+        assertThat(agentPublic("GET","/api/conversations/"+id+"/runs/"+next.path("runId").asText(),null,"alice",200).at("/data/message/tools/0/status").asText()).isEqualTo("UNAVAILABLE");
+        assertThat(agentInternal("POST",root+"/runs",wrong,grant,200).at("/data/created").asBoolean()).isFalse();
+        agentPublic("PATCH","/api/conversations/"+id,Map.of("title","重命名后的对话"),"alice",200);
+        assertThat(agentPublic("GET","/api/conversations?search=重命名",null,"alice",200).at("/data/records/0/title").asText()).isEqualTo("重命名后的对话");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_message WHERE conversation_id=?",Integer.class,UUID.fromString(id))).isEqualTo(4);
+        agentPublic("DELETE","/api/conversations/"+id,null,"alice",204);
+        agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",404);
+        agentInternal("POST",root+"/runs",wrong,grant,404);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_message",Integer.class)).isZero();
+    }
+    @Test void agentHistorySnapshotsAreReauthorizedBeforeDisplayAndModelHistory()throws Exception {
+        var data=dataset();String id=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID(),"kbIds",List.of(data.kb())),"alice",201).at("/data/id").asText();
+        String grant=agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
+        String root="/internal/agent/conversations/"+id;
+        JsonNode found;
+        try(var client=new InternalClient()){found=client.call("/internal/rag/retrieve",Map.of("query","PostgreSQL backup","kbIds",List.of(data.kb()),"topK",1),grant,"00-"+"1".repeat(32)+"-1234567890abcdef-01","history-evidence",200).path("data");}
+        var source=(com.fasterxml.jackson.databind.node.ObjectNode)found.path("evidence").get(0).deepCopy();
+        String ref="K"+"a".repeat(32)+"_E1";source.put("evidenceId",ref);source.set("versions",found.path("versions"));
+        for(String key:List.of("chunkIndex","documentName","fileUrl","adjacent","parentChunkId","subQueries","fusionScore","rerankScore"))source.remove(key);
+        source.put("toolTruncated",false);
+        var run=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","备份步骤","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
+        agentInternal("PATCH",root+"/runs/"+run.path("runId").asText(),agentSnapshot(1,"COMPLETED","使用 pg_dump。["+ref+"]",List.of(source),List.of(ref)),grant,200);
+        var history=agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/1");
+        assertThat(history.at("/citations/0/content").asText()).isNotBlank();assertThat(history.at("/evidence/0/versions/indexes").isArray()).isTrue();
+        var derived=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","继续说明","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
+        agentInternal("PATCH",root+"/runs/"+derived.path("runId").asText(),agentSnapshot(1,"COMPLETED","沿用先前的备份说明。",List.of(source),List.of()),grant,200);
+        UUID chunk=UUID.fromString(source.path("chunkId").asText());jdbc.update("UPDATE kb_chunk SET enabled=false WHERE id=?",chunk);
+        var hidden=agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/1");
+        assertThat(hidden.path("sourcesRestricted").asBoolean()).isTrue();assertThat(hidden.path("content").asText()).doesNotContain("pg_dump");assertThat(hidden.path("evidence").isEmpty()).isTrue();
+        assertThat(agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/3/sourcesRestricted").asBoolean()).isTrue();
+        assertThat(agentInternal("GET",root+"/history",null,grant,200).path("data").size()).isEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT evidence::text FROM kb_agent_message WHERE id=?",String.class,UUID.fromString(run.path("assistantMessageId").asText()))).contains("pg_dump");
+    }
+    private Map<String,Object> agentSnapshot(long sequence,String status,String text,List<?> evidence,List<String> citations) {
+        return Map.of("sequence",sequence,"status",status,"content",text,"evidence",evidence,"citations",citations,"tools",List.of(),"model","fixture-model","promptVersion","test-v1","promptHash","a".repeat(64));
+    }
+    private JsonNode agentPublic(String method,String path,Object body,String user,int expected)throws Exception {
+        var request=org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(org.springframework.http.HttpMethod.valueOf(method),path).with(auth(user));
+        if(body!=null)request.contentType("application/json").content(json.writeValueAsBytes(body));
+        var response=mvc.perform(request).andReturn().getResponse();assertThat(response.getStatus()).as(response.getContentAsString()).isEqualTo(expected);
+        return response.getContentAsByteArray().length==0?json.createObjectNode():json.readTree(response.getContentAsByteArray());
+    }
+    private JsonNode agentInternal(String method,String path,Object body,String grant,int expected)throws Exception {
+        var request=org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(org.springframework.http.HttpMethod.valueOf(method),path)
+                .header("Authorization","Bearer service-test-token-1234567890-abcdef").header("X-Rag-Service","agent-test")
+                .header("X-Rag-Deadline",java.time.Instant.now().plusSeconds(5).toString()).header("traceparent","00-"+"1".repeat(32)+"-1234567890abcdef-01");
+        if(grant!=null)request.header("X-Rag-Delegation",grant);if(body!=null)request.contentType("application/json").content(json.writeValueAsBytes(body));
+        var response=mvc.perform(request).andReturn().getResponse();assertThat(response.getStatus()).as(response.getContentAsString()).isEqualTo(expected);return json.readTree(response.getContentAsByteArray());
     }
     private final class InternalClient implements AutoCloseable {
         final okhttp3.OkHttpClient client=new okhttp3.OkHttpClient.Builder().readTimeout(java.time.Duration.ofSeconds(8)).build();

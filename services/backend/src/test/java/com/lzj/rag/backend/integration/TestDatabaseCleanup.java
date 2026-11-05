@@ -6,6 +6,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 final class TestDatabaseCleanup {
     private TestDatabaseCleanup(){ }
     static void clear(JdbcTemplate jdbc){
+        jdbc.update("DELETE FROM kb_agent_message");
+        jdbc.update("DELETE FROM kb_agent_run");
+        jdbc.update("DELETE FROM kb_agent_conversation");
         jdbc.update("DELETE FROM kb_rag_delegation");
         jdbc.update("DELETE FROM kb_rag_answer_run");
         jdbc.update("DELETE FROM kb_rag_conversation");

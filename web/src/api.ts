@@ -101,10 +101,38 @@ export class ApiClient {
   async send<T>(method: string, path: string, body?: unknown, headers?: Record<string, string>, signal?: AbortSignal): Promise<T> {
     return this.read(path, { method, signal, headers: { 'Content-Type': 'application/json', ...headers }, body: body === undefined ? undefined : JSON.stringify(body) }, response => this.unwrap<T>(response));
   }
+  async stream(path: string, body: unknown, event: (name: string, data: Record<string, unknown>) => void, signal?: AbortSignal): Promise<void> {
+    return this.read(path, { method: 'POST', signal, headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' }, body: JSON.stringify(body) }, async response => {
+      if (!response.headers.get('Content-Type')?.includes('text/event-stream') || !response.body) throw new Error('流式响应格式无效。');
+      const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; let done = false;
+      const consume = () => {
+        let boundary: number;
+        while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+          const frame = buffer.slice(0, boundary); buffer = buffer.slice(boundary + 2);
+          let name = 'message'; const data: string[] = [];
+          for (const line of frame.split('\n')) {
+            if (line.startsWith('event:')) name = line.slice(6).trim();
+            if (line.startsWith('data:')) data.push(line.slice(5).trimStart());
+          }
+          if (data.length) { const payload = JSON.parse(data.join('\n')) as Record<string, unknown>; event(name, payload); if (name === 'done') done = true; }
+        }
+      };
+      try {
+        while (true) {
+          const result = await reader.read();
+          buffer += decoder.decode(result.value, { stream: !result.done }).replace(/\r/g, '');
+          if (buffer.length > 524288) throw new Error('流式响应超出预算。');
+          consume(); if (result.done) break;
+        }
+        if (!done) throw new Error('连接已中断，请刷新会话查看已保存的内容和状态。');
+      } finally { await reader.cancel(); reader.releaseLock(); }
+    });
+  }
   async upload<T>(path: string, data: FormData, key: string): Promise<T> {
     return this.read(path, { method: 'POST', body: data, headers: { 'Idempotency-Key': key } }, response => this.unwrap<T>(response));
   }
   private async unwrap<T>(response: Response): Promise<T> {
+    if (response.status === 204) return undefined as T;
     let envelope: { code: string; data: T; requestId?: string };
     try { envelope = await response.json(); } catch { throw new Error('服务响应格式无效，请联系维护者。'); }
     if (envelope.code !== '0') throw new ApiError(response.status, envelope.code, envelope.requestId);

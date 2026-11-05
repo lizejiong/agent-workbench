@@ -48,6 +48,7 @@ export default function Answer({ reply }: { reply: AgentReply }) {
     <Drawer title="来源资料" open={!!source} onClose={() => setSource(undefined)} size={420} className="chat-source-drawer">
       {source && <div className="chat-source-detail"><span className="chat-source-file"><FileTextOutlined /></span><h2>{source.documentName}</h2>
         <Source metadata={source.sourceMetadata || {}} />
+        {source.content && <blockquote className="chat-source-excerpt">{source.content}</blockquote>}
         {(source.truncated || source.toolTruncated) && <p className="chat-source-hint">本次回答使用了资料摘录，完整内容请查阅原文件。</p>}
         <Button block icon={<DownloadOutlined />} loading={downloading} onClick={() => void download()}>下载原文件</Button>
         <Link to={`/documents/${source.documentId}?tab=chunks`} onClick={() => setSource(undefined)}>在后台查看文档</Link>

@@ -162,3 +162,15 @@ Java 隔离副本仅运行新增 `pythonMainAgentRunsGraphAgainstJavaWithUserDel
 验证使用真实 Chromium/Vite/Uvicorn/FastAPI/LangGraph/SQLite，Java API 和主模型是明确 HTTP 协议桩；未重跑真实 Java/PG/MinIO 或供应商，未运行 Maven verify，未覆盖原运行 JAR。Nginx 应用镜像/生产网络未实跑，不把 Vite 联调当作生产代理验收。
 
 接口缺口已按代码列于 docs/web/CHAT.md：稳定身份查询、服务端会话列表/历史、重命名/删除、Python Agent SSE、运行状态/显式取消，以及能力发现/授权证据预览。当前前端列表仅覆盖本次登录，退出/刷新不等于删除 Python 检查点；没有伪造持久历史或流式文本。本轮到此结束，后续接口另行实施。
+
+
+## Java 统一 Agent 会话、消息与原生 SSE（2026-11-05）
+
+- V11 新增 Java Agent 会话、运行、消息账本；租户/所有者、固定范围、标题/时间、稳定序号、三类关联 ID、执行状态、工具展示、引用、实际证据摘录与知识版本全部持久化。公开列表/消息分页、重命名/删除、运行读取/取消；服务身份 + 会话绑定用户委托的内部读写。
+- 数据库短事务取得唯一执行权，重复请求不重复保存/调用图，陈旧快照拒绝，终态不能复活。持久 deadline 清扫仅结算，无自动恢复生成。取消/超时可在不可延长的5秒窗口保存尾部，删除物理清消息/证据并保留最小请求墓碑。
+- Python 移除 sessions.py，从 Java 有效历史中选近期消息/用户问题提取摘要，新回答继承历史助手的证据依赖。每次模型调用前确认历史与新证据，旧引用不进入本轮引用表。图按 runId 隔离，终态/重启清理，不从旧 checkpoints 重放工具。
+- 新增 Python 原生 SSE：meta/delta/tool/error/done、背压与心跳，正文批量保存；AnyIO 取消域保护末尾结算，修复浏览器断连二次取消导致清理中断的问题。Web 从 Java 恢复历史，支持管理、分页、工具状态、引用摘录及取消后的权威状态复查；仅查询，不自动重发问题。
+- Java 定向3个场景已通过真实 PG/pgvector/MinIO 和 Python TCP/SSE 验证；Python 与 Web 定向结果及浏览器记录统一保存为 CONVERSATION_VALIDATION.json。运行中 JAR 未覆盖，不连接既有业务数据库，不运行全量 reactor verify。
+- 维护当前架构、会话契约、OpenAPI 生成器和五份 RAG 文档。真实模型语义效果、业务工具、人工图恢复、多实例图存储、生产代理/容量未验收；本轮范围到此，不自动开发后续能力。
+
+最终定向验证：Java 3 个独立场景通过（最新分页/终态工具与跨语言分别补验，均0失败/跳过）；Python 9 项服务 + 4 项原适配器通过；Web 构建和23项检查通过；浏览器8类行为通过。OpenAPI 9路径/39个本地引用解析通过，ruff与锁文件检查通过。记录、分层、日志和源码哈希见 [CONVERSATION_VALIDATION.json](CONVERSATION_VALIDATION.json)。临时浏览器、Vite和验收Agent已关闭。

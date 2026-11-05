@@ -28,10 +28,25 @@ class ProtocolFixture:
         self.block_retrieval = False
         self.started = asyncio.Event()
         self.closed = asyncio.Event()
+        self.conversations = {}
+        self.runs = {}
+        self.messages = {}
+        self.block_answer = False
+        self.partial_started = asyncio.Event()
+        self.answer_closed = asyncio.Event()
+        self.answer_delay = 0.01
+        self.direct_answer = False
+        self.truncate_answer = False
 
     async def java(self, request):
         self.java_requests.append(request)
         path = request.url.path
+        if (
+            path == "/api/conversations"
+            or path.startswith("/api/conversations/")
+            or path.startswith("/internal/agent/")
+        ):
+            return await self.conversation(request)
         if request.method == "DELETE":
             return httpx.Response(204)
         if path == "/api/rag/delegations":
@@ -140,7 +155,9 @@ class ProtocolFixture:
         tool_messages = [
             item for item in messages[last_user + 1 :] if item["role"] == "tool"
         ]
-        if not tool_messages:
+        if not tool_messages and self.direct_answer:
+            message = {"role": "assistant", "content": "根据刚才的回答继续说明。"}
+        elif not tool_messages:
             count = 2 if "两次" in messages[last_user]["content"] else 1
             message = {
                 "role": "assistant",
@@ -176,6 +193,51 @@ class ProtocolFixture:
                     "UNAVAILABLE": "检索暂不可用，请稍后重试。",
                 }[status]
             message = {"role": "assistant", "content": answer}
+        if body.get("stream"):
+            owner = self
+
+            class Chunks(httpx.AsyncByteStream):
+                async def __aiter__(self):
+                    def frame(delta, finish=None):
+                        value = {
+                            "id": "chatcmpl-fixture",
+                            "object": "chat.completion.chunk",
+                            "created": 1,
+                            "model": "fixture-agent",
+                            "choices": [
+                                {"index": 0, "delta": delta, "finish_reason": finish}
+                            ],
+                        }
+                        return (
+                            "data: " + json.dumps(value, ensure_ascii=False) + "\n\n"
+                        ).encode()
+
+                    if message.get("tool_calls"):
+                        calls = [
+                            {"index": i, **c}
+                            for i, c in enumerate(message["tool_calls"])
+                        ]
+                        yield frame({"role": "assistant", "tool_calls": calls})
+                        yield frame({}, "tool_calls")
+                    else:
+                        text = message["content"]
+                        try:
+                            for i in range(0, len(text), 8):
+                                yield frame({"content": text[i : i + 8]})
+                                if owner.truncate_answer:
+                                    return
+                                if owner.block_answer:
+                                    owner.partial_started.set()
+                                    await asyncio.Event().wait()
+                                await asyncio.sleep(owner.answer_delay)
+                            yield frame({}, "stop")
+                        finally:
+                            owner.answer_closed.set()
+                    yield b"data: [DONE]\n\n"
+
+            return httpx.Response(
+                200, headers={"Content-Type": "text/event-stream"}, stream=Chunks()
+            )
         return httpx.Response(
             200,
             json={
@@ -198,4 +260,154 @@ class ProtocolFixture:
                     "total_tokens": 20,
                 },
             },
+        )
+
+    async def conversation(self, request):
+        """仅模拟 Java 新契约；实际 SQL/隔离语义由 Java PostgreSQL 集成测试验证。"""
+        path, method = request.url.path, request.method
+        body = json.loads(request.content) if request.content else {}
+        if path.startswith("/api/"):
+            header = request.headers.get("Authorization", "")
+            if not header.startswith("Basic "):
+                return httpx.Response(401)
+            username, password = base64.b64decode(header[6:]).decode().split(":", 1)
+            if password != AUTH[1]:
+                return httpx.Response(401)
+            if path == "/api/conversations":
+                conversation_id = str(uuid.uuid4())
+                self.conversations[conversation_id] = {
+                    "id": conversation_id,
+                    "owner": username,
+                    "title": "新对话",
+                    "kbIds": body.get("kbIds") or [KB_ID],
+                    "documentIds": body.get("documentIds"),
+                }
+                self.messages[conversation_id] = []
+                return httpx.Response(
+                    201, json={"code": "0", "data": self.conversations[conversation_id]}
+                )
+            conversation_id = path.split("/")[3]
+            conversation = self.conversations.get(conversation_id)
+            if not conversation or conversation["owner"] != username or self.denied:
+                return httpx.Response(404)
+            if path.endswith("/delegations"):
+                token = "rd_" + uuid.uuid4().hex + "x" * 11
+                grant = {
+                    "delegationId": str(uuid.uuid4()),
+                    "delegationToken": token,
+                    "serviceId": body["serviceId"],
+                    "tenantId": "tenant-a",
+                    "userId": username,
+                    "agentSessionId": conversation_id,
+                    "kbIds": conversation["kbIds"],
+                    "documentIds": conversation["documentIds"],
+                    "expiresAt": (datetime.now(UTC) + timedelta(minutes=5)).isoformat(),
+                }
+                self.grants[token] = grant
+                return httpx.Response(201, json={"code": "0", "data": grant})
+            raise AssertionError(path)
+        assert request.headers["Authorization"] == "Bearer " + "s" * 32
+        grant = self.grants[request.headers["X-Rag-Delegation"]]
+        conversation_id = path.split("/")[4]
+        assert conversation_id == grant["agentSessionId"]
+        rows = self.messages[conversation_id]
+        if path.endswith("/history"):
+            history = [
+                {
+                    **{k: row[k] for k in ("id", "role", "content", "runId")},
+                    "evidence": row.get("evidence", []),
+                }
+                for row in rows
+                if row["status"] == "COMPLETED"
+                and (self.status == "READY" or row["role"] == "user")
+            ]
+            return httpx.Response(200, json={"code": "0", "data": history})
+        if method == "POST":
+            previous = next(
+                (
+                    r
+                    for r in self.runs.values()
+                    if r["conversationId"] == conversation_id
+                    and r["requestId"] == body["requestId"]
+                ),
+                None,
+            )
+            if previous:
+                if (
+                    previous["userMessageId"] != body["messageId"]
+                    or previous["question"] != body["question"]
+                ):
+                    return httpx.Response(409, json={"code": "AGENT_REQUEST_CONFLICT"})
+                return httpx.Response(
+                    200, json={"code": "0", "data": {**previous, "created": False}}
+                )
+            if any(
+                r["conversationId"] == conversation_id and r["status"] == "RUNNING"
+                for r in self.runs.values()
+            ):
+                return httpx.Response(409, json={"code": "SESSION_BUSY"})
+            run_id, assistant = str(uuid.uuid4()), str(uuid.uuid4())
+            run = {
+                "runId": run_id,
+                "conversationId": conversation_id,
+                "requestId": body["requestId"],
+                "userMessageId": body["messageId"],
+                "assistantMessageId": assistant,
+                "question": body["question"],
+                "traceId": request.headers["traceparent"].split("-")[1],
+                "status": "RUNNING",
+                "checkpointSequence": 0,
+                "deadline": body["deadline"],
+                "created": True,
+            }
+            self.runs[run_id] = run
+            rows.extend(
+                [
+                    {
+                        "id": body["messageId"],
+                        "runId": run_id,
+                        "role": "user",
+                        "content": body["question"],
+                        "status": "COMPLETED",
+                    },
+                    {
+                        "id": assistant,
+                        "runId": run_id,
+                        "role": "assistant",
+                        "content": "",
+                        "status": "RUNNING",
+                        "citations": [],
+                        "evidence": [],
+                        "tools": [],
+                    },
+                ]
+            )
+            return httpx.Response(200, json={"code": "0", "data": run})
+        run = self.runs[path.split("/")[-1]]
+        row = next(r for r in rows if r["id"] == run["assistantMessageId"])
+        if method == "PATCH":
+            if run["status"] == "RUNNING":
+                run["status"] = body["status"]
+            run["checkpointSequence"] = body["sequence"]
+            row.update(
+                content=body["content"],
+                status=run["status"],
+                evidence=body["evidence"],
+                tools=body["tools"],
+                model=body["model"],
+                promptVersion=body["promptVersion"],
+                promptHash=body["promptHash"],
+            )
+            row["citations"] = [
+                {
+                    **s,
+                    "documentName": "备份说明",
+                    "fileUrl": f"/api/documents/{s['documentId']}/file",
+                }
+                for s in body["evidence"]
+                if s["evidenceId"] in body["citations"]
+            ]
+            return httpx.Response(200, json={"code": "0", "data": run})
+        return httpx.Response(
+            200, json={"code": "0", "data": {"run": run, "message": row}}
         )

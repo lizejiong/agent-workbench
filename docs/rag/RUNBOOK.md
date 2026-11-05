@@ -1,5 +1,25 @@
 # RAG 运行手册
 
+## Java 业务会话与 Python SSE（2026-11-05）
+
+升级顺序：先备份 Java PostgreSQL 与受保护 Agent 状态目录，部署 backend 并确认 Flyway V11，再升级 Python（`uv sync --project services/agent-service --locked`、单 worker），最后更新 Web。V11 是新增 Agent 领域表，不迁移 Java 独立问答或自动导入旧 Python 图历史。旧 sessions.sqlite 不再读写；按现有保留策略人工归档/删除，不把旧图中未经验证的来源变成新业务历史。
+
+服务身份/用户委托继续使用原 `kb.rag.internal` 配置。每次 Python 执行都按当前用户取得会话绑定委托，不能使用固定万能用户。Java 不可用时停止模型执行或保存并准确报告失败，不切换到 Python 本地历史库。AGENT_STATE_DIR 只能供一个 Python 进程独占；重启会清理遗留执行图，Java 运行按持久 deadline 结算，不自动重放。
+
+代理中 `/api/agent/*` 发往 Python，`/api/conversations/*` 发往 Java。排障先用当前用户 GET 会话消息或 run；RUNNING 在 deadline 后最多约5秒清扫为 TIMED_OUT，部分文本保留。检查 meta 的 runId/消息 ID 与 Java requestId/traceId；这些关联字段不授予权限。checkpoint 冲突409通常表示重复标识内容变化或旧执行，不能通过新 ID 盲目重放业务操作。
+
+SSE 无 done、persisted=false 或代理断连时先读 Java，禁止把全部失败当作无资料。取消后短预算保存可能滞后，Web 只读复查；异常终态工具显示 UNAVAILABLE，不显示成仍执行。删除清除业务消息/快照，图由 Python 生命周期清理。生产 Nginx、真实模型与容量仍需单独验收。
+
+定向命令（在隔离构建副本执行 Java，先同步源码，不覆盖运行中的 JAR）：
+
+```powershell
+.\mvnw.cmd -pl services/backend -am '-Dtest=KnowledgeSearchTest#agentConversationHistoryIsOwnedOrderedIdempotentAndNeverReexecutes+agentHistorySnapshotsAreReauthorizedBeforeDisplayAndModelHistory+pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources' '-Dsurefire.failIfNoSpecifiedTests=false' '-Dkb.test.agent-python=实际工作区/services/agent-service/.venv/Scripts/python.exe' '-Dkb.test.agent-smoke=实际工作区/services/agent-service/tests/java_runtime_smoke.py' test
+uv run --project services/agent-service --locked pytest services/agent-service/tests/test_agent.py examples/integration/rag_agent/test_knowledge_tool.py -q --basetemp=.cache/agent-tests-local
+python scripts/rag/build_conversation_openapi.py
+```
+
+Java 依赖 Docker 中独立 PG/pgvector 与 MinIO；显式 agent-python 使跨语言方法实际执行，跳过不能计为通过。回执为隔离副本 target/knowledge-base/agent-runtime-contract.json，分层结果见 [CONVERSATION_VALIDATION.json](CONVERSATION_VALIDATION.json)。以下旧轮次说明按其日期保留。
+
 已交付共享检索、Java 普通/流式独立问答及 Python 主 Agent 正式入口。依赖、账号、对象存储与入库流程继续使用 [知识库运行手册](../knowledge-base/RUNBOOK.md)。Java 问答随 backend 启动；Python 是独立进程，启动、配置与调用见 [Agent README](../../services/agent-service/README.md)。
 
 ## Python 主 Agent 正式入口（2026-11-02）

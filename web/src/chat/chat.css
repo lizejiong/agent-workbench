@@ -1,3 +1,14 @@
+.chat-conversation-row { display: flex; align-items: center; min-width: 0; }
+.chat-conversation-row .chat-conversation { flex: 1; min-width: 0; }
+.chat-history-menu { flex: none; width: 26px; height: 28px; }
+.chat-sidebar-collapsed .chat-history-menu { display: none; }
+.chat-history-load { display: block; margin: 10px auto; padding: 8px 12px; border: 1px solid #ddd; border-radius: 10px; background: transparent; color: #555; cursor: pointer; }
+.chat-history-load:disabled { opacity: .5; cursor: wait; }
+.chat-tool-events { margin-bottom: 14px; color: #777; font-size: 12px; }
+.chat-tool-events summary { cursor: pointer; }
+.chat-tool-events p { margin: 8px 0; }
+.chat-source-excerpt { margin: 16px 0; padding: 12px; border-left: 3px solid #ddd; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.chat-rename-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin-top: 12px; }
 .chat-shell {
   --primary: #171717; --text: #202020; --muted: #777; --line: #e8e8e8;
   height: 100dvh; min-height: 360px; display: grid; grid-template-columns: 248px minmax(0, 1fr);

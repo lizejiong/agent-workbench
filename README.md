@@ -4,7 +4,7 @@
 
 当前已实现 AI 服务、知识库后端、Java 独立 RAG 问答、Web 管理台，以及 Python 主 Agent 的 FastAPI/LangGraph 运行入口，并提供 Java/Python 公共组件。主 Agent 复用 Java 证据服务，实际供应商模型、业务 MCP 工具和生产部署仍需分别验收。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
 
-Python / LangGraph 承载 Agent 执行、会话检查点与主模型调用，Java 承载知识业务、检索、独立问答及平台能力；业务工具按需扩展。目录、接口和上下文边界见 [项目架构边界](docs/ARCHITECTURE.md)。
+Python / LangGraph 承载 Agent 执行、当前图检查点与主模型调用，Java 统一管理 Agent 会话/消息/证据及运行状态，并承载知识业务、检索、独立问答及平台能力；业务工具按需扩展。目录、接口和上下文边界见 [项目架构边界](docs/ARCHITECTURE.md)。
 
 ```text
 packages/

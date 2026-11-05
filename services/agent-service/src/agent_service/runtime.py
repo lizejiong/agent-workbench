@@ -1,159 +1,455 @@
-"""每轮注入新身份、调用预算和引用表；图检查点不承载凭据。"""
+"""Java 持有业务历史及运行权；Python 仅执行图、选择上下文并输出真实模型增量。"""
 
 import asyncio
 import logging
+import re
 import time
-import uuid
+from dataclasses import replace
 
 import httpx
-from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage
-from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
 from langsmith import tracing_context
 
 from agent_service.config import Settings
 from agent_service.contracts import AgentError, ChatRequest
-from agent_service.graph import AgentContext
-from agent_service.knowledge.adapter import TrustedContext
+from agent_service.conversations import ConversationClient
+from agent_service.graph import PROMPT_VERSION, AgentContext
+from agent_service.knowledge.adapter import TrustedContext, encode
 from agent_service.knowledge.delegation import DelegationClient
-from agent_service.sessions import Sessions
 
 logger = logging.getLogger(__name__)
 
 
+def select_history(rows, current_run, budget):
+    """最近完整消息优先；更早的用户问题形成有界提取摘要，不复用旧工具正文。"""
+    eligible = [r for r in rows if r["runId"] != current_run and r["content"].strip()]
+    recent = []
+    used = 0
+    inherited = {}
+    for row in reversed(eligible):
+        text = row["content"]
+        size = len(text.encode("utf-8"))
+        if len(recent) >= 12:
+            break
+        if used + size > budget:
+            continue
+        sources = row.get("evidence", [])
+        additional = {
+            s["evidenceId"]: s for s in sources if s["evidenceId"] not in inherited
+        }
+        if (
+            len(inherited) + len(additional) > 64
+            or len(encode([*inherited.values(), *additional.values()])) > 131072
+        ):
+            continue
+        inherited.update(additional)
+        recent.append(row)
+        used += size
+    recent.reverse()
+    selected = {r["id"] for r in recent}
+    earlier = [
+        r["content"][:160]
+        for r in eligible
+        if r["role"] == "user" and r["id"] not in selected
+    ][-8:]
+    messages = []
+    if earlier:
+        summary = "此前用户问题摘要（提取片段，仅供消解指代）：\n" + "\n".join(earlier)
+        while len(summary.encode("utf-8")) > 2048:
+            summary = summary[: len(summary) * 3 // 4]
+        messages.append(HumanMessage(content=summary))
+    for row in recent:
+        # 历史引用不注册为本轮新证据；需要引用时必须重新检索。
+        text = re.sub(r"\[K[a-f0-9]{32}_E[1-9][0-9]{0,3}\]", "", row["content"])
+        messages.append(
+            HumanMessage(content=text)
+            if row["role"] == "user"
+            else AIMessage(content=text)
+        )
+    return messages, [r for r in recent if r["role"] == "assistant"]
+
+
+class TurnWriter:
+    def __init__(self, store, identity, run, context, settings, prompt_hash, emit):
+        self.store, self.identity, self.run, self.context = (
+            store,
+            identity,
+            run,
+            context,
+        )
+        self.settings, self.prompt_hash, self.emit = settings, prompt_hash, emit
+        self.text = ""
+        self.sequence = 0
+        self.citations = []
+        self.lock = asyncio.Lock()
+        self.last_write = 0
+        self.dirty = False
+        self.status = "RUNNING"
+
+    async def event(self, event, data):
+        if self.emit:
+            await self.emit(event, data)
+
+    async def append(self, text):
+        if not text:
+            return
+        self.text += text
+        if len(self.text) > 65536:
+            raise AgentError(413, "CONTEXT_BUDGET", "本轮输出过长")
+        self.dirty = True
+        if time.monotonic() - self.last_write >= 0.4:
+            await self.save()
+        await self.event(
+            "delta", {"messageId": self.run["assistantMessageId"], "text": text}
+        )
+
+    async def changed(self, event, data):
+        self.dirty = True
+        await self.save()
+        await self.event(event, data)
+
+    async def save(self, status="RUNNING", code=None):
+        async with self.lock:
+            self.sequence += 1
+            response = await self.store.save(
+                self.identity,
+                self.run["runId"],
+                {
+                    "sequence": self.sequence,
+                    "status": status,
+                    "content": self.text,
+                    "evidence": list(self.context.snapshots.values()),
+                    "citations": self.citations,
+                    "tools": list(self.context.tools.values()),
+                    "model": self.settings.model,
+                    "promptVersion": PROMPT_VERSION,
+                    "promptHash": self.prompt_hash,
+                    "errorCode": code,
+                },
+            )
+            self.status = response["status"]
+            self.dirty = False
+            self.last_write = time.monotonic()
+            if status == "RUNNING" and self.status != "RUNNING":
+                raise AgentError(409, "AGENT_RUN_ENDED", "本轮生成已取消或结束")
+            return response
+
+    async def monitor(self):
+        while True:
+            await asyncio.sleep(0.5)
+            if self.dirty:
+                await self.save()
+            state = await self.store.state(self.identity, self.run["runId"])
+            self.status = state["run"]["status"]
+            if self.status != "RUNNING":
+                raise AgentError(409, "AGENT_RUN_ENDED", "本轮生成已取消或结束")
+
+
 class AgentRuntime:
-    def __init__(
-        self, settings: Settings, gateway, graph, sessions: Sessions, prompt_hash
-    ):
-        self.settings = settings
-        self.gateway = gateway
-        self.graph = graph
-        self.sessions = sessions
+    def __init__(self, settings: Settings, gateway, graph, prompt_hash):
+        self.settings, self.gateway, self.graph = settings, gateway, graph
         self.delegations = DelegationClient(gateway.client, settings.service_id)
+        self.store = ConversationClient(gateway)
         self.prompt_hash = prompt_hash
         self.active = 0
 
-    async def run(self, request: ChatRequest, auth: httpx.BasicAuth, trace_id: str):
-        # 检查与加计数之间没有 await；单个事件循环内拒绝排队。
+    async def run(
+        self, request: ChatRequest, auth: httpx.BasicAuth, trace_id: str, emit=None
+    ):
         if self.active >= self.settings.concurrency:
             raise AgentError(503, "AGENT_CAPACITY", "Agent 当前繁忙，请稍后重试")
         self.active += 1
         try:
-            async with asyncio.timeout(self.settings.turn_timeout):
-                return await self._turn(
-                    request,
-                    auth,
-                    trace_id,
-                    time.monotonic() + self.settings.turn_timeout,
-                )
+            deadline = time.monotonic() + self.settings.turn_timeout
+            async with asyncio.timeout_at(deadline):
+                return await self._turn(request, auth, trace_id, emit, deadline)
         except TimeoutError as exc:
             raise AgentError(
-                504, "AGENT_TIMEOUT", "本轮处理超时，请缩小问题范围"
+                504, "AGENT_TIMEOUT", "本轮处理超时，已保存的内容可从历史查看"
             ) from exc
         finally:
             self.active -= 1
 
-    async def _turn(
-        self,
-        request: ChatRequest,
-        auth: httpx.BasicAuth,
-        trace_id: str,
-        deadline: float,
-    ):
-        session_id = str(request.sessionId or uuid.uuid4())
-        run_id = str(uuid.uuid4())
-        if request.sessionId is None:
-            scope = {
-                "kbIds": None
-                if request.kbIds is None
-                else list(map(str, request.kbIds)),
-                "documentIds": None
-                if request.documentIds is None
-                else list(map(str, request.documentIds)),
-            }
-        else:
+    async def _turn(self, request, auth, trace_id, emit, deadline):
+        conversation_id = request.conversationId or request.sessionId
+        if (
+            request.conversationId
+            and request.sessionId
+            and request.conversationId != request.sessionId
+        ):
+            raise AgentError(400, "CONVERSATION_INVALID", "会话标识不一致")
+        if conversation_id:
             if request.kbIds is not None or request.documentIds is not None:
                 raise AgentError(400, "SESSION_SCOPE_FIXED", "已有会话不能修改知识范围")
-            scope = await self.sessions.scope(session_id)
-        async with self.delegations.issue(auth, session_id, scope) as grant:
+        else:
+            conversation_id = (await self.store.create(request, auth))["id"]
+        async with self.delegations.issue(auth, str(conversation_id)) as grant:
             identity = TrustedContext.from_grant(
                 grant,
                 seconds=max(0.001, deadline - time.monotonic()),
                 trace_id=trace_id,
             )
-            if request.sessionId is None:
-                await self.sessions.create(grant)
-            await self.sessions.acquire(grant, run_id, self.settings.turn_timeout)
+            identity = replace(identity, deadline=deadline)
+            run = await self.store.begin(identity, request)
+            if emit:
+                await emit("meta", {**run, "persisted": True})
+            if not run["created"]:
+                state = await self.store.state(identity, run["runId"])
+                message = state["message"]
+                reply = self._reply(
+                    identity,
+                    state["run"],
+                    message["content"],
+                    message["citations"],
+                    [
+                        {
+                            k: v
+                            for k, v in t.items()
+                            if k
+                            in {
+                                "status",
+                                "requestId",
+                                "traceId",
+                                "degraded",
+                                "strategy",
+                                "toolTruncated",
+                                "errorCode",
+                                "retryable",
+                            }
+                        }
+                        for t in message.get("tools", [])
+                        if t["status"] != "RUNNING"
+                    ],
+                    True,
+                    message,
+                )
+                if emit:
+                    await emit("done", reply)
+                return reply
+            context = AgentContext(self.gateway, identity, self.settings)
+            writer = TurnWriter(
+                self.store,
+                identity,
+                run,
+                context,
+                self.settings,
+                self.prompt_hash,
+                emit,
+            )
+            context.changed = writer.changed
+            generation = monitor = None
             try:
-                return await self._invoke(request, run_id, identity)
-            finally:
-                await self.sessions.release(session_id, run_id)
+                history = await self.store.history(identity)
+                messages, assistants = select_history(
+                    history,
+                    run["runId"],
+                    min(24000, self.settings.context_byte_budget // 2),
+                )
+                for row in assistants:
+                    for snapshot in row.get("evidence", []):
+                        context.snapshots[snapshot["evidenceId"]] = {
+                            key: snapshot[key]
+                            for key in (
+                                "evidenceId",
+                                "kbId",
+                                "documentId",
+                                "chunkId",
+                                "generation",
+                                "content",
+                                "sourceContentHash",
+                                "snapshotHash",
+                                "sourceMetadata",
+                                "truncated",
+                                "toolTruncated",
+                                "versions",
+                            )
+                        }
 
-    async def _invoke(
-        self, request: ChatRequest, run_id: str, identity: TrustedContext
-    ):
+                async def authorize():
+                    if assistants:
+                        live = {
+                            r["id"]: r["content"]
+                            for r in await self.store.history(identity)
+                        }
+                        if any(live.get(r["id"]) != r["content"] for r in assistants):
+                            raise AgentError(
+                                409, "EVIDENCE_CHANGED", "历史知识已变化，请重新提问"
+                            )
+                    await writer.save()
+
+                context.authorize_model = authorize
+                messages.append(HumanMessage(content=request.question))
+                generation = asyncio.create_task(
+                    self._generate(messages, run, context, writer)
+                )
+                monitor = asyncio.create_task(writer.monitor())
+                await asyncio.wait(
+                    {generation, monitor}, return_when=asyncio.FIRST_COMPLETED
+                )
+                if monitor.done():
+                    await monitor
+                await generation
+                monitor.cancel()
+                await asyncio.gather(monitor, return_exceptions=True)
+                selected = context.references.validate_answer(writer.text)
+                writer.citations = [r["evidenceId"] for r in selected]
+                terminal = await writer.save("COMPLETED")
+                reply = self._reply(
+                    identity,
+                    terminal,
+                    writer.text,
+                    [context.public_sources[r["evidenceId"]] for r in selected],
+                    context.tool_events,
+                )
+                await writer.event("done", reply)
+                return reply
+            except BaseException as exc:
+                for task in (generation, monitor):
+                    if task:
+                        task.cancel()
+                await asyncio.gather(
+                    *(t for t in (generation, monitor) if t), return_exceptions=True
+                )
+                status = (
+                    "CANCELLED" if isinstance(exc, asyncio.CancelledError) else "FAILED"
+                )
+                if time.monotonic() >= identity.deadline or isinstance(
+                    exc, TimeoutError
+                ):
+                    status = "TIMED_OUT"
+                code = (
+                    exc.code
+                    if isinstance(exc, AgentError)
+                    else "AGENT_TIMEOUT"
+                    if status == "TIMED_OUT"
+                    else "CLIENT_DISCONNECTED"
+                    if status == "CANCELLED"
+                    else "MODEL_UNAVAILABLE"
+                )
+                if isinstance(exc, ValueError):
+                    code = "CITATION_INVALID"
+                for tool in context.tools.values():
+                    if tool["status"] == "RUNNING":
+                        tool.update(status="UNAVAILABLE", errorCode=code)
+                persisted = False
+                try:
+                    async with asyncio.timeout(3.5):
+                        terminal = await asyncio.shield(writer.save(status, code))
+                    status, persisted = terminal["status"], True
+                except Exception:
+                    logger.warning(
+                        "agent settlement unavailable run_id=%s trace_id=%s",
+                        run["runId"],
+                        trace_id,
+                    )
+                if not isinstance(exc, asyncio.CancelledError):
+                    try:
+                        await writer.event(
+                            "error", {"code": code, "persisted": persisted}
+                        )
+                        await writer.event(
+                            "done", {**run, "status": status, "persisted": persisted}
+                        )
+                    except TimeoutError:
+                        pass  # 慢客户端不占用已完成的执行权；客户端通过 Java 查询终态。
+                if isinstance(exc, (asyncio.CancelledError, TimeoutError, AgentError)):
+                    raise
+                raise AgentError(
+                    502 if code == "CITATION_INVALID" else 503,
+                    code,
+                    "本轮未完成，已保存的内容可从历史查看",
+                ) from None
+            finally:
+                for task in (generation, monitor):
+                    if task:
+                        task.cancel()
+                await asyncio.gather(
+                    *(t for t in (generation, monitor) if t), return_exceptions=True
+                )
+                try:
+                    await self.graph.checkpointer.adelete_thread(run["runId"])
+                except Exception:
+                    logger.warning(
+                        "agent checkpoint cleanup unavailable run_id=%s", run["runId"]
+                    )
+
+    async def _generate(self, messages, run, context, writer):
         config = {
-            "configurable": {"thread_id": identity.agent_session_id},
+            "configurable": {"thread_id": run["runId"]},
             "recursion_limit": self.settings.max_model_calls * 4 + 8,
         }
-        context = AgentContext(self.gateway, identity, self.settings)
-        # 禁用环境中可能打开的第三方追踪，凭据/资料不通过回调导出。
+        last = None
+        model_message = None
         with tracing_context(enabled=False):
-            snapshot = await self.graph.aget_state(config)
-            # 权限变化后旧正文不能重用：仅保留至多 4 条、共 8000 字节的用户消息。
-            history = []
-            used = 0
-            for message in reversed(snapshot.values.get("messages", [])):
-                if not isinstance(message, HumanMessage):
-                    continue
-                size = len(str(message.content).encode("utf-8"))
-                if len(history) >= 4 or used + size > 8000:
-                    break
-                history.append(message)
-                used += size
-            messages = [
-                RemoveMessage(id=REMOVE_ALL_MESSAGES),
-                *reversed(history),
-                HumanMessage(content=request.question),
-            ]
-            try:
-                result = await self.graph.ainvoke(
-                    {"messages": messages}, config=config, context=context
-                )
-            except (AgentError, TimeoutError, asyncio.CancelledError):
-                raise
-            except Exception as exc:
-                # 上游原始正文可能包含地址/密钥，不能进入响应或常规日志。
-                logger.warning(
-                    "agent invocation failed type=%s run_id=%s trace_id=%s",
-                    type(exc).__name__,
-                    run_id,
-                    identity.trace_id,
-                )
-                raise AgentError(
-                    503, "MODEL_UNAVAILABLE", "主 Agent 模型暂不可用"
-                ) from None
-        final = result["messages"][-1]
-        if not isinstance(final, AIMessage) or final.tool_calls:
+            async for mode, data in self.graph.astream(
+                {"messages": messages},
+                config=config,
+                context=context,
+                stream_mode=["messages", "updates"],
+            ):
+                if mode == "messages":
+                    message, metadata = data
+                    if (
+                        isinstance(message, AIMessageChunk)
+                        and metadata.get("langgraph_node") == "model"
+                    ):
+                        text = message.text
+                        if text:
+                            if (
+                                model_message
+                                and message.id != model_message
+                                and writer.text
+                            ):
+                                await writer.append("\n\n")
+                            model_message = message.id
+                            await writer.append(text)
+                elif mode == "updates" and isinstance(data, dict):
+                    for update in data.values():
+                        if isinstance(update, dict) and update.get("messages"):
+                            candidate = update["messages"][-1]
+                            if isinstance(candidate, AIMessage):
+                                last = candidate
+        if (
+            last is None
+            or last.tool_calls
+            or not last.text.strip()
+            or last.response_metadata.get("finish_reason") != "stop"
+        ):
             raise AgentError(502, "AGENT_INCOMPLETE", "本轮未取得完整回答")
-        answer = final.text
-        if not answer.strip():
-            raise AgentError(502, "AGENT_EMPTY_ANSWER", "本轮未取得有效回答")
-        try:
-            selected = context.references.validate_answer(answer)
-        except ValueError as exc:
-            raise AgentError(
-                502, "CITATION_INVALID", "回答引用校验未通过，请重新提问"
-            ) from exc
-        citations = [context.public_sources[item["evidenceId"]] for item in selected]
+        if not writer.text:
+            await writer.append(last.text)
+
+    def _reply(
+        self, identity, run, text, citations, retrievals, replayed=False, metadata=None
+    ):
+        metadata = metadata or {}
+        keys = {
+            "evidenceId",
+            "kbId",
+            "documentId",
+            "chunkId",
+            "generation",
+            "documentName",
+            "sourceMetadata",
+            "snapshotHash",
+            "fileUrl",
+            "truncated",
+            "toolTruncated",
+        }
         return {
             "sessionId": identity.agent_session_id,
-            "runId": run_id,
-            "traceId": identity.trace_id,
-            "status": "COMPLETED",
-            "answer": answer,
-            "citations": citations,
-            "retrievals": context.tool_events,
-            "model": self.settings.model,
-            "promptVersion": "agent-system-v1+agent-knowledge-v1",
-            "promptHash": self.prompt_hash,
+            "conversationId": identity.agent_session_id,
+            "runId": run["runId"],
+            "userMessageId": run["userMessageId"],
+            "assistantMessageId": run["assistantMessageId"],
+            "traceId": run["traceId"],
+            "status": run["status"],
+            "answer": text,
+            "citations": [{k: v for k, v in r.items() if k in keys} for r in citations],
+            "retrievals": retrievals,
+            "model": metadata.get("model") or self.settings.model,
+            "promptVersion": metadata.get("promptVersion") or PROMPT_VERSION,
+            "promptHash": metadata.get("promptHash") or self.prompt_hash,
+            "replayed": replayed,
+            "persisted": True,
         }

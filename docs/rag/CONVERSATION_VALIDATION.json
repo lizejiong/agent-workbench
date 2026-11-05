@@ -1,0 +1,173 @@
+{
+  "recordedAt": "2026-11-05T22:31:48.154115+08:00",
+  "scope": "Java 统一 Agent 会话/消息/证据、授权历史、Python 原生 SSE、Web 跨刷新恢复与管理",
+  "versions": {
+    "langchain": "1.4.7",
+    "langgraph": "1.2.19",
+    "langchain-openai": "1.7.3",
+    "langgraph-checkpoint-sqlite": "3.1.3",
+    "fastapi": "0.162.0",
+    "pydantic": "2.14.2",
+    "httpx": "0.28.1",
+    "anyio": "4.16.0"
+  },
+  "verification": {
+    "java": {
+      "uniqueScenarios": 3,
+      "failures": 0,
+      "skipped": 0,
+      "kind": "真实 Spring MVC/PostgreSQL-pgvector/MinIO，模型为明确 HTTP/SSE 协议桩",
+      "mainLog": ".cache/agent-conversations-verified-java.log",
+      "latestPaginationAndTerminalToolLog": ".cache/agent-conversations-java-pagination-final.log",
+      "latestCrossLanguageLog": ".cache/agent-conversations-release-cross-language.log",
+      "methods": [
+        "agentConversationHistoryIsOwnedOrderedIdempotentAndNeverReexecutes",
+        "agentHistorySnapshotsAreReauthorizedBeforeDisplayAndModelHistory",
+        "pythonMainAgentRunsGraphAgainstJavaWithUserDelegationAndValidatedSources"
+      ],
+      "coverage": [
+        "创建幂等、稳定消息顺序和向前分页、空页安全游标",
+        "租户/用户隔离，服务身份单独不能读写",
+        "重复提交不重新执行、并发冲突、陈旧快照拒绝",
+        "取消/超时终态、迟到正文、失效工具展示",
+        "历史和派生消息的启停/代次/正文有效性检查",
+        "重命名、删除内容及请求墓碑",
+        "真实 Python 原生流分批保存、引用版本、trace 关联"
+      ]
+    },
+    "python": {
+      "uniqueTests": 13,
+      "failures": 0,
+      "skipped": 0,
+      "kind": "真实 FastAPI/LangGraph/Saver，Java 与主模型为 MockTransport 协议桩",
+      "combinedLog": ".cache/agent-conversations-release-python-checked.log",
+      "latestSseAndRuntimeLog": ".cache/agent-conversations-final-sse.log",
+      "latestSubsetTests": 9,
+      "adapterTests": 4,
+      "coverage": [
+        "Java 历史及证据依赖继承",
+        "重复请求不执行，使用原模型/提示词追踪",
+        "模型工具 JSON Schema 只含 query",
+        "四种检索状态与受控错误",
+        "原生增量及上游缺少 stop 时失败保留部分内容",
+        "task.cancel、HTTP 断连、AnyIO SSE 取消域结算",
+        "连接池复用/关闭、委托撤销、容量和截止时间"
+      ]
+    },
+    "web": {
+      "build": "npm run build passed",
+      "tests": 23,
+      "failures": 0,
+      "buildLog": ".cache/agent-conversations-web-build-final.log",
+      "testLog": ".cache/agent-conversations-web-tests.log",
+      "newTests": [
+        "UTF-8/CRLF/SSE 跨帧解码及稳定业务请求 ID",
+        "缺少持久终态时报告中断，不重试生成"
+      ]
+    },
+    "browser": {
+      "kind": "真实 Chromium/Vite/Uvicorn/FastAPI/LangGraph；Java/模型为明确协议桩",
+      "checks": [
+        "首个真实增量出现时仍在生成",
+        "停止后模型连接关闭、部分正文保留",
+        "刷新重新登录恢复已取消内容",
+        "会话重命名持久显示",
+        "历史会话继续提问，恢复用户/助手消息及工具状态",
+        "来源抽屉显示真实授权摘录",
+        "删除会话后侧栏移除",
+        "390px 手机宽度无横向溢出"
+      ],
+      "finalFixtureFacts": {
+        "modelClosed": true,
+        "lastRunStatus": "CANCELLED"
+      },
+      "productionProxyValidated": false
+    },
+    "contract": {
+      "javaOpenapiPaths": 9,
+      "resolvedLocalRefs": 39,
+      "markdownFences": "passed",
+      "ruff": "passed",
+      "uvLockOfflineCheck": "passed"
+    }
+  },
+  "crossLanguageReceipt": {
+    "status": "COMPLETED",
+    "traceId": "3123456789abcdef0123456789abcdef",
+    "retrievalStatuses": [
+      "READY",
+      "READY"
+    ],
+    "requestIds": [
+      "1e4c749a-3315-4053-a442-ff435eab3cfd",
+      "2ee0c619-4fc5-457c-8164-37b44acdfc16"
+    ],
+    "uniqueCitationIds": [
+      "K1e4c749a33154053a442ff435eab3cfd_E1",
+      "K1e4c749a33154053a442ff435eab3cfd_E2",
+      "K1e4c749a33154053a442ff435eab3cfd_E3",
+      "K2ee0c6194fc5457c816437b44acdfc16_E1",
+      "K2ee0c6194fc5457c816437b44acdfc16_E2",
+      "K2ee0c6194fc5457c816437b44acdfc16_E3"
+    ],
+    "modelRequests": 2,
+    "totalModelRequests": 6,
+    "conversationPersistence": {
+      "javaHistory": true,
+      "nativeSse": true,
+      "partialSavedWhileRunning": true,
+      "duplicateDidNotExecute": true,
+      "crossUserDenied": true,
+      "cancelledPartialSaved": true,
+      "authorizedHistoryReused": true
+    },
+    "entrypoint": "POST /api/agent/chat over Uvicorn TCP",
+    "graph": "langchain.create_agent / LangGraph / AsyncSqliteSaver",
+    "note": "真实 Python 入口→图工具循环→Java→PG/MinIO；主模型和向量模型为协议桩，非语义效果评估"
+  },
+  "boundaries": {
+    "realVendorSemanticEvaluation": false,
+    "productionDeployment": false,
+    "productionNginxValidation": false,
+    "fullMavenVerify": false,
+    "businessToolsIntegrated": false,
+    "automaticReplayOnHistoryLoad": false,
+    "oldPythonSessionHistoryImported": false,
+    "parallelPythonWorkersOnSharedSqliteSupported": false
+  },
+  "sourceSha256": {
+    "services/agent-service/pyproject.toml": "155d2d6aa2716c14985e7a2e63d5303d1d2c1273dce40ce351f5bf3d80bac982",
+    "services/agent-service/src/agent_service/__init__.py": "89ed9b346884571d6a705fca02529b6974aefdf0d12c33bf16ff96eafebaf52f",
+    "services/agent-service/src/agent_service/app.py": "b73cc523b309a4625d1b4861ee08d8f4dd2cf3f3aebdb78277584fcafe4da6c4",
+    "services/agent-service/src/agent_service/config.py": "71d9ae3b67ecb7949361e19fe7da4a21c7d88882a14b1995e4863591ae2e8bd9",
+    "services/agent-service/src/agent_service/contracts.py": "28e604ca0a3a9ee9f6439feca52982567b58bbc51732be1761666a1900d9c483",
+    "services/agent-service/src/agent_service/conversations.py": "35ee7985831866a1c40b08caa7869762af6d8e866f21ffa4d47a5ce2e89169c0",
+    "services/agent-service/src/agent_service/graph.py": "87513c637f586e4c4e073521f157fd373d615f435f119bd2ad83c68ceb71d1b9",
+    "services/agent-service/src/agent_service/knowledge/__init__.py": "5ba92ca82c00722fb62fce0777af80d1232e15850b36ba898ac66eafa48b1184",
+    "services/agent-service/src/agent_service/knowledge/adapter.py": "bc468c2d490f2f42bb16bcdfa9283411a670ae82049ede0f0a2f9a4ff6b77a90",
+    "services/agent-service/src/agent_service/knowledge/delegation.py": "56ff52b12d4a88899f15b62dcd2c359bb68b54d2d32c43f65f69404da393239f",
+    "services/agent-service/src/agent_service/prompts/agent-knowledge-v1.txt": "e9d7891a4e55fa502d72202847b0045a713b52505c92aefac1857b6b4924b19f",
+    "services/agent-service/src/agent_service/prompts/agent-knowledge-v2.txt": "387b22376610892ea8afdc06bcd4d5af9ebe0a8d94f73aca77013f9b78d53136",
+    "services/agent-service/src/agent_service/prompts/agent-system-v1.txt": "339284f82cb6d9191065f8f4ad4c2295907bf3e204828ab765b1e1179bd47e34",
+    "services/agent-service/src/agent_service/prompts/agent-system-v2.txt": "18b34a317158fe710fb4442acf104923fbebdf6a7ba1573341b35c788cfb0382",
+    "services/agent-service/src/agent_service/runtime.py": "cd1f62687c418d257566ff2ad1c818e02bf37264aab42b2da0ef083afda881de",
+    "services/agent-service/uv.lock": "6c52beb6439a3b2fda3c418299af49a0b75bb247f5f5552ebdb28c9abeb1829b",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/controller/AgentContracts.java": "570a1f4da2a0ebdd4fc435c9012d31a29b865153c3a6043986f904971c480e93",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/controller/ConversationController.java": "4155f9ceb8351152a7fd297f818088b02b481e7d3d75bfe4c4300bc65324a069",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/controller/InternalConversationController.java": "5cdb8bc2e756d57e94c7537cbd4c5df5172192f313473281d4be67bb4646ba05",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/repository/ConversationLedger.java": "6ad4d1dad885fbeb000259bafa530a00bd433123afad93c92b7feb77ab6ad9f6",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/service/ConversationEvidence.java": "5a81dbf0425e43650c98f539da2e6b67874007bce05890fd92023f0aa8234517",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/service/ConversationRecovery.java": "7640dd9b2a09419b64175ec45dfd24116cc3929d5b9be2ab5259ed36385759dd",
+    "services/backend/src/main/java/com/lzj/rag/backend/security/config/InternalRagSecurityConfiguration.java": "1940cf4d7d7e37da3eb7b672dde8cf132db201a6c46da18174aa4b257eec0a6e",
+    "services/backend/src/main/resources/db/migration/V11__agent_conversations.sql": "7441ab91e92515dff5f938885f43429781a3e9849b304949aee539a5026449eb",
+    "services/backend/src/main/resources/static/openapi/conversations.json": "7dcd27f8c06954927d274c71a505fb41a8499afcb70ca2756ddeaf8120bcec09",
+    "web/src/api.ts": "8eab2b17ca0032e63603fcd245a61cfcfbf4906a304d42607fe192ba3fe1c402",
+    "web/src/chat/Answer.tsx": "e4229c09f9849314bd06880c45c72fff75aad97ef601c1832875ef0cd3263eaa",
+    "web/src/chat/chat.css": "19c918561136bd4c87a817a31b3fb69925ac4f35bbc907b3bbace0e4a3d0e056",
+    "web/src/chat/Chat.tsx": "7356e91bab1d7e1b3acd6301125f8a3f13353a9f49ee2ad14a177256da2489d5",
+    "web/src/chat/format.test.ts": "0cc271a495ac242ef44048daff80c4c707c8c3513299649d3bc4b1a4b52f4654",
+    "web/src/chat/format.ts": "60b497bfad91207ea282b3716fef7ee90c43f853ab30dd83ce46b4faf8cc0e61",
+    "web/src/chat/state.tsx": "72744c5986a3bd891897499c4b4142c9873fe62c5b933b2472c4c04d91993f1b",
+    "web/src/chat/types.ts": "98213db0ef3415e4a14d8bed69622cfed5d2182da88dfd975acd280e27facb26"
+  }
+}

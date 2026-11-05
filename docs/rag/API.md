@@ -1,5 +1,13 @@
 # RAG API
 
+## 当前 Agent 会话与 SSE（2026-11-05）
+
+Java 会话/消息/运行由 `/api/conversations` 及 `/internal/agent/conversations` 管理，公开静态契约为 `/openapi/conversations.json`；完整请求、响应、状态码、幂等及 SSE 事件见 [CONVERSATIONS.md](CONVERSATIONS.md)。Python `/api/agent/chat/stream` 使用原生流，`/api/agent/chat` 保留完整 JSON 与 sessionId 别名，但所有业务历史已改由 Java 保存。
+
+新客户端先以当前用户身份创建 Java 会话，再提交 conversationId、requestId、messageId、question 到 Python；不发送旧消息或自报身份。Python 用会话绑定委托通过 Java 检查归属、建立唯一执行权和原子消息，再读取有效历史。Java 独立 RAG 问答及共享检索契约不变。
+
+以下 Python 2026-11-02 章节为旧版兼容背景，其中旧 sessions.sqlite、仅 JSON 和历史缺口描述由当前会话契约替代；旧 Python 会话 ID 不自动导入 Java。
+
 已实现 A、B、C 的 Java 内部证据接口，以及 Python 主 Agent 的正式 FastAPI/LangGraph 入口。Java 契约见 `/openapi/knowledge-base.yaml` 和 `/openapi/rag.json`；Python 的 `/openapi.json` 独立生成，不在 Java 注册 Python 路由。
 
 ## Python 主 Agent（2026-11-02 新增）

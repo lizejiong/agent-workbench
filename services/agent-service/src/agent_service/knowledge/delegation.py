@@ -15,15 +15,15 @@ class DelegationClient:
         self.service_id = service_id
 
     @asynccontextmanager
-    async def issue(self, auth: httpx.BasicAuth, session_id: str, scope: dict):
+    async def issue(
+        self, auth: httpx.BasicAuth, session_id: str, scope: dict | None = None
+    ):
         try:
             response = await self.client.post(
-                "/api/rag/delegations",
+                f"/api/conversations/{session_id}/delegations",
                 auth=auth,
                 json={
                     "serviceId": self.service_id,
-                    "agentSessionId": session_id,
-                    **scope,
                 },
             )
         except httpx.HTTPError as exc:

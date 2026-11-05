@@ -2,7 +2,7 @@
 
 React + Ant Design + Vite 应用。登录后进入 `/#/chat`，通过 Python 主 Agent 对话；右上角进入原知识后台，提供知识库、上传/URL 导入、文档配置、入库任务、Chunk 维护、刷新及检索测试，不建设新的账号/角色管理。
 
-聊天页提供本次登录的对话、新建/切换/搜索、知识范围、Markdown/真实来源、复制和停止。当前 Agent 为完整 JSON 响应，不模拟流式；跨刷新历史、重命名/删除和 SSE 尚缺服务端接口。功能和接口缺口见 [Web 聊天说明](../docs/web/CHAT.md)。
+聊天页支持 Java 持久会话/消息分页、刷新及重新登录恢复、标题搜索、重命名/删除、知识范围、原生 Agent SSE、工具状态、Markdown/真实来源和停止后部分结果保留。功能、代理及边界见 [Web 聊天说明](../docs/web/CHAT.md) 和 [会话契约](../docs/rag/CONVERSATIONS.md)。
 
 ## 界面设计
 

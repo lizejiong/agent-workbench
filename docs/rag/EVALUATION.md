@@ -1,5 +1,15 @@
 # RAG 评估记录
 
+## Java 会话与 Agent 流式验收（2026-11-05）
+
+本轮评估业务行为与边界，不增加答案语义质量分数。沿用 database/backup/cooking 自有样本、明确 topic-vector 与主模型原生 SSE 协议桩、真实 Java MVC/PG-pgvector/MinIO/Uvicorn/LangGraph。覆盖业务历史落库、生成中保存、重复提交不执行、跨用户隔离、有效历史复用、取消部分正文；Java 检查历史与派生消息撤权、顺序分页、删除、超时和迟到结算。
+
+Python 的专门 ASGI 断连用例覆盖 Starlette/AnyIO 取消域，验证模型连接关闭和 Java 部分结果结算；它与普通 task.cancel 不同。浏览器验证采用真实 Chromium/Vite/FastAPI/图，Java/模型为协议桩，覆盖刷新重新登录、重命名、继续提问、引用摘录、取消后部分正文和删除。后端真实验证与浏览器协议桩验证分别记录，不混作生产部署。
+
+历史参数：最近60条完成/有效记录中选最多12条，近期消息最多24000字节且受总预算限制；较早最多8条用户问题提取为2048字节摘要。历史依赖64份/128KiB，本轮128份；上下文60000字节、工具4096字节、8模型/6工具/60秒，与真实模型 tokenizer 或长期记忆效果不同。没有自动 LLM 摘要、真实供应商效果、跨主机图恢复、负载/SLO 或生产 Nginx 验收结论。结果与命令见 [CONVERSATION_VALIDATION.json](CONVERSATION_VALIDATION.json)。
+
+以下为历史基线，其旧上下文/会话归属描述不代表当前实现。
+
 ## 首版 Web 聊天验证（2026-11-02）
 
 页面复用现有 Python Agent；只验证交互、引用展示、代理和取消，不新增检索或模型效果指标。`npm run build` 与 21 项前端检查通过（原 19 项 + 2 项引用展示边界）。真实浏览器/Vite/Uvicorn/FastAPI/LangGraph/SQLite 链路，Java 和主模型采用明确协议桩；未把前序真实 Java/PG/MinIO 验收重算成本轮验证。检查了四种检索状态、同一局部编号的不同来源、授权下载、HTML/外部图片过滤、范围固定、手机布局、IME 与退出清理；取消确实关闭 Python 工具 HTTP 并调用 Java 取消通知。回执见 `../web/CHAT_VALIDATION.json`。没有供应商语义效果或生产 Nginx/负载结论。

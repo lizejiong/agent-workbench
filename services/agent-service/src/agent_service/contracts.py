@@ -18,10 +18,15 @@ class ChatRequest(BaseModel):
 
     question: Annotated[StrictStr, Field(min_length=1, max_length=4000)]
     sessionId: UUID | None = None
+    conversationId: UUID | None = None
+    requestId: UUID | None = None
+    messageId: UUID | None = None
     kbIds: list[UUID] | None = Field(default=None, max_length=64)
     documentIds: list[UUID] | None = Field(default=None, min_length=1, max_length=500)
 
-    @field_validator("sessionId", mode="before")
+    @field_validator(
+        "sessionId", "conversationId", "requestId", "messageId", mode="before"
+    )
     @classmethod
     def session_uuid(cls, value):
         return UUID(value) if isinstance(value, str) else value
@@ -74,9 +79,14 @@ class RetrievalSummary(BaseModel):
 class AgentReply(BaseModel):
     model_config = ConfigDict(extra="forbid")
     sessionId: UUID
+    conversationId: UUID
     runId: UUID
     traceId: str
-    status: Literal["COMPLETED"]
+    status: Literal["RUNNING", "COMPLETED", "CANCELLED", "FAILED", "TIMED_OUT"]
+    userMessageId: UUID
+    assistantMessageId: UUID
+    replayed: bool = False
+    persisted: bool = True
     answer: str
     citations: list[Citation]
     retrievals: list[RetrievalSummary]

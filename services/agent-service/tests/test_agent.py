@@ -1,5 +1,7 @@
 import asyncio
 import json
+import uuid
+from dataclasses import replace
 
 import httpx
 import pytest
@@ -8,6 +10,159 @@ from protocol_fixture import AUTH, KB_ID, ProtocolFixture
 from agent_service.app import create_app
 from agent_service.config import Settings
 from agent_service.contracts import AgentError, ChatRequest
+
+
+@pytest.mark.asyncio
+async def test_java_history_is_reused_and_duplicate_request_never_reexecutes(tmp_path):
+    fixture = ProtocolFixture()
+    app = application(tmp_path, fixture)
+    events = []
+
+    async def emit(name, data):
+        events.append((name, data))
+
+    async with app.router.lifespan_context(app):
+        runtime = app.state.runtime
+        request_id, message_id = uuid.uuid4(), uuid.uuid4()
+        first = await runtime.run(
+            ChatRequest(
+                question="备份步骤", requestId=request_id, messageId=message_id
+            ),
+            httpx.BasicAuth(*AUTH),
+            "a" * 32,
+            emit,
+        )
+        assert sum(name == "delta" for name, _ in events) > 1
+        saved = fixture.messages[first["conversationId"]][-1]
+        assert saved["evidence"][0]["versions"]["pipeline"] == "fixture-v1"
+        model_results = [
+            json.loads(m["content"])
+            for m in fixture.model_requests[1]["messages"]
+            if m["role"] == "tool"
+        ]
+        assert all("versions" not in e for r in model_results for e in r["evidence"])
+        assert events[0][0] == "meta" and events[-1][0] == "done"
+        calls = len(fixture.model_requests)
+        previous_settings = runtime.settings
+        runtime.settings = replace(runtime.settings, model="new-config-after-deploy")
+        repeated = await runtime.run(
+            ChatRequest(
+                question="备份步骤",
+                conversationId=first["conversationId"],
+                requestId=request_id,
+                messageId=message_id,
+            ),
+            httpx.BasicAuth(*AUTH),
+            "b" * 32,
+        )
+        assert repeated["replayed"] and repeated["answer"] == first["answer"]
+        assert (
+            repeated["runId"] == first["runId"] and len(fixture.model_requests) == calls
+        )
+        assert len(fixture.messages[first["conversationId"]]) == 2
+        assert repeated["model"] == first["model"]
+        runtime.settings = previous_settings
+        fixture.direct_answer = True
+        await runtime.run(
+            ChatRequest(
+                question="刚才的步骤再解释一下", conversationId=first["conversationId"]
+            ),
+            httpx.BasicAuth(*AUTH),
+            "c" * 32,
+        )
+        model_history = fixture.model_requests[calls]["messages"]
+        assert any(
+            m["role"] == "assistant" and "按资料执行" in m["content"]
+            for m in model_history
+        )
+        assert not any(m["role"] == "tool" for m in model_history)
+        assert "[K" not in model_history[2]["content"]
+        assert fixture.messages[first["conversationId"]][-1]["evidence"]
+        assert not (tmp_path / "sessions.sqlite").exists()
+
+
+@pytest.mark.asyncio
+async def test_cancel_after_model_delta_preserves_partial_answer_in_java(tmp_path):
+    fixture = ProtocolFixture()
+    fixture.block_answer = True
+    app = application(tmp_path, fixture)
+    async with app.router.lifespan_context(app):
+        runtime = app.state.runtime
+        task = asyncio.create_task(
+            runtime.run(
+                ChatRequest(question="备份步骤"), httpx.BasicAuth(*AUTH), "d" * 32
+            )
+        )
+        await asyncio.wait_for(fixture.partial_started.wait(), 5)
+        await asyncio.sleep(0.03)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        run = list(fixture.runs.values())[-1]
+        assert run["status"] == "CANCELLED" and fixture.answer_closed.is_set()
+        message = fixture.messages[run["conversationId"]][-1]
+        assert message["content"] and message["evidence"] and message["tools"]
+        assert message["status"] == "CANCELLED" and runtime.active == 0
+
+
+@pytest.mark.asyncio
+async def test_sse_disconnect_settles_partial_under_asgi_cancellation_scope(tmp_path):
+    fixture = ProtocolFixture()
+    fixture.block_answer = True
+    cid = str(uuid.uuid4())
+    fixture.conversations[cid] = {
+        "id": cid,
+        "owner": "alice",
+        "title": "测试",
+        "kbIds": [KB_ID],
+        "documentIds": None,
+    }
+    fixture.messages[cid] = []
+    app = application(tmp_path, fixture)
+    request = httpx.Request(
+        "POST",
+        "http://test/api/agent/chat/stream",
+        json={
+            "conversationId": cid,
+            "requestId": str(uuid.uuid4()),
+            "messageId": str(uuid.uuid4()),
+            "question": "备份",
+        },
+        headers={"Authorization": "Basic YWxpY2U6dGVzdC1wYXNzd29yZA=="},
+    )
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/api/agent/chat/stream",
+        "raw_path": b"/api/agent/chat/stream",
+        "query_string": b"",
+        "headers": [(k.lower(), v) for k, v in request.headers.raw],
+        "client": ("127.0.0.1", 12345),
+        "server": ("test", 80),
+    }
+    delivered = False
+    sent = []
+
+    async def receive():
+        nonlocal delivered
+        if not delivered:
+            delivered = True
+            return {"type": "http.request", "body": request.content, "more_body": False}
+        await fixture.partial_started.wait()
+        await asyncio.sleep(0.03)
+        return {"type": "http.disconnect"}
+
+    async def send(message):
+        sent.append(message)
+
+    async with app.router.lifespan_context(app):
+        await asyncio.wait_for(app(scope, receive, send), 8)
+        assert fixture.answer_closed.is_set() and app.state.runtime.active == 0
+        assert fixture.messages[cid][-1]["content"]
+        assert fixture.messages[cid][-1]["status"] == "CANCELLED"
 
 
 def application(tmp_path, fixture, **overrides):
@@ -182,6 +337,18 @@ async def test_auth_scope_statuses_and_sanitized_failures(tmp_path):
                 "/api/agent/chat", auth=AUTH, json={"question": "问题"}
             )
             assert failed.status_code == 503 and "secret" not in failed.text
+            fixture.model_down = False
+            fixture.invalid_citation = False
+            fixture.truncate_answer = True
+            truncated = await client.post(
+                "/api/agent/chat", auth=AUTH, json={"question": "中途断流"}
+            )
+            assert (
+                truncated.status_code == 502
+                and truncated.json()["code"] == "AGENT_INCOMPLETE"
+            )
+            latest = list(fixture.messages.values())[-1][-1]
+            assert latest["status"] == "FAILED" and latest["content"]
 
 
 @pytest.mark.asyncio

@@ -4,6 +4,20 @@ import { allPages, ApiClient, ApiError, basicAuthorization, downloadName, query 
 const ok = (data: unknown) => new Response(JSON.stringify({ code: '0', data }), { headers: { 'Content-Type': 'application/json' } });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 describe('authenticated same-origin API', () => {
+  it('decodes UTF-8 SSE split across network frames and keeps the logical request identifiers', async () => {
+    const wire = new TextEncoder().encode(': heartbeat\r\n\r\nevent: meta\r\ndata: {"runId":"run"}\r\n\r\nevent: delta\r\ndata: {"text":"中文"}\r\n\r\nevent: done\r\ndata: {"status":"COMPLETED","persisted":true}\r\n\r\n');
+    const fetcher = vi.fn().mockResolvedValue(new Response(new ReadableStream({ start(controller) { for (const byte of wire) controller.enqueue(Uint8Array.of(byte)); controller.close(); } }), { headers: { 'Content-Type': 'text/event-stream' } }));
+    vi.stubGlobal('fetch', fetcher); const events: unknown[] = []; const body = { conversationId: 'conversation', requestId: 'logical-request', messageId: 'message', question: '问题' };
+    await new ApiClient('Basic test').stream('/api/agent/chat/stream', body, (name, data) => events.push([name, data]));
+    expect(events).toEqual([['meta', { runId: 'run' }], ['delta', { text: '中文' }], ['done', { status: 'COMPLETED', persisted: true }]]);
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual(body); expect(fetcher).toHaveBeenCalledOnce();
+  });
+  it('reports a stream ending before its durable terminal event without retrying generation', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response('event: delta\ndata: {"text":"部分正文"}\n\n', { headers: { 'Content-Type': 'text/event-stream' } })); vi.stubGlobal('fetch', fetcher);
+    const received: unknown[] = [];
+    await expect(new ApiClient('Basic test').stream('/api/agent/chat/stream', {}, (_name, data) => received.push(data))).rejects.toThrow('连接已中断');
+    expect(received).toEqual([{ text: '部分正文' }]); expect(fetcher).toHaveBeenCalledOnce();
+  });
   it('encodes UTF-8 credentials and rejects ambiguous account names', () => {
     expect(basicAuthorization(' 张三 ', '密码')).toBe('Basic ' + Buffer.from('张三:密码').toString('base64'));
     expect(() => basicAuthorization('a:b', 'secret')).toThrow(); expect(() => basicAuthorization('a', '')).toThrow();

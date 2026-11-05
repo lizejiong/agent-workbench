@@ -388,6 +388,7 @@ class KnowledgeGateway:
                 "agentSessionId": context.agent_session_id,
                 "retrievalRequestId": request_id,
                 "localEvidenceId": local,
+                "versions": data.get("versions") or {},
             }
         if status == "READY" and not result["evidence"]:
             return self._failure(request_id, context.trace_id, "TOOL_RESULT_BUDGET")
