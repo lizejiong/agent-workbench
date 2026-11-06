@@ -7,9 +7,10 @@ import { Link } from 'react-router-dom';
 import { useApi } from '../state';
 import { Source } from '../components';
 import { citationMarkdown, copyAnswer } from './format';
-import type { AgentReply, Citation } from './types';
+import type { AgentReply, ChatBlock, Citation } from './types';
+import Timeline from './Timeline';
 
-export default function Answer({ reply }: { reply: AgentReply }) {
+export default function Answer({ reply, blocks }: { reply: AgentReply; blocks?: ChatBlock[] }) {
   const api = useApi(); const { message } = App.useApp();
   const [source, setSource] = useState<Citation>(); const [copied, setCopied] = useState(false); const [downloading, setDownloading] = useState(false);
   const citations = reply.citations;
@@ -25,7 +26,7 @@ export default function Answer({ reply }: { reply: AgentReply }) {
     finally { setDownloading(false); }
   };
   const statuses = new Set(reply.retrievals.map(item => item.status));
-  return <>
+  const renderAnswer = (text: string) => (
     <div className="chat-markdown">
       <Markdown skipHtml remarkPlugins={[remarkGfm]} components={{
         a: ({ href, children }) => {
@@ -34,12 +35,15 @@ export default function Answer({ reply }: { reply: AgentReply }) {
         },
         img: ({ alt }) => <span>{alt || '图片'}</span>,
         table: ({ children }) => <div className="chat-table-scroll"><table>{children}</table></div>,
-      }}>{citationMarkdown(reply.answer, citations)}</Markdown>
+      }}>{citationMarkdown(text, citations)}</Markdown>
     </div>
+  );
+  return <>
+    {blocks?.length ? <Timeline blocks={blocks} answer={renderAnswer} source={setSource} /> : renderAnswer(reply.answer)}
     {!!citations.length && <div className="chat-sources" aria-label="回答来源">{citations.map((item, index) => <button key={item.evidenceId} type="button" onClick={() => setSource(item)} title={item.documentName}><FileTextOutlined /><span>{index + 1}. {item.documentName}</span></button>)}</div>}
     <div className="chat-answer-meta">
       <Tooltip title={copied ? '已复制' : '复制回答'}><button className="chat-icon-button" type="button" aria-label="复制回答" onClick={() => void copy()}>{copied ? <CheckOutlined /> : <CopyOutlined />}</button></Tooltip>
-      {statuses.has('UNAVAILABLE') ? <span className="chat-result-note">检索暂不可用</span>
+      {statuses.has('UNAVAILABLE') ? <span className="chat-result-note">{statuses.has('READY') ? '部分检索暂不可用' : '检索暂不可用'}</span>
         : statuses.has('NEEDS_CLARIFICATION') ? <span className="chat-result-note">需要补充信息</span>
           : statuses.has('NO_EVIDENCE') && !citations.length ? <span className="chat-result-note">当前资料不足</span> : null}
       {reply.retrievals.some(item => item.degraded) && <span className="chat-result-note">部分检索降级</span>}

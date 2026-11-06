@@ -511,6 +511,36 @@ class KnowledgeSearchTest {
         agentInternal("POST",root+"/runs",wrong,grant,404);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_message",Integer.class)).isZero();
     }
+    @Test void agentBlocksKeepOrderAndRejectSnapshotRewrites()throws Exception {
+        String id=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID()),"alice",201).at("/data/id").asText();
+        String grant=agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
+        String root="/internal/agent/conversations/"+id;
+        String runId=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","查询资料","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).at("/data/runId").asText();
+        var answer=new LinkedHashMap<String,Object>(Map.of("blockId","B"+"a".repeat(32),"kind","answer","text","先查询资料。","status","streaming"));
+        var tool=new LinkedHashMap<String,Object>(Map.of("blockId","B"+"b".repeat(32),"kind","tool","toolCallId","call-one","name","search_knowledge","status","pending","batchId","B"+"c".repeat(32),"callIndex",0,"arguments",Map.of("query","资料"),"evidenceIds",List.of()));
+        var checkpoint=new LinkedHashMap<String,Object>(agentSnapshot(1,"RUNNING","先查询资料。",List.of(),List.of()));
+        checkpoint.put("blocks",List.of(answer,tool));checkpoint.put("eventSeq",3);
+        checkpoint.put("tools",List.of(Map.of("toolCallId","call-one","name","search_knowledge","status","RUNNING")));
+        agentInternal("PATCH",root+"/runs/"+runId,checkpoint,grant,200);
+        answer.put("status","done");tool.put("status","running");tool.put("startedAt",java.time.Instant.now());
+        checkpoint.put("sequence",2);checkpoint.put("eventSeq",4);
+        agentInternal("PATCH",root+"/runs/"+runId,checkpoint,grant,200);
+        checkpoint.put("sequence",3);checkpoint.put("eventSeq",5);checkpoint.put("blocks",List.of(tool,answer));
+        agentInternal("PATCH",root+"/runs/"+runId,checkpoint,grant,409);
+        checkpoint.put("blocks",List.of(answer,tool));checkpoint.put("eventSeq",2);
+        agentInternal("PATCH",root+"/runs/"+runId,checkpoint,grant,409);
+        var finalText=Map.of("blockId","B"+"d".repeat(32),"kind","answer","status","done","text","当前资料不足。");
+        tool.put("status","done");tool.put("durationMs",12);
+        checkpoint.put("blocks",List.of(answer,tool,finalText));checkpoint.put("eventSeq",7);
+        checkpoint.put("content","先查询资料。\n\n当前资料不足。");checkpoint.put("status","COMPLETED");
+        checkpoint.put("tools",List.of(Map.of("toolCallId","call-one","name","search_knowledge","status","NO_EVIDENCE")));
+        agentInternal("PATCH",root+"/runs/"+runId,checkpoint,grant,200);
+        var message=agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/1");
+        assertThat(message.path("blocks").size()).isEqualTo(3);
+        assertThat(message.at("/blocks/1/toolCallId").asText()).isEqualTo("call-one");
+        assertThat(message.at("/blocks/1/result/evidence").isArray()).isTrue();
+        assertThat(message.path("eventSeq").asInt()).isEqualTo(7);
+    }
     @Test void agentHistorySnapshotsAreReauthorizedBeforeDisplayAndModelHistory()throws Exception {
         var data=dataset();String id=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID(),"kbIds",List.of(data.kb())),"alice",201).at("/data/id").asText();
         String grant=agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
@@ -522,14 +552,20 @@ class KnowledgeSearchTest {
         for(String key:List.of("chunkIndex","documentName","fileUrl","adjacent","parentChunkId","subQueries","fusionScore","rerankScore"))source.remove(key);
         source.put("toolTruncated",false);
         var run=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","备份步骤","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
-        agentInternal("PATCH",root+"/runs/"+run.path("runId").asText(),agentSnapshot(1,"COMPLETED","使用 pg_dump。["+ref+"]",List.of(source),List.of(ref)),grant,200);
+        var snapshot=new LinkedHashMap<String,Object>(agentSnapshot(1,"COMPLETED","使用 pg_dump。["+ref+"]",List.of(source),List.of(ref)));
+        snapshot.put("blocks",List.of(Map.of("blockId","B"+"a".repeat(32),"kind","tool","toolCallId","call-source","name","search_knowledge","status","done","batchId","B"+"c".repeat(32),"callIndex",0,"evidenceIds",List.of(ref),"startedAt",java.time.Instant.now(),"durationMs",10),
+                Map.of("blockId","B"+"b".repeat(32),"kind","answer","status","done","text","使用 pg_dump。["+ref+"]")));
+        snapshot.put("eventSeq",4);snapshot.put("tools",List.of(Map.of("toolCallId","call-source","name","search_knowledge","status","READY")));
+        agentInternal("PATCH",root+"/runs/"+run.path("runId").asText(),snapshot,grant,200);
         var history=agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/1");
         assertThat(history.at("/citations/0/content").asText()).isNotBlank();assertThat(history.at("/evidence/0/versions/indexes").isArray()).isTrue();
+        assertThat(history.at("/blocks/0/result/evidence/0/content").asText()).isNotBlank();
         var derived=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","继续说明","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
         agentInternal("PATCH",root+"/runs/"+derived.path("runId").asText(),agentSnapshot(1,"COMPLETED","沿用先前的备份说明。",List.of(source),List.of()),grant,200);
         UUID chunk=UUID.fromString(source.path("chunkId").asText());jdbc.update("UPDATE kb_chunk SET enabled=false WHERE id=?",chunk);
         var hidden=agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/1");
         assertThat(hidden.path("sourcesRestricted").asBoolean()).isTrue();assertThat(hidden.path("content").asText()).doesNotContain("pg_dump");assertThat(hidden.path("evidence").isEmpty()).isTrue();
+        assertThat(hidden.path("blocks").isEmpty()).isTrue();
         assertThat(agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/3/sourcesRestricted").asBoolean()).isTrue();
         assertThat(agentInternal("GET",root+"/history",null,grant,200).path("data").size()).isEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT evidence::text FROM kb_agent_message WHERE id=?",String.class,UUID.fromString(run.path("assistantMessageId").asText()))).contains("pg_dump");

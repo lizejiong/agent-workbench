@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-06",
+  "scope": "有序 Agent 内容块、SSE v2、Java 历史、Web 时间线",
+  "java": {
+    "tests": 3,
+    "failures": 0,
+    "skipped": 0,
+    "infrastructure": "隔离 Testcontainers PostgreSQL/pgvector 与 MinIO；模型 HTTP 协议桩",
+    "migration": "V12"
+  },
+  "python": {
+    "tests": 10,
+    "failures": 0,
+    "model": "协议桩；运行实际 LangGraph 主循环",
+    "scenarios": [
+      "旧协议和幂等",
+      "前后文本与同名并行工具逆序完成",
+      "SSE 取消与部分保存",
+      "身份、预算、依赖失败及引用"
+    ]
+  },
+  "web": {
+    "tests": 26,
+    "failures": 0,
+    "productionBuild": "passed",
+    "browser": {
+      "engine": "Playwright Chromium",
+      "cards": 4,
+      "answerSegments": 3,
+      "expandedEvidence": 2,
+      "reloadPreservesOrder": true,
+      "mobileViewport": [
+        375,
+        812
+      ],
+      "mobileHorizontalOverflow": false,
+      "consoleErrors": 0
+    }
+  },
+  "live": {
+    "verification": "真实 DeepSeek 主模型、百炼 Embedding、Java V12、pgvector 与 Vite SSE；未使用模型协议桩",
+    "conversationId": "3448b288-8980-458c-9adf-54073fc17984",
+    "runId": "0d605a4f-2129-413b-b9e6-cdf4bc8fba5d",
+    "status": "COMPLETED",
+    "model": "deepseek-flash",
+    "blockKinds": [
+      "answer",
+      "tool",
+      "tool",
+      "answer",
+      "tool",
+      "tool",
+      "answer"
+    ],
+    "toolStates": [
+      "failed",
+      "failed",
+      "done",
+      "done"
+    ],
+    "citationCount": 4,
+    "savedEventSeq": 614,
+    "originalStreamObserved": {
+      "continuousSeq": true,
+      "stableRunAndMessageIds": true,
+      "finalBlocksEqualJavaHistory": true
+    },
+    "note": "初始两次并行检索暂不可用，Agent 在原预算内后续两次检索成功；失败卡与成功卡分别保留，不能将整轮完成等同全部工具成功。",
+    "replayValidation": {
+      "sameRun": true,
+      "noNewMessageOrCheckpoint": true,
+      "identicalBlocks": true,
+      "events": [
+        "meta",
+        "finish",
+        "done"
+      ]
+    }
+  },
+  "limitations": [
+    "未接入有副作用的业务工具或人工审批流程",
+    "未实现 SSE 日志重放或自动重发整轮请求",
+    "未进行容量压测、事实正确性或检索质量的正式评估",
+    "初次两项检索超时/不可用已按失败卡保留，未宣称依赖始终健康"
+  ]
+}

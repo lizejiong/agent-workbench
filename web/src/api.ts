@@ -102,7 +102,7 @@ export class ApiClient {
     return this.read(path, { method, signal, headers: { 'Content-Type': 'application/json', ...headers }, body: body === undefined ? undefined : JSON.stringify(body) }, response => this.unwrap<T>(response));
   }
   async stream(path: string, body: unknown, event: (name: string, data: Record<string, unknown>) => void, signal?: AbortSignal): Promise<void> {
-    return this.read(path, { method: 'POST', signal, headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' }, body: JSON.stringify(body) }, async response => {
+    return this.read(path, { method: 'POST', signal, headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', 'X-Agent-Stream-Version': '2' }, body: JSON.stringify(body) }, async response => {
       if (!response.headers.get('Content-Type')?.includes('text/event-stream') || !response.body) throw new Error('流式响应格式无效。');
       const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; let done = false;
       const consume = () => {

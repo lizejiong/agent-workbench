@@ -16,6 +16,7 @@ from agent_service.conversations import ConversationClient
 from agent_service.graph import PROMPT_VERSION, AgentContext
 from agent_service.knowledge.adapter import TrustedContext, encode
 from agent_service.knowledge.delegation import DelegationClient
+from agent_service.timeline import StreamEvents, Timeline
 
 logger = logging.getLogger(__name__)
 
@@ -78,35 +79,62 @@ class TurnWriter:
             context,
         )
         self.settings, self.prompt_hash, self.emit = settings, prompt_hash, emit
-        self.text = ""
+        self.timeline = Timeline(context)
         self.sequence = 0
         self.citations = []
         self.lock = asyncio.Lock()
         self.last_write = 0
         self.dirty = False
         self.status = "RUNNING"
+        self.mutations = asyncio.Lock()
+
+    @property
+    def text(self):
+        return self.timeline.text
 
     async def event(self, event, data):
         if self.emit:
             await self.emit(event, data)
 
-    async def append(self, text):
-        if not text:
+    async def model_text(self, text, message_id):
+        async with self.mutations:
+            block, suffix = self.timeline.append_model(text, message_id)
+            if not suffix:
+                return
+            self.dirty = True
+            await self.event(
+                "delta",
+                {
+                    "messageId": self.run["assistantMessageId"],
+                    "blockId": block["blockId"],
+                    "text": suffix,
+                },
+            )
+            if time.monotonic() - self.last_write >= 0.4:
+                await self.save()
+
+    async def model_completed(self, message):
+        if not isinstance(message, AIMessage):
             return
-        self.text += text
-        if len(self.text) > 65536:
-            raise AgentError(413, "CONTEXT_BUDGET", "本轮输出过长")
-        self.dirty = True
-        if time.monotonic() - self.last_write >= 0.4:
-            await self.save()
-        await self.event(
-            "delta", {"messageId": self.run["assistantMessageId"], "text": text}
+        await self.model_text(
+            message.text, message.id or f"model-{self.context.model_calls}"
         )
+        async with self.mutations:
+            for block in self.timeline.prepare(message.tool_calls):
+                self.dirty = True
+                await self.save()
+                await self.emit(
+                    "tool",
+                    self.context.tools[block["toolCallId"]],
+                    block=self.timeline.visible(block),
+                )
 
     async def changed(self, event, data):
-        self.dirty = True
-        await self.save()
-        await self.event(event, data)
+        async with self.mutations:
+            block = self.timeline.tool(data)
+            self.dirty = True
+            await self.save()
+            await self.emit(event, data, block=self.timeline.visible(block))
 
     async def save(self, status="RUNNING", code=None):
         async with self.lock:
@@ -121,6 +149,8 @@ class TurnWriter:
                     "evidence": list(self.context.snapshots.values()),
                     "citations": self.citations,
                     "tools": list(self.context.tools.values()),
+                    "blocks": self.timeline.blocks,
+                    "eventSeq": self.emit.seq,
                     "model": self.settings.model,
                     "promptVersion": PROMPT_VERSION,
                     "promptHash": self.prompt_hash,
@@ -154,7 +184,12 @@ class AgentRuntime:
         self.active = 0
 
     async def run(
-        self, request: ChatRequest, auth: httpx.BasicAuth, trace_id: str, emit=None
+        self,
+        request: ChatRequest,
+        auth: httpx.BasicAuth,
+        trace_id: str,
+        emit=None,
+        protocol_version=1,
     ):
         if self.active >= self.settings.concurrency:
             raise AgentError(503, "AGENT_CAPACITY", "Agent 当前繁忙，请稍后重试")
@@ -162,7 +197,13 @@ class AgentRuntime:
         try:
             deadline = time.monotonic() + self.settings.turn_timeout
             async with asyncio.timeout_at(deadline):
-                return await self._turn(request, auth, trace_id, emit, deadline)
+                return await self._turn(
+                    request,
+                    auth,
+                    trace_id,
+                    StreamEvents(emit, protocol_version),
+                    deadline,
+                )
         except TimeoutError as exc:
             raise AgentError(
                 504, "AGENT_TIMEOUT", "本轮处理超时，已保存的内容可从历史查看"
@@ -191,10 +232,14 @@ class AgentRuntime:
             )
             identity = replace(identity, deadline=deadline)
             run = await self.store.begin(identity, request)
+            previous = None
+            if not run["created"]:
+                previous = await self.store.state(identity, run["runId"])
+            emit.bind(run, (previous or {}).get("message", {}).get("eventSeq", 0))
             if emit:
                 await emit("meta", {**run, "persisted": True})
             if not run["created"]:
-                state = await self.store.state(identity, run["runId"])
+                state = previous
                 message = state["message"]
                 reply = self._reply(
                     identity,
@@ -237,6 +282,7 @@ class AgentRuntime:
                 emit,
             )
             context.changed = writer.changed
+            context.model_completed = writer.model_completed
             generation = monitor = None
             try:
                 history = await self.store.history(identity)
@@ -293,13 +339,16 @@ class AgentRuntime:
                 await asyncio.gather(monitor, return_exceptions=True)
                 selected = context.references.validate_answer(writer.text)
                 writer.citations = [r["evidenceId"] for r in selected]
+                writer.timeline.settle("COMPLETED")
                 terminal = await writer.save("COMPLETED")
+                saved_view = (await self.store.state(identity, run["runId"]))["message"]
                 reply = self._reply(
                     identity,
                     terminal,
-                    writer.text,
-                    [context.public_sources[r["evidenceId"]] for r in selected],
+                    saved_view["content"],
+                    saved_view["citations"],
                     context.tool_events,
+                    metadata=saved_view,
                 )
                 await writer.event("done", reply)
                 return reply
@@ -331,11 +380,16 @@ class AgentRuntime:
                 for tool in context.tools.values():
                     if tool["status"] == "RUNNING":
                         tool.update(status="UNAVAILABLE", errorCode=code)
+                writer.timeline.settle(status, code)
                 persisted = False
+                saved_view = None
                 try:
                     async with asyncio.timeout(3.5):
                         terminal = await asyncio.shield(writer.save(status, code))
                     status, persisted = terminal["status"], True
+                    saved_view = (await self.store.state(identity, run["runId"]))[
+                        "message"
+                    ]
                 except Exception:
                     logger.warning(
                         "agent settlement unavailable run_id=%s trace_id=%s",
@@ -348,7 +402,34 @@ class AgentRuntime:
                             "error", {"code": code, "persisted": persisted}
                         )
                         await writer.event(
-                            "done", {**run, "status": status, "persisted": persisted}
+                            "done",
+                            {
+                                **run,
+                                "status": status,
+                                "persisted": persisted,
+                                "eventSeq": emit.seq,
+                                **(
+                                    {
+                                        "blocks": saved_view["blocks"],
+                                        "sourcesRestricted": saved_view.get(
+                                            "sourcesRestricted", False
+                                        ),
+                                        "answer": saved_view["content"],
+                                        "citations": saved_view["citations"],
+                                        "retrievals": context.tool_events,
+                                        "model": self.settings.model,
+                                        "promptVersion": PROMPT_VERSION,
+                                        "promptHash": self.prompt_hash,
+                                    }
+                                    if saved_view is not None
+                                    else {}
+                                ),
+                                **(
+                                    {"blocks": [], "sourcesRestricted": True}
+                                    if code == "EVIDENCE_CHANGED"
+                                    else {}
+                                ),
+                            },
                         )
                     except TimeoutError:
                         pass  # 慢客户端不占用已完成的执行权；客户端通过 Java 查询终态。
@@ -379,7 +460,7 @@ class AgentRuntime:
             "recursion_limit": self.settings.max_model_calls * 4 + 8,
         }
         last = None
-        model_message = None
+        streamed = {}
         with tracing_context(enabled=False):
             async for mode, data in self.graph.astream(
                 {"messages": messages},
@@ -395,14 +476,9 @@ class AgentRuntime:
                     ):
                         text = message.text
                         if text:
-                            if (
-                                model_message
-                                and message.id != model_message
-                                and writer.text
-                            ):
-                                await writer.append("\n\n")
-                            model_message = message.id
-                            await writer.append(text)
+                            message_id = message.id or f"model-{context.model_calls}"
+                            streamed[message_id] = streamed.get(message_id, "") + text
+                            await writer.model_text(streamed[message_id], message_id)
                 elif mode == "updates" and isinstance(data, dict):
                     for update in data.values():
                         if isinstance(update, dict) and update.get("messages"):
@@ -417,7 +493,9 @@ class AgentRuntime:
         ):
             raise AgentError(502, "AGENT_INCOMPLETE", "本轮未取得完整回答")
         if not writer.text:
-            await writer.append(last.text)
+            await writer.model_text(
+                last.text, last.id or f"model-{context.model_calls}"
+            )
 
     def _reply(
         self, identity, run, text, citations, retrievals, replayed=False, metadata=None
@@ -452,4 +530,7 @@ class AgentRuntime:
             "promptHash": metadata.get("promptHash") or self.prompt_hash,
             "replayed": replayed,
             "persisted": True,
+            "blocks": metadata.get("blocks", []),
+            "eventSeq": metadata.get("eventSeq", 0),
+            "sourcesRestricted": metadata.get("sourcesRestricted", False),
         }

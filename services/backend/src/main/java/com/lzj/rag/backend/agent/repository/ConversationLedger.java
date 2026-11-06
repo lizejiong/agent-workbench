@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzj.rag.backend.agent.controller.AgentContracts.*;
 import com.lzj.rag.backend.agent.service.ConversationEvidence;
+import com.lzj.rag.backend.agent.service.ConversationTimeline;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
 import com.lzj.rag.backend.model.catalog.EmbeddingCatalog;
 import com.lzj.rag.backend.rag.service.bo.DelegationBO;
@@ -131,6 +132,9 @@ public class ConversationLedger {
         }
         if(Set.of("COMPLETED","FAILED").contains(r.status()))return r;
         if(encode(input).length()>524288)throw new KnowledgeBaseException(413,"AGENT_SNAPSHOT_BUDGET","Snapshot too large");
+        List<Block> previousBlocks=decode(jdbc.queryForObject("SELECT blocks::text FROM kb_agent_message WHERE id=?",String.class,r.assistantMessageId()),new TypeReference<>(){});
+        long previousSeq=jdbc.queryForObject("SELECT event_seq FROM kb_agent_message WHERE id=?",Long.class,r.assistantMessageId());
+        var blocks=ConversationTimeline.validate(input,previousBlocks,previousSeq);
         var ids=input.evidence().stream().map(Snapshot::evidenceId).toList();
         if(new HashSet<>(ids).size()!=ids.size() || !ids.containsAll(input.citations()))throw conflict("CITATION_INVALID");
         if(input.status().equals("COMPLETED")) {
@@ -146,8 +150,8 @@ public class ConversationLedger {
         if(!current && (!Set.of("CANCELLED","FAILED","TIMED_OUT").contains(input.status()) || !saved.containsAll(input.evidence())))throw conflict("EVIDENCE_CHANGED");
         String state=r.status().equals("RUNNING")?input.status():r.status();
         if(!r.status().equals("RUNNING") && Duration.between(jdbc.queryForObject("SELECT ended_at FROM kb_agent_run WHERE id=?",Timestamp.class,id).toInstant(),Instant.now()).toSeconds()>5)return r;
-        jdbc.update("UPDATE kb_agent_message SET content=?,status=?,evidence=?::jsonb,citations=?::jsonb,tools=?::jsonb,model=?,prompt_version=?,prompt_hash=?,updated_at=clock_timestamp() WHERE id=?",
-                input.content(),state,encode(input.evidence()),encode(input.citations()),encode(input.tools()),input.model(),input.promptVersion(),input.promptHash(),r.assistantMessageId());
+        jdbc.update("UPDATE kb_agent_message SET content=?,status=?,evidence=?::jsonb,citations=?::jsonb,tools=?::jsonb,blocks=?::jsonb,event_seq=?,model=?,prompt_version=?,prompt_hash=?,updated_at=clock_timestamp() WHERE id=?",
+                input.content(),state,encode(input.evidence()),encode(input.citations()),encode(input.tools()),encode(blocks),input.eventSeq()==null?0:input.eventSeq(),input.model(),input.promptVersion(),input.promptHash(),r.assistantMessageId());
         jdbc.update("UPDATE kb_agent_run SET status=?,checkpoint_sequence=?,checkpoint_hash=?,error_code=?,updated_at=clock_timestamp(),ended_at=CASE WHEN ?='RUNNING' THEN ended_at ELSE COALESCE(ended_at,clock_timestamp()) END WHERE id=?",
                 state,input.sequence(),hash,state.equals("COMPLETED")?null:input.errorCode()==null?r.errorCode():input.errorCode(),state,id);
         jdbc.update("UPDATE kb_agent_conversation SET active_at=clock_timestamp() WHERE id=?",conversationId);
@@ -188,6 +192,9 @@ public class ConversationLedger {
         value.put("sourcesRestricted",restricted);value.put("evidence",restricted?List.of():available);
         value.put("citations",restricted?List.of():available.stream().filter(e->selected.contains(e.get("evidenceId"))).toList());
         List<Tool> tools=decode(row.get("tools").toString(),new TypeReference<>(){});
+        List<Block> blocks=decode(row.get("blocks").toString(),new TypeReference<>(){});
+        value.put("eventSeq",row.get("event_seq"));
+        value.put("blocks",restricted?List.of():ConversationTimeline.visible(blocks,tools,available,row.get("status").toString()));
         value.put("tools",tools.stream().map(t->!row.get("status").equals("RUNNING") && t.status().equals("RUNNING")
                 ?new Tool(t.toolCallId(),t.name(),"UNAVAILABLE",t.requestId(),t.traceId(),t.degraded(),t.strategy(),t.toolTruncated(),"AGENT_RUN_ENDED",false):t).toList());
         if(restricted)value.put("content","相关知识已变化或不可访问，本条回答已隐藏。请重新提问。");

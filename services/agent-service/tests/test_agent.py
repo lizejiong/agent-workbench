@@ -13,6 +13,50 @@ from agent_service.contracts import AgentError, ChatRequest
 
 
 @pytest.mark.asyncio
+async def test_v2_timeline_keeps_parallel_tool_identity_text_order_and_saved_blocks(
+    tmp_path,
+):
+    fixture = ProtocolFixture()
+    fixture.narrate_tools = fixture.reverse_tools = True
+    app = application(tmp_path, fixture)
+    events = []
+
+    async def emit(name, data):
+        events.append((name, data))
+
+    async with app.router.lifespan_context(app):
+        reply = await app.state.runtime.run(
+            ChatRequest(question="请分两次检索备份资料"),
+            httpx.BasicAuth(*AUTH),
+            "e" * 32,
+            emit,
+            protocol_version=2,
+        )
+        blocks = reply["blocks"]
+        assert [b["kind"] for b in blocks] == ["answer", "tool", "tool", "answer"]
+        assert blocks[0]["text"] == "我先查询资料。"
+        assert [b["callIndex"] for b in blocks[1:3]] == [0, 1]
+        assert blocks[1]["batchId"] == blocks[2]["batchId"]
+        assert blocks[1]["toolCallId"] != blocks[2]["toolCallId"]
+        assert all(b["status"] == "done" for b in blocks)
+        for b in blocks[1:3]:
+            assert b["durationMs"] >= 0 and b["result"]["evidence"]
+        assert [data["seq"] for _, data in events] == list(range(1, len(events) + 1))
+        assert all(data["runId"] == reply["runId"] for _, data in events)
+        assert [name for name, _ in events][-2:] == ["finish", "done"]
+        assert all(name not in {"delta", "tool"} for name, _ in events)
+        finished_tools = [
+            d for n, d in events if n == "block" and d["status"] == "done"
+        ]
+        assert [t["callIndex"] for t in finished_tools] == [1, 0]
+        saved = fixture.messages[reply["conversationId"]][-1]
+        assert [b["blockId"] for b in saved["blocks"]] == [b["blockId"] for b in blocks]
+        assert saved["content"] == "\n\n".join(
+            b["text"] for b in blocks if b["kind"] == "answer"
+        )
+
+
+@pytest.mark.asyncio
 async def test_java_history_is_reused_and_duplicate_request_never_reexecutes(tmp_path):
     fixture = ProtocolFixture()
     app = application(tmp_path, fixture)

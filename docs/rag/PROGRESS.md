@@ -1,5 +1,17 @@
 # RAG 进度
 
+## 2026-11-06：Agent 有序内容块与时间线（已完成）
+
+- Python 沿用官方 LangGraph `create_agent`，增加稳定块、真实工具调用批次、状态与耗时，模型文本流和完整消息相互校准，避免完成回调重复正文。SSE 按 `X-Agent-Stream-Version` 协商 v1/v2；v2 带 runId/messageId/blockId/seq，区分 finish/cancel 与 done。
+- Java V12 持久化有序 blocks/eventSeq，校验顺序、追加、工具身份、终态及授权证据关联；结果正文按当前权限从快照引用组装，撤权后连同派生回答隐藏。旧客户端和旧格式消息保留兼容。
+- Web 使用现有 Context，新增纯事件 reducer 和 Timeline；支持文字与工具交错、同名并行卡片、参数与返回展开、耗时、异常、刷新恢复。seq 缺口只读恢复，不自动重发；加载旧页不会覆盖正在流式更新的块。
+- 参考 Codex App Server、Claude 公开 SDK 与 Pi 的消息/工具生命周期；来源和技术取舍见 [TIMELINE.md](TIMELINE.md)。没有新增框架，没有实现另一个 ReAct，没有为只读工具虚设审批按钮。
+- 验证：Java 3 项定向集成检查通过且无跳过（真实隔离 PG/MinIO、模型桩）；Python Agent 10 项通过（真实图、协议桩）；Web 26 项通过，生产构建通过。Playwright 验证四张卡片、三段文字、展开两份证据、刷新重登录恢复、375px 无横向溢出及控制台无错误。
+- 本地真实联调：DeepSeek 主模型 + 百炼嵌入 + Java/pgvector，形成 answer/tool/tool/answer/tool/tool/answer，保存 4 个真实引用。前两项检索约20秒后不可用，Agent 在预算内后续两项检索成功，失败卡和成功卡分别保留；不能把整轮完成宣传成每个工具成功。同请求重提返回相同运行与 blocks，不新增消息或检查点。
+- 本机已备份业务 PG 并确认 V12 迁移、Java/Agent 重启；保留“检索时间线演示”会话供查看。真实供应商联调、协议桩验证和效果评估已分开记录，详情见 [TIMELINE_VALIDATION.json](TIMELINE_VALIDATION.json)。没有生产部署、压测或事实准确率结论。
+- 后续只有在接入实际需要审批的业务工具时才增加服务端授权与幂等暂停恢复；本轮在当前范围结束。
+
+
 ## R1：共享检索引擎加固（2026-10-28，已完成）
 
 本轮范围：核对知识库交付，复用现有结构化检索，补齐预算、取消、失败语义与版本追踪。B 独立问答、SSE、C Python 工具及查询理解尚未实现；本轮结束后不自动进入后续阶段。

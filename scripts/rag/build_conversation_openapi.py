@@ -45,6 +45,24 @@ schemas = {
 }
 
 
+schemas['ToolArguments'] = obj({'query': {**TEXT, 'minLength': 1, 'maxLength': 1000}}, ['query'])
+schemas['Block'] = obj({
+    'blockId': {**TEXT, 'pattern': '^B[a-f0-9]{32}$'}, 'kind': {**TEXT, 'enum': ['answer', 'tool', 'hint', 'error']},
+    'status': {**TEXT, 'enum': ['streaming', 'pending', 'running', 'done', 'failed', 'interrupted']},
+    'text': {**TEXT, 'maxLength': 65536, 'nullable': True}, 'toolCallId': {**TEXT, 'maxLength': 128, 'nullable': True},
+    'name': {**TEXT, 'enum': ['search_knowledge'], 'nullable': True}, 'startedAt': {**TIME, 'nullable': True},
+    'durationMs': {'type': 'integer', 'minimum': 0, 'maximum': 120000, 'nullable': True},
+    'batchId': {**TEXT, 'pattern': '^B[a-f0-9]{32}$', 'nullable': True},
+    'callIndex': {'type': 'integer', 'minimum': 0, 'maximum': 31, 'nullable': True},
+    'arguments': {**ref('ToolArguments'), 'nullable': True}, 'evidenceIds': array(TEXT, maxItems=128, nullable=True),
+    'errorCode': {**TEXT, 'pattern': '^[A-Z0-9_]{1,80}$', 'nullable': True},
+}, ['blockId', 'kind', 'status'])
+schemas['Checkpoint']['properties'].update({
+    'blocks': array(ref('Block'), maxItems=128, nullable=True),
+    'eventSeq': {'type': 'integer', 'minimum': 0, 'nullable': True},
+})
+
+
 def operation(name, schema=None, code=200, internal=False):
     value = {"operationId": name, "security": [{"serviceBearer": [], "serviceId": [], "delegation": []}] if internal else [{"basicAuth": []}],
              "responses": {str(code): {"description": "Success", **({"content": {"application/json": {"schema": ref("Result")}}} if code != 204 else {})},
@@ -81,6 +99,13 @@ schemas["Message"] = obj({"id": UUID, "runId": UUID, "requestId": UUID, "sequenc
                           "evidence": array(ref("VisibleEvidence")), "citations": array(ref("VisibleEvidence")), "tools": array(ref("Tool")),
                           "model": {**TEXT, "nullable": True}, "promptVersion": {**TEXT, "nullable": True}, "promptHash": {**TEXT, "nullable": True}},
                          ["id", "runId", "requestId", "sequence", "role", "content", "status", "createdAt", "updatedAt", "sourcesRestricted", "evidence", "citations", "tools"])
+schemas['VisibleBlock'] = obj({**schemas['Block']['properties'],
+    'displayName': TEXT, 'retrievalStatus': {**TEXT, 'nullable': True}, 'degraded': {'type': 'boolean'},
+    'strategy': {**TEXT, 'nullable': True}, 'toolTruncated': {'type': 'boolean'},
+    'result': obj({'evidence': array(ref('VisibleEvidence'))}, ['evidence']),
+}, ['blockId', 'kind', 'status'])
+schemas['Message']['properties'].update({'blocks': array(ref('VisibleBlock')), 'eventSeq': {'type': 'integer', 'minimum': 0}})
+schemas['Message']['required'].extend(['blocks', 'eventSeq'])
 schemas["ConversationPage"] = obj({"current": {"type": "integer"}, "size": {"type": "integer"}, "total": {"type": "integer", "format": "int64"}, "records": array(ref("Conversation"))}, ["current", "size", "total", "records"])
 schemas["MessagePage"] = obj({"records": array(ref("Message")), "hasMore": {"type": "boolean"}, "nextBeforeSequence": {"type": "integer", "format": "int64"}}, ["records", "hasMore", "nextBeforeSequence"])
 schemas["RunResult"] = obj({"run": ref("Run"), "message": ref("Message")}, ["run", "message"])
@@ -109,7 +134,7 @@ paths["/api/conversations/{id}/messages"]["get"]["parameters"] += [
     {"in": "query", "name": "size", "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 30}},
     {"in": "query", "name": "beforeSequence", "schema": {"type": "integer", "format": "int64", "minimum": 1}},
 ]
-document = {"openapi": "3.0.3", "info": {"title": "Java Agent Conversation API", "version": "2026-11-05", "description": "Response fields, statuses and Python SSE: docs/rag/CONVERSATIONS.md"},
+document = {"openapi": "3.0.3", "info": {"title": "Java Agent Conversation API", "version": "2026-11-06", "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"},
             "paths": paths, "components": {"schemas": schemas, "securitySchemes": {
                 "basicAuth": {"type": "http", "scheme": "basic"}, "serviceBearer": {"type": "http", "scheme": "bearer"},
                 "serviceId": {"type": "apiKey", "in": "header", "name": "X-Rag-Service"},

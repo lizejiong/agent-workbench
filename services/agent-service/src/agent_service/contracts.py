@@ -87,6 +87,9 @@ class AgentReply(BaseModel):
     assistantMessageId: UUID
     replayed: bool = False
     persisted: bool = True
+    blocks: list[dict[str, Any]] = Field(default_factory=list, max_length=128)
+    eventSeq: int = 0
+    sourcesRestricted: bool = False
     answer: str
     citations: list[Citation]
     retrievals: list[RetrievalSummary]

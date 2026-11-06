@@ -134,6 +134,27 @@
 .chat-sidebar-collapsed .chat-profile { padding: 6px; justify-content: center; }
 .chat-sidebar-collapsed .chat-main-toggle { display: inline-flex; }
 @keyframes chat-pulse { 50% { opacity: .35; } }
+.agent-timeline { display: flex; flex-direction: column; gap: 18px; }
+.agent-tool-batch { border-left: 2px solid #e7e7e7; padding-left: 16px; margin: 3px 0; }
+.agent-batch-title { font-size: 11px; color: #888; margin: 0 0 9px; }
+.agent-tool { border: 1px solid #e9e9e9; border-radius: 12px; padding: 11px 14px; background: #fcfcfc; margin-bottom: 8px; }
+.agent-tool:last-child { margin-bottom: 0; }
+.agent-tool-heading { display: flex; align-items: center; gap: 9px; font-size: 12px; }
+.agent-tool-heading strong { font-weight: 550; }
+.agent-tool-icon { color: #6b7a70; font-size: 14px; }
+.agent-tool.is-failed .agent-tool-icon { color: #b46859; }
+.agent-tool-status { color: #888; font-size: 11px; margin-left: auto; white-space: nowrap; }
+.agent-tool-summary, .agent-tool-note { color: #777; font-size: 12px; line-height: 1.7; margin: 7px 0 0; }
+.agent-tool-note { font-size: 11px; }
+.agent-tool-details { font-size: 12px; margin-top: 9px; }
+.agent-tool-details summary { cursor: pointer; color: #888; width: fit-content; }
+.agent-tool-details h4 { margin: 12px 0 4px; font-size: 11px; font-weight: 500; color: #888; }
+.agent-tool-details pre { max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; background: #f3f3f3; border-radius: 6px; font-size: 11px; line-height: 1.7; }
+.agent-tool-evidence { padding: 10px 0; border-top: 1px solid #eaeaea; margin-top: 10px; }
+.agent-tool-evidence button { color: #555; border: 0; background: none; text-align: left; padding: 0; font-size: 12px; cursor: pointer; }
+.agent-tool-evidence small { display: block; color: #999; overflow-wrap: anywhere; font-size: 10px; }
+.agent-tool-evidence p { max-height: 240px; overflow: auto; white-space: pre-wrap; font-size: 12px; line-height: 1.8; color: #777; margin: 5px 0 0; }
+.agent-timeline-error, .agent-timeline-hint { padding: 9px 13px; border-radius: 8px; background: #faf7f3; font-size: 12px; line-height: 1.8; color: #8a6552; margin: 0; }
 @media (prefers-reduced-motion: reduce) { .chat-thinking-dot, .chat-running-dot { animation: none; } }
 @media (max-width: 767px) {
   .chat-shell, .chat-sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }

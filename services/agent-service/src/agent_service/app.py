@@ -178,6 +178,9 @@ def create_app(
 
     @app.post("/api/agent/chat/stream")
     async def stream(body: ChatRequest, request: Request):
+        version = request.headers.get("X-Agent-Stream-Version", "1")
+        if version not in {"1", "2"}:
+            raise AgentError(400, "STREAM_VERSION_UNSUPPORTED", "不支持的事件协议版本")
         if not body.conversationId or not body.requestId or not body.messageId:
             raise AgentError(
                 400,
@@ -197,7 +200,9 @@ def create_app(
 
         async def produce():
             try:
-                await app.state.runtime.run(body, auth, trace_id, emit)
+                await app.state.runtime.run(
+                    body, auth, trace_id, emit, protocol_version=int(version)
+                )
             except AgentError as exc:
                 if not terminal:
                     await emit(
@@ -292,6 +297,7 @@ def create_app(
                 "Cache-Control": "no-store",
                 "X-Accel-Buffering": "no",
                 "X-Trace-Id": trace_id,
+                "X-Agent-Stream-Version": version,
             },
         )
 

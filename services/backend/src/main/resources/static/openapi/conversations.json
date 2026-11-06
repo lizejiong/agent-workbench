@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Java Agent Conversation API",
-    "version": "2026-11-05",
-    "description": "Response fields, statuses and Python SSE: docs/rag/CONVERSATIONS.md"
+    "version": "2026-11-06",
+    "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"
   },
   "paths": {
     "/api/conversations": {
@@ -1261,6 +1261,19 @@
             "type": "string",
             "pattern": "^[A-Z0-9_]{1,80}$",
             "nullable": true
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Block"
+            },
+            "maxItems": 128,
+            "nullable": true
+          },
+          "eventSeq": {
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true
           }
         },
         "required": [
@@ -1287,6 +1300,111 @@
             "type": "string"
           }
         }
+      },
+      "ToolArguments": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "Block": {
+        "type": "object",
+        "properties": {
+          "blockId": {
+            "type": "string",
+            "pattern": "^B[a-f0-9]{32}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "answer",
+              "tool",
+              "hint",
+              "error"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "streaming",
+              "pending",
+              "running",
+              "done",
+              "failed",
+              "interrupted"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 65536,
+            "nullable": true
+          },
+          "toolCallId": {
+            "type": "string",
+            "maxLength": 128,
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "enum": [
+              "search_knowledge"
+            ],
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 120000,
+            "nullable": true
+          },
+          "batchId": {
+            "type": "string",
+            "pattern": "^B[a-f0-9]{32}$",
+            "nullable": true
+          },
+          "callIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 31,
+            "nullable": true
+          },
+          "arguments": {
+            "$ref": "#/components/schemas/ToolArguments",
+            "nullable": true
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 128,
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_]{1,80}$",
+            "nullable": true
+          }
+        },
+        "required": [
+          "blockId",
+          "kind",
+          "status"
+        ],
+        "additionalProperties": false
       },
       "Conversation": {
         "type": "object",
@@ -1565,6 +1683,16 @@
           "promptHash": {
             "type": "string",
             "nullable": true
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VisibleBlock"
+            }
+          },
+          "eventSeq": {
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
@@ -1580,7 +1708,132 @@
           "sourcesRestricted",
           "evidence",
           "citations",
-          "tools"
+          "tools",
+          "blocks",
+          "eventSeq"
+        ],
+        "additionalProperties": false
+      },
+      "VisibleBlock": {
+        "type": "object",
+        "properties": {
+          "blockId": {
+            "type": "string",
+            "pattern": "^B[a-f0-9]{32}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "answer",
+              "tool",
+              "hint",
+              "error"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "streaming",
+              "pending",
+              "running",
+              "done",
+              "failed",
+              "interrupted"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 65536,
+            "nullable": true
+          },
+          "toolCallId": {
+            "type": "string",
+            "maxLength": 128,
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "enum": [
+              "search_knowledge"
+            ],
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 120000,
+            "nullable": true
+          },
+          "batchId": {
+            "type": "string",
+            "pattern": "^B[a-f0-9]{32}$",
+            "nullable": true
+          },
+          "callIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 31,
+            "nullable": true
+          },
+          "arguments": {
+            "$ref": "#/components/schemas/ToolArguments",
+            "nullable": true
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 128,
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_]{1,80}$",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "retrievalStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "degraded": {
+            "type": "boolean"
+          },
+          "strategy": {
+            "type": "string",
+            "nullable": true
+          },
+          "toolTruncated": {
+            "type": "boolean"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/VisibleEvidence"
+                }
+              }
+            },
+            "required": [
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "blockId",
+          "kind",
+          "status"
         ],
         "additionalProperties": false
       },

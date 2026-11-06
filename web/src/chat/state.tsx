@@ -3,7 +3,8 @@ import type { PropsWithChildren } from 'react';
 import { query } from '../api';
 import { useApi } from '../state';
 import type { Page } from '../types';
-import type { AgentReply, ChatTurn, Conversation, StoredMessage, ToolEvent } from './types';
+import type { AgentReply, ChatTurn, Conversation, StoredMessage } from './types';
+import { reduceAgentEvent } from './stream';
 
 const fresh = (): Conversation => ({ id: crypto.randomUUID(), title: '新对话', turns: [], draft: '', updatedAt: Date.now(), loaded: true });
 type RemoteConversation = { id: string; title: string; kbIds: string[]; activeAt: string };
@@ -27,6 +28,7 @@ function turnsFromMessages(messages: StoredMessage[], conversationId: string): C
     else {
       turn.status = row.status === 'RUNNING' ? 'pending' : row.status === 'COMPLETED' ? 'completed' : row.status === 'CANCELLED' ? 'cancelled' : 'failed';
       turn.runStatus = row.status; turn.tools = row.tools; turn.sourcesRestricted = row.sourcesRestricted; turn.persisted = true;
+      turn.blocks = row.blocks; turn.eventSeq = row.eventSeq; turn.assistantMessageId = row.id;
       turn.reply = { sessionId: conversationId, runId: row.runId, traceId: row.tools.find(t => t.traceId)?.traceId || '', status: row.status,
         answer: row.content, citations: row.citations, retrievals: row.tools.filter(t => t.status !== 'RUNNING') as AgentReply['retrievals'],
         model: row.model || '', promptVersion: row.promptVersion || '', promptHash: row.promptHash || '' };
@@ -75,7 +77,11 @@ export function ChatProvider({ children }: PropsWithChildren) {
       const old = stored.current.get(id) || [];
       const byId = new Map((older ? [...data.records, ...old] : [...old, ...data.records]).map(m => [m.id, m]));
       const messages = [...byId.values()]; stored.current.set(id, messages);
-      change(id, c => ({ ...c, loaded: true, loading: false, turns: turnsFromMessages(messages, item.sessionId!),
+      change(id, c => ({ ...c, loaded: true, loading: false, turns: turnsFromMessages(messages, item.sessionId!).map(remote => {
+        const live = c.turns.find(t => t.id === remote.id);
+        // 加载更早历史不能用较旧批量快照覆盖仍在消费的实时块及 seq。
+        return live && requests.current.has(id) && live.runId === remote.runId && !remote.sourcesRestricted ? live : remote;
+      }),
         hasMore: older ? data.hasMore : c.hasMore || data.hasMore, beforeSequence: older || !c.beforeSequence ? data.nextBeforeSequence : c.beforeSequence }));
       setError(undefined);
     } catch (e) { change(id, c => ({ ...c, loading: false })); if (!closed.current) setError(e instanceof Error ? e : new Error('历史消息加载失败')); }
@@ -111,7 +117,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
     if (!conversation || !question || question.length > 4000 || requests.current.has(id) || conversation.turns.some(t => t.status === 'pending')) return;
     const controller = new AbortController(); requests.current.set(id, controller);
     const requestId = crypto.randomUUID(); const messageId = crypto.randomUUID();
-    const turn: ChatTurn = { id: requestId, requestId, messageId, question, status: 'pending', tools: [] };
+    const turn: ChatTurn = { id: requestId, requestId, messageId, question, status: 'pending', tools: [], blocks: [] };
     change(id, c => ({ ...c, draft: '', title: c.turns.length ? c.title : Array.from(question).slice(0, 28).join(''), updatedAt: Date.now(), turns: [...c.turns, turn] }));
     let conversationId = conversation.sessionId;
     const editTurn = (edit: (turn: ChatTurn) => ChatTurn) => change(id, c => ({ ...c, turns: c.turns.map(t => t.id === requestId ? edit(t) : t) }));
@@ -121,11 +127,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
         conversationId = created.id; change(id, c => ({ ...c, sessionId: created.id, knowledgeIds: created.kbIds }));
       }
       await api.stream('/api/agent/chat/stream', { conversationId, question, requestId, messageId }, (name, data) => {
-        if (name === 'meta') editTurn(t => ({ ...t, runId: String(data.runId) }));
-        else if (name === 'delta') editTurn(t => ({ ...t, reply: { sessionId: conversationId!, runId: t.runId || '', traceId: '', status: 'RUNNING', answer: (t.reply?.answer || '') + String(data.text || ''), citations: [], retrievals: [], model: '', promptVersion: '', promptHash: '' } }));
-        else if (name === 'tool') editTurn(t => ({ ...t, tools: [...(t.tools || []).filter(e => e.toolCallId !== data.toolCallId), data as unknown as ToolEvent] }));
-        else if (name === 'error') editTurn(t => ({ ...t, persisted: data.persisted !== false, error: new Error('本轮未完成，请刷新会话确认运行及保存状态。') }));
-        else if (name === 'done') editTurn(t => ({ ...t, persisted: data.persisted !== false, runStatus: data.persisted === false ? 'UNKNOWN' : String(data.status), status: data.persisted === false ? 'pending' : data.status === 'COMPLETED' ? 'completed' : data.status === 'CANCELLED' ? 'cancelled' : data.status === 'RUNNING' ? 'pending' : 'failed', reply: typeof data.answer === 'string' ? data as unknown as AgentReply : t.reply }));
+        editTurn(t => reduceAgentEvent(t, name, data, conversationId!));
       }, controller.signal);
     } catch (failure) {
       if (!closed.current) editTurn(t => ({ ...t, status: t.runId ? 'pending' : 'failed', persisted: false, runStatus: controller.signal.aborted ? 'CANCELLING' : 'UNKNOWN', error: controller.signal.aborted ? undefined : failure instanceof Error ? failure : new Error('连接中断，请查询历史状态。') }));

@@ -13,6 +13,16 @@ export interface AgentReply {
   sessionId: string; conversationId?: string; runId: string; traceId: string; status: string; answer: string;
   citations: Citation[]; retrievals: RetrievalSummary[]; model: string;
   promptVersion: string; promptHash: string;
+  blocks?: ChatBlock[]; eventSeq?: number;
+}
+export interface ChatBlock {
+  blockId: string; kind: 'answer' | 'tool' | 'hint' | 'error';
+  status: 'streaming' | 'pending' | 'running' | 'done' | 'failed' | 'interrupted';
+  text?: string; toolCallId?: string; name?: string; displayName?: string;
+  batchId?: string; callIndex?: number; startedAt?: string; durationMs?: number;
+  arguments?: { query: string } | null; result?: { evidence: Citation[] };
+  evidenceIds?: string[]; retrievalStatus?: RetrievalSummary['status'] | 'RUNNING';
+  degraded?: boolean; strategy?: string; toolTruncated?: boolean; errorCode?: string;
 }
 export interface ChatTurn {
   id: string; question: string; status: 'pending' | 'completed' | 'failed' | 'cancelled';
@@ -20,6 +30,7 @@ export interface ChatTurn {
   runId?: string; requestId?: string; messageId?: string; tools?: ToolEvent[];
   runStatus?: string; sourcesRestricted?: boolean;
   persisted?: boolean;
+  blocks?: ChatBlock[]; eventSeq?: number; assistantMessageId?: string;
 }
 export interface Conversation {
   id: string; title: string; sessionId?: string; knowledgeIds?: string[];
@@ -31,4 +42,5 @@ export interface StoredMessage {
   id: string; runId: string; requestId: string; role: string; content: string; sequence: number;
   status: string; citations: Citation[]; tools: ToolEvent[]; model?: string; promptVersion?: string; promptHash?: string;
   sourcesRestricted: boolean;
+  blocks?: ChatBlock[]; eventSeq?: number;
 }

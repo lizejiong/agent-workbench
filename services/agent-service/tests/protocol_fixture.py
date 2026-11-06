@@ -37,6 +37,8 @@ class ProtocolFixture:
         self.answer_delay = 0.01
         self.direct_answer = False
         self.truncate_answer = False
+        self.narrate_tools = False
+        self.reverse_tools = False
 
     async def java(self, request):
         self.java_requests.append(request)
@@ -80,6 +82,8 @@ class ProtocolFixture:
         grant = self.grants[request.headers["X-Rag-Delegation"]]
         body = json.loads(request.content)
         assert body["kbIds"] == grant["kbIds"]
+        if self.reverse_tools and body["query"].endswith("0"):
+            await asyncio.sleep(0.08)
         assert (
             not {"tenantId", "userId", "agentSessionId", "conversationId"} & body.keys()
         )
@@ -161,7 +165,7 @@ class ProtocolFixture:
             count = 2 if "两次" in messages[last_user]["content"] else 1
             message = {
                 "role": "assistant",
-                "content": None,
+                "content": "我先查询资料。" if self.narrate_tools else None,
                 "tool_calls": [
                     {
                         "id": f"call_{uuid.uuid4().hex}",
@@ -213,6 +217,10 @@ class ProtocolFixture:
                         ).encode()
 
                     if message.get("tool_calls"):
+                        if message.get("content"):
+                            yield frame(
+                                {"role": "assistant", "content": message["content"]}
+                            )
                         calls = [
                             {"index": i, **c}
                             for i, c in enumerate(message["tool_calls"])
@@ -397,6 +405,8 @@ class ProtocolFixture:
                 model=body["model"],
                 promptVersion=body["promptVersion"],
                 promptHash=body["promptHash"],
+                blocks=body.get("blocks", []),
+                eventSeq=body.get("eventSeq", 0),
             )
             row["citations"] = [
                 {
@@ -408,6 +418,21 @@ class ProtocolFixture:
                 if s["evidenceId"] in body["citations"]
             ]
             return httpx.Response(200, json={"code": "0", "data": run})
+        view = json.loads(json.dumps(row))
+        for block in view.get("blocks", []):
+            if block["kind"] == "tool":
+                block["displayName"] = "知识库检索"
+                block["result"] = {
+                    "evidence": [
+                        {
+                            **s,
+                            "documentName": "备份说明",
+                            "fileUrl": f"/api/documents/{s['documentId']}/file",
+                        }
+                        for s in row["evidence"]
+                        if s["evidenceId"] in block["evidenceIds"]
+                    ]
+                }
         return httpx.Response(
-            200, json={"code": "0", "data": {"run": run, "message": row}}
+            200, json={"code": "0", "data": {"run": run, "message": view}}
         )

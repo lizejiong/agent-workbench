@@ -37,7 +37,9 @@ class AgentContext:
     tool_calls: int = 0
     snapshots: dict[str, dict] = field(default_factory=dict)
     tools: dict[str, dict] = field(default_factory=dict)
+    tool_evidence: dict[str, list[str]] = field(default_factory=dict)
     changed: Callable | None = None
+    model_completed: Callable | None = None
     authorize_model: Callable[[], Awaitable] | None = None
 
 
@@ -125,6 +127,7 @@ async def search_knowledge(
         "name": "search_knowledge",
         **context.tool_events[-1],
     }
+    context.tool_evidence[call_id] = [e["evidenceId"] for e in result["evidence"]]
     if context.changed:
         await context.changed("tool", context.tools[call_id])
     return result
@@ -154,7 +157,7 @@ class TurnLimits(AgentMiddleware):
         remaining = context.identity.deadline - time.monotonic()
         if remaining <= 0:
             raise TimeoutError
-        return await handler(
+        response = await handler(
             request.override(
                 model_settings={
                     **request.model_settings,
@@ -167,6 +170,10 @@ class TurnLimits(AgentMiddleware):
                 }
             )
         )
+        if context.model_completed:
+            for message in response.result:
+                await context.model_completed(message)
+        return response
 
 
 def build_graph(model, saver):

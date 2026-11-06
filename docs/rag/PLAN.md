@@ -1,5 +1,9 @@
 # RAG 服务计划
 
+## 2026-11-06：有序 Agent 时间线
+
+Python 适配现有 LangGraph 事件，Java V12 持久化 blocks/eventSeq，Web 使用同一套时间线组件展示实时与历史。SSE 按请求头协商 v1/v2；v2 区分内容、工具、运行终态及连接结束。设计、社区参考与约束见 [TIMELINE.md](TIMELINE.md)。当前只读检索工具不引入无后端授权的确认按钮。
+
 ## 当前范围：Java 统一 Agent 会话（2026-11-05）
 
 按用户明确边界实施 Java 会话账本、受委托历史读写、Python 原生 SSE 分批保存及 Web 历史恢复。架构和全部字段见 [CONVERSATIONS.md](CONVERSATIONS.md)。技术映射：backend/agent + JDBC/事务/Flyway V11；Python 复用现有 httpx、create_agent/LangGraph 和 Saver；Web 复用 ApiClient 与原代理，不新增 AI 框架或第二套检索。

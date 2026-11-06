@@ -1,5 +1,9 @@
 # RAG 评估记录
 
+## 时间线验证范围（2026-11-06）
+
+本轮验证事件顺序、同名工具身份及逆序完成、块快照恢复、取消、撤权与旧协议兼容，不以这些协议检查宣传答案事实正确或提升检索准确率。Python/模型协议桩、真实 PG/MinIO 集成检查、真实供应商页面联调分别记录于 PROGRESS；详细场景见 [TIMELINE.md](TIMELINE.md)。
+
 ## Java 会话与 Agent 流式验收（2026-11-05）
 
 本轮评估业务行为与边界，不增加答案语义质量分数。沿用 database/backup/cooking 自有样本、明确 topic-vector 与主模型原生 SSE 协议桩、真实 Java MVC/PG-pgvector/MinIO/Uvicorn/LangGraph。覆盖业务历史落库、生成中保存、重复提交不执行、跨用户隔离、有效历史复用、取消部分正文；Java 检查历史与派生消息撤权、顺序分页、删除、超时和迟到结算。

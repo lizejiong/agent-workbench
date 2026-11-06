@@ -1,5 +1,9 @@
 # RAG API
 
+## Agent SSE v2 与消息内容块（2026-11-06）
+
+`POST /api/agent/chat/stream` 请求头 `X-Agent-Stream-Version: 2`；Web 默认使用。meta/message/block/error/finish/cancel/done 带 runId、助手 messageId 与递增 seq。Java 消息增加有序 blocks/eventSeq，工具结果读取时按当前权限从 evidenceIds 组装。省略版本仍支持旧 meta/delta/tool/error/done。完整字段、状态和不支持事件重放的边界见 [TIMELINE.md](TIMELINE.md)。
+
 ## 当前 Agent 会话与 SSE（2026-11-05）
 
 Java 会话/消息/运行由 `/api/conversations` 及 `/internal/agent/conversations` 管理，公开静态契约为 `/openapi/conversations.json`；完整请求、响应、状态码、幂等及 SSE 事件见 [CONVERSATIONS.md](CONVERSATIONS.md)。Python `/api/agent/chat/stream` 使用原生流，`/api/agent/chat` 保留完整 JSON 与 sessionId 别名，但所有业务历史已改由 Java 保存。

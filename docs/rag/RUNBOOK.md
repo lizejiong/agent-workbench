@@ -1,5 +1,9 @@
 # RAG 运行手册
 
+## 有序块升级与排障（2026-11-06）
+
+先备份 PostgreSQL，部署 Java 并确认 V12，再重启 Python 单 worker，最后更新 Web。必须在未被运行进程占用的隔离目录构建 JAR。旧消息 blocks 为空不会补造执行顺序。检查 v2 响应头、runId/messageId/seq、Java blocks/eventSeq；缺帧或断连仅查询历史，不重放整个 Agent 请求。详见 [TIMELINE.md](TIMELINE.md)。
+
 ## Java 业务会话与 Python SSE（2026-11-05）
 
 升级顺序：先备份 Java PostgreSQL 与受保护 Agent 状态目录，部署 backend 并确认 Flyway V11，再升级 Python（`uv sync --project services/agent-service --locked`、单 worker），最后更新 Web。V11 是新增 Agent 领域表，不迁移 Java 独立问答或自动导入旧 Python 图历史。旧 sessions.sqlite 不再读写；按现有保留策略人工归档/删除，不把旧图中未经验证的来源变成新业务历史。
