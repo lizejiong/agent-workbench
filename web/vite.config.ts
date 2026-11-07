@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     }
   }
   const proxy: Record<string, ProxyOptions> = {
-    '/api/agent': { target: agent, changeOrigin: false, configure(server) {
+    '/api/agent/chat': { target: agent, changeOrigin: false, configure(server) {
       server.on('proxyReq', (upstream, _request, response) => {
         // 请求体发送完毕后的浏览器取消表现为 response.close，也须关闭 Python 上游。
         const disconnect = () => { if (!response.writableEnded) upstream.destroy(); };

@@ -26,7 +26,11 @@ from agent_service.knowledge.adapter import (
 
 logger = logging.getLogger(__name__)
 
-PROMPT_FILES = ("agent-system-v2.txt", "agent-knowledge-v2.txt")
+PROMPT_FILES = (
+    "agent-system-v2.txt",
+    "agent-knowledge-v2.txt",
+    "agent-preferences-v1.txt",
+)
 PROMPT_VERSION = "+".join(name.removesuffix(".txt") for name in PROMPT_FILES)
 
 

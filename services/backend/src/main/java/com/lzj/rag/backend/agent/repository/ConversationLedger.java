@@ -24,8 +24,9 @@ import java.util.*;
 public class ConversationLedger {
     private final JdbcTemplate jdbc;private final ObjectMapper json;
     private final HybridRetrievalService scopes;private final ConversationEvidence evidence;private final ConversationSummaryGuard summaries;
-    public ConversationLedger(JdbcTemplate jdbc,ObjectMapper json,HybridRetrievalService scopes,ConversationEvidence evidence,ConversationSummaryGuard summaries) {
-        this.jdbc=jdbc;this.json=json;this.scopes=scopes;this.evidence=evidence;this.summaries=summaries;
+    private final AgentPreferences preferences;
+    public ConversationLedger(JdbcTemplate jdbc,ObjectMapper json,HybridRetrievalService scopes,ConversationEvidence evidence,ConversationSummaryGuard summaries,AgentPreferences preferences) {
+        this.jdbc=jdbc;this.json=json;this.scopes=scopes;this.evidence=evidence;this.summaries=summaries;this.preferences=preferences;
     }
     @Transactional(timeout=10)
     public Conversation create(KnowledgeBasePrincipal actor,Create input) {
@@ -95,14 +96,14 @@ public class ConversationLedger {
         if(!deadline.isAfter(Instant.now()))throw new KnowledgeBaseException(504,"AGENT_TIMEOUT","Execution deadline expired");
         UUID id=UUID.randomUUID(),assistant=UUID.randomUUID();
         long sequence=jdbc.queryForObject("SELECT next_sequence FROM kb_agent_conversation WHERE id=?",Long.class,conversationId);
-        jdbc.update("INSERT INTO kb_agent_run(id,conversation_id,request_id,request_hash,user_message_id,assistant_message_id,service_id,trace_id,status,deadline_at) VALUES(?,?,?,?,?,?,?,?,'RUNNING',?)",
-                id,conversationId,input.requestId(),requestHash,input.messageId(),assistant,g.serviceId(),traceId,Timestamp.from(deadline));
+        jdbc.update("INSERT INTO kb_agent_run(id,conversation_id,request_id,request_hash,user_message_id,assistant_message_id,service_id,trace_id,status,deadline_at,preferences_snapshot) VALUES(?,?,?,?,?,?,?,?,'RUNNING',?,?::jsonb)",
+                id,conversationId,input.requestId(),requestHash,input.messageId(),assistant,g.serviceId(),traceId,Timestamp.from(deadline),encode(preferences.get(g.actor())));
         jdbc.update("INSERT INTO kb_agent_message(id,conversation_id,run_id,request_id,sequence,role,content,status) VALUES(?,?,?,?,?,'user',?,'COMPLETED'),(?,?,?,?,?,'assistant','','RUNNING')",
                 input.messageId(),conversationId,id,input.requestId(),sequence,question,assistant,conversationId,id,input.requestId(),sequence+1);
         jdbc.update("UPDATE kb_agent_conversation SET next_sequence=next_sequence+2,active_at=clock_timestamp(),title=CASE WHEN next_sequence=1 AND title='新对话' THEN ? ELSE title END WHERE id=?",
                 question.codePoints().limit(28).collect(StringBuilder::new,StringBuilder::appendCodePoint,StringBuilder::append).toString(),conversationId);
         Run r=get(g,conversationId,id);
-        return new Run(r.runId(),r.conversationId(),r.requestId(),r.userMessageId(),r.assistantMessageId(),r.traceId(),r.status(),r.checkpointSequence(),r.deadline(),r.errorCode(),true);
+        return new Run(r.runId(),r.conversationId(),r.requestId(),r.userMessageId(),r.assistantMessageId(),r.traceId(),r.status(),r.checkpointSequence(),r.deadline(),r.errorCode(),true,r.preferences());
     }
     public Run get(DelegationBO g,UUID conversationId,UUID id) {
         delegated(g,conversationId,false);return ownedRun(g,conversationId,id,false);
@@ -248,7 +249,7 @@ public class ConversationLedger {
     private Run run(ResultSet r,int n)throws SQLException {
         String state=r.getString("status");if(state.equals("RUNNING") && !r.getTimestamp("deadline_at").toInstant().isAfter(Instant.now()))state="TIMED_OUT";
         return new Run(r.getObject("id",UUID.class),r.getObject("conversation_id",UUID.class),r.getObject("request_id",UUID.class),r.getObject("user_message_id",UUID.class),
-                r.getObject("assistant_message_id",UUID.class),r.getString("trace_id"),state,r.getLong("checkpoint_sequence"),r.getTimestamp("deadline_at").toInstant(),r.getString("error_code"),false);
+                r.getObject("assistant_message_id",UUID.class),r.getString("trace_id"),state,r.getLong("checkpoint_sequence"),r.getTimestamp("deadline_at").toInstant(),r.getString("error_code"),false,decode(r.getString("preferences_snapshot"),new TypeReference<>(){}));
     }
     private void expire(UUID id) {
         jdbc.update("UPDATE kb_agent_run SET status='TIMED_OUT',error_code='AGENT_TIMEOUT',ended_at=clock_timestamp(),updated_at=clock_timestamp() WHERE conversation_id=? AND status='RUNNING' AND deadline_at<=clock_timestamp()",id);

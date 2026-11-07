@@ -8,6 +8,8 @@ export class ApiError extends Error {
 export function friendlyError(code: string, status = 0): string {
   const messages: Record<string, string> = {
     AGENT_CAPACITY: '助手当前繁忙，请稍后再发送。', AGENT_TIMEOUT: '本轮处理超时，可缩小问题范围后重新发送。',
+    AGENT_PREFERENCES_CONFLICT: '回答偏好已在其他页面更新，请重新加载后再保存。',
+    INVALID_PREFERENCES: '回答偏好响应无效，请联系维护者检查服务版本。',
     JAVA_UNAVAILABLE: '知识授权服务暂不可用，请稍后重试。', MODEL_UNAVAILABLE: '助手模型暂不可用，请稍后重试。',
     SESSION_NOT_FOUND: '对话已不可访问，请新建对话。', SCOPE_NOT_ACCESSIBLE: '当前对话或知识范围已不可访问，请重新选择知识库。',
     SESSION_SCOPE_FIXED: '已有对话不能更换知识范围，请新建对话。', SESSION_BUSY: '该对话上一轮仍在结束，请稍后继续。',

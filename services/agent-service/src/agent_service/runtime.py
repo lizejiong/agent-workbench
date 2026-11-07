@@ -11,6 +11,7 @@ from langsmith import tracing_context
 
 from agent_service.config import Settings
 from agent_service.context.history import select_history
+from agent_service.context.preferences import preference_message
 from agent_service.context.summary import background, policy, prepare_summary
 from agent_service.contracts import AgentError, ChatRequest
 from agent_service.conversations import ConversationClient
@@ -374,6 +375,7 @@ class AgentRuntime:
 
     async def _messages(self, request, run, context, writer):
         identity = context.identity
+        preferences = preference_message(run.get("preferences"))
         summary = await prepare_summary(
             self.store, identity, run, context, self.summary_model
         )
@@ -464,6 +466,8 @@ class AgentRuntime:
             await writer.save()
 
         context.authorize_model = authorize
+        if preferences:
+            messages.insert(0, preferences)
         messages.append(HumanMessage(content=request.question))
         return messages
 

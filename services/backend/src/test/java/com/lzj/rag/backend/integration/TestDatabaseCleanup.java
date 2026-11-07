@@ -10,6 +10,7 @@ final class TestDatabaseCleanup {
         jdbc.update("DELETE FROM kb_agent_context_summary");
         jdbc.update("DELETE FROM kb_agent_run");
         jdbc.update("DELETE FROM kb_agent_conversation");
+        jdbc.update("DELETE FROM kb_agent_preferences");
         jdbc.update("DELETE FROM kb_rag_delegation");
         jdbc.update("DELETE FROM kb_rag_answer_run");
         jdbc.update("DELETE FROM kb_rag_conversation");

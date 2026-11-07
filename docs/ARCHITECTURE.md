@@ -9,6 +9,7 @@
 | Agent 决策、工具调度、主模型原生流 | services/agent-service；官方 create_agent / LangGraph |
 | 当前图执行检查点 | Python AsyncSqliteSaver，按 runId 隔离；不作为业务历史或重放授权 |
 | Agent 会话、消息、引用/证据、运行状态 | services/backend/agent；Flyway V11、JdbcTemplate 与短事务 |
+| 跨会话回答偏好 | Java V14按tenant/owner保存并绑定run；Python校验后加入预算内背景；Web账号菜单编辑 |
 | 历史输入选择及摘要 | Python，从 Java 已授权历史中选择近期消息与有界用户问题提取摘要 |
 | 知识管理、入库、向量/关键词、融合、精排、证据组装 | services/backend；复用已有共享 RAG 引擎及索引 |
 | Java 独立问答及其 SSE/历史 | services/backend/rag；原 V9 表与接口，不混作 Agent 会话 |
@@ -23,7 +24,7 @@ Web 先调用 Java POST /api/conversations 创建固定范围会话，再把 con
 
 Python 分批写 Java 快照并输出 SSE；终态落库确认后才声称 persisted=true。Web 刷新、重新登录、其他设备均通过 Java GET 恢复历史和运行状态。加载、分页、重连查询不会恢复旧工具节点；重复请求只返回已有 run。
 
-浏览器同源代理 `/api/agent/*` 发往 Python，`/api/conversations/*` 和其他 `/api/*` 发往 Java；不用 Python 路径冒充 Java 会话接口。用户/租户、固定范围和凭证不能由模型填写，trace 仅作关联。
+浏览器同源代理 `/api/agent/chat` 及其流路径发往 Python，`/api/agent/preferences`、会话和其他 `/api/*` 发往 Java。用户/租户、固定范围和凭证不能由模型填写，trace 仅作关联。偏好是固定表达枚举，当前问题明确要求优先，不构成事实、审批或授权；完整契约见 [回答偏好](rag/PREFERENCES.md)。
 
 ## 历史、权限与删除
 

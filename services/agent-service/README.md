@@ -1,5 +1,7 @@
 # Python 主 Agent
 
+2026-11-07当前版本需要Java V14。用户可在Web账号菜单设置跨会话回答偏好；Java按tenant/owner保存，begin run绑定快照，Python严格校验后按固定枚举注入预算内背景。设置不包含自由文本、事实或授权，不增加模型调用；默认值不增加动态消息。新设置在下一新run生效，幂等重提保留旧快照。无新增环境变量，缺失/非法快照以INVALID_PREFERENCES停止；先升级Java再升级Python/Web。详见 [PREFERENCES.md](../../docs/rag/PREFERENCES.md)。
+
 正式入口 `agent_service.app:app`。Python 负责官方 LangChain create_agent / LangGraph 工具循环、上下文选择、主模型原生调用和 SSE；Java 统一保存业务会话、消息、运行状态、引用及证据快照。当前实际工具只有 search_knowledge，调用 Java /internal/rag/retrieve，共用 Java RAG 算法，不调用 /answer 后重新转述。
 
 ## 模块

@@ -1,6 +1,6 @@
 # Agent 上下文管理调研与实施建议
 
-2026-11-07。状态：第一、二轮及新工具结果动态预算补充已实现；长期记忆及中断恢复仍为后续方案。第二轮实际契约、限制和验证见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)。
+2026-11-07。状态：第一、二轮、新工具结果动态预算及用户主动管理的回答偏好已实现；自动事实记忆及中断恢复仍为后续方案。第二轮实际契约见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)，偏好见 [PREFERENCES.md](PREFERENCES.md)。下文调研建议保留当时规划顺序。
 
 ## 第一轮实际实现
 

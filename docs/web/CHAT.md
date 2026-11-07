@@ -18,10 +18,13 @@
 |---|---|
 | 登录、知识范围、原文件、知识后台 | Java 原接口 |
 | 创建/列表/重命名/删除会话、消息/运行查询、显式取消 | Java /api/conversations/* |
+| 本人回答偏好、保存与恢复默认 | Java /api/agent/preferences、/reset |
 | 主 Agent 原生流 | Python POST /api/agent/chat/stream |
 | 兼容完整 JSON | Python POST /api/agent/chat，Web 正常聊天不使用此替代流 |
 
-完整请求、响应、状态码和 SSE 见 [会话契约](../rag/CONVERSATIONS.md)。Vite dev/preview 同源 /api/agent/* → KB_AGENT_ORIGIN（默认 http://127.0.0.1:8090），其他 /api/* → KB_BACKEND_ORIGIN（默认 http://127.0.0.1:8080）。这些配置只在服务端，不下发浏览器。
+完整请求、响应、状态码和 SSE 见 [会话契约](../rag/CONVERSATIONS.md)。Vite dev/preview 同源 /api/agent/chat 及其流路径 → KB_AGENT_ORIGIN（默认 http://127.0.0.1:8090），偏好及其他 /api/* → KB_BACKEND_ORIGIN（默认 http://127.0.0.1:8080）。这些配置只在服务端，不下发浏览器。
+
+2026-11-07新增账号菜单“回答偏好”：语言、详略、格式只保存在Java，之后新回答按run绑定版本读取；可恢复默认，旧页保存冲突后重新加载，不自动覆盖。无本地偏好缓存或自动事实记忆；实际浏览器记录见 [PREFERENCES_VALIDATION.json](../rag/PREFERENCES_VALIDATION.json)。
 
 Nginx 模板继续用 KB_AGENT_UPSTREAM，关闭 Agent 缓冲、转发认证与 trace、传播断连。生产 Nginx/镜像仍需实际部署验收；既有知识库 Compose 不自动部署 Agent。
 

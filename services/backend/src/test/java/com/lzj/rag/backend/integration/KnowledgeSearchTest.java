@@ -664,6 +664,44 @@ class KnowledgeSearchTest {
         agentPublic("DELETE","/api/conversations/"+id,null,"alice",204);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_context_summary WHERE conversation_id=?",Integer.class,UUID.fromString(id))).isZero();
     }
+    @Test void userPreferencesAreIsolatedVersionedAndBoundToIdempotentRuns()throws Exception {
+        String path="/api/agent/preferences";
+        mvc.perform(get(path)).andExpect(status().isUnauthorized());
+        assertThat(agentPublic("GET",path,null,"alice",200).at("/data/revision").asLong()).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_preferences",Integer.class)).isZero();
+        var write=Map.of("expectedRevision",0,"language","EN","detail","CONCISE","format","BULLETS");
+        var selected=agentPublic("PUT",path,write,"alice",200).path("data");
+        assertThat(selected.path("revision").asLong()).isEqualTo(1);assertThat(selected.path("language").asText()).isEqualTo("EN");
+        assertThat(agentPublic("GET",path,null,"bob",200).at("/data/revision").asLong()).isZero();
+        var actor=(com.lzj.rag.backend.security.model.KnowledgeBasePrincipal)users.loadUserByUsername("alice");
+        var otherTenant=new com.lzj.rag.backend.security.model.KnowledgeBasePrincipal("same-user-other-tenant","unused","different-tenant",actor.userId());
+        mvc.perform(put(path).with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(otherTenant)).contentType("application/json").content(json.writeValueAsBytes(write)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.revision").value(1));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_preferences WHERE owner_id=?",Integer.class,actor.userId())).isEqualTo(2);
+        assertThat(agentPublic("GET",path,null,"alice",200).at("/data/revision").asLong()).isEqualTo(1);
+        agentPublic("PUT",path,Map.of("expectedRevision",1,"language","IGNORE_RULES","detail","CONCISE","format","AUTO"),"alice",400);
+        agentPublic("POST",path+"/reset",Map.of(),"alice",400);
+        String conversation=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID()),"alice",201).at("/data/id").asText();
+        String grant=agentPublic("POST","/api/conversations/"+conversation+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
+        String root="/internal/agent/conversations/"+conversation;
+        var begin=Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","偏好测试","deadline",java.time.Instant.now().plusSeconds(60));
+        var run=agentInternal("POST",root+"/runs",begin,grant,200).path("data");
+        assertThat(run.at("/preferences/language").asText()).isEqualTo("EN");
+        agentPublic("PUT",path,Map.of("expectedRevision",1,"language","ZH_CN","detail","DETAILED","format","PARAGRAPHS"),"alice",200);
+        var replay=agentInternal("POST",root+"/runs",begin,grant,200).path("data");
+        assertThat(replay.path("created").asBoolean()).isFalse();assertThat(replay.path("preferences")).isEqualTo(run.path("preferences"));
+        String runId=run.path("runId").asText();
+        assertThat(agentPublic("GET","/api/conversations/"+conversation+"/runs/"+runId,null,"alice",200).at("/data/run/preferences/revision").asLong()).isEqualTo(1);
+        agentInternal("PATCH",root+"/runs/"+runId,agentSnapshot(1,"COMPLETED","完成",List.of(),List.of()),grant,200);
+        var reset=agentPublic("POST",path+"/reset",Map.of("expectedRevision",2),"alice",200).path("data");
+        assertThat(reset.path("revision").asLong()).isEqualTo(3);assertThat(reset.path("epoch").asLong()).isEqualTo(1);assertThat(reset.path("language").asText()).isEqualTo("AUTO");
+        agentPublic("PUT",path,write,"alice",409); // 清空前的旧页面不能恢复旧设置。
+        var next=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","新的回答","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
+        assertThat(next.at("/preferences/revision").asLong()).isEqualTo(3);assertThat(next.at("/preferences/epoch").asLong()).isEqualTo(1);
+        assertThat(next.at("/preferences/detail").asText()).isEqualTo("BALANCED");
+        agentPublic("DELETE","/api/conversations/"+conversation,null,"alice",204);
+        assertThat(agentPublic("GET",path,null,"alice",200).at("/data/revision").asLong()).isEqualTo(3);
+    }
     private Map<String,Object> agentSnapshot(long sequence,String status,String text,List<?> evidence,List<String> citations) {
         return Map.of("sequence",sequence,"status",status,"content",text,"evidence",evidence,"citations",citations,"tools",List.of(),"model","fixture-model","promptVersion","test-v1","promptHash","a".repeat(64));
     }

@@ -50,5 +50,5 @@ public final class AgentContracts {
     public record Conversation(UUID id,String title,List<UUID> kbIds,List<UUID> documentIds,
             Instant createdAt,Instant activeAt,String status) {}
     public record Run(UUID runId,UUID conversationId,UUID requestId,UUID userMessageId,UUID assistantMessageId,
-            String traceId,String status,long checkpointSequence,Instant deadline,String errorCode,boolean created) {}
+            String traceId,String status,long checkpointSequence,Instant deadline,String errorCode,boolean created,PreferenceContracts.View preferences) {}
 }

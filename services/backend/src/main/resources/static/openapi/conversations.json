@@ -1344,6 +1344,171 @@
           }
         ]
       }
+    },
+    "/api/agent/preferences": {
+      "get": {
+        "operationId": "getAgentPreferences",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Result"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Preferences"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing or expired authentication/delegation"
+          },
+          "404": {
+            "description": "Not owned, deleted or unavailable"
+          },
+          "409": {
+            "description": "Idempotency, run state or evidence conflict"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      },
+      "put": {
+        "operationId": "saveAgentPreferences",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Result"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Preferences"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing or expired authentication/delegation"
+          },
+          "404": {
+            "description": "Not owned, deleted or unavailable"
+          },
+          "409": {
+            "description": "Idempotency, run state or evidence conflict"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/preferences/reset": {
+      "post": {
+        "operationId": "resetAgentPreferences",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Result"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Preferences"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing or expired authentication/delegation"
+          },
+          "404": {
+            "description": "Not owned, deleted or unavailable"
+          },
+          "409": {
+            "description": "Idempotency, run state or evidence conflict"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesReset"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1880,6 +2045,9 @@
           },
           "created": {
             "type": "boolean"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/Preferences"
           }
         },
         "required": [
@@ -1892,7 +2060,8 @@
           "status",
           "checkpointSequence",
           "deadline",
-          "created"
+          "created",
+          "preferences"
         ],
         "additionalProperties": false
       },
@@ -2782,6 +2951,110 @@
         },
         "required": [
           "revision"
+        ],
+        "additionalProperties": false
+      },
+      "Preferences": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "epoch": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "AUTO",
+              "ZH_CN",
+              "EN"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "enum": [
+              "BALANCED",
+              "CONCISE",
+              "DETAILED"
+            ]
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "AUTO",
+              "PARAGRAPHS",
+              "BULLETS"
+            ]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "revision",
+          "epoch",
+          "language",
+          "detail",
+          "format",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PreferencesWrite": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "AUTO",
+              "ZH_CN",
+              "EN"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "enum": [
+              "BALANCED",
+              "CONCISE",
+              "DETAILED"
+            ]
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "AUTO",
+              "PARAGRAPHS",
+              "BULLETS"
+            ]
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "language",
+          "detail",
+          "format"
+        ],
+        "additionalProperties": false
+      },
+      "PreferencesReset": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "expectedRevision"
         ],
         "additionalProperties": false
       }

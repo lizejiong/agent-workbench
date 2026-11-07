@@ -1,5 +1,9 @@
 # RAG API
 
+## 用户回答偏好（2026-11-07）
+
+Java 新增本人 `GET/PUT /api/agent/preferences` 和 `POST /api/agent/preferences/reset`，固定枚举、expectedRevision、409冲突及no-store；没有模型可填的用户/租户/scope。内部 run 响应新增绑定 preferences 快照，SSE meta 沿用该字段，不增加事件。Python不新增偏好工具，RAG检索/独立问答接口不变。完整请求响应、版本与重置语义见 [PREFERENCES.md](PREFERENCES.md)，机器契约为 openapi/conversations.json。
+
 ## Agent完整轮次上下文（2026-11-07）
 
 原 `GET /internal/agent/conversations/{id}/history` 省略参数仍返回消息数组。新增 `view=turns&runId=<UUID>&size=4&beforeSequence=<可选正整数>`；size为1–8，runId必须属于当前委托会话和服务。响应为 `{turns:[{runId,status,user,assistant,sourcesRestricted}],upperSequence,hasMore,nextBeforeSequence}`，消息含id/role/content/runId/sequence/status/evidence；assistant不可用时为null。上界由Java查该run用户消息sequence确定，排除该轮及之后记录，客户端游标只能缩小范围。继续服务身份+用户委托、no-store及现有404隔离；无效视图、缺少runId或超额size为400。公开聊天、消息、SSE协议不变。

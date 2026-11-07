@@ -41,6 +41,14 @@ class ProtocolFixture:
         self.reverse_tools = False
         self.tool_preamble = ""
         self.evidence_content = "授权资料：使用 pg_dump 进行 PostgreSQL 备份。"
+        self.preferences = {
+            "revision": 0,
+            "epoch": 0,
+            "language": "AUTO",
+            "detail": "BALANCED",
+            "format": "AUTO",
+            "updatedAt": None,
+        }
         self.summary_records = {}
         self.invalid_summary = False
         self.block_summary = False
@@ -469,6 +477,7 @@ class ProtocolFixture:
                 "traceId": request.headers["traceparent"].split("-")[1],
                 "status": "RUNNING",
                 "checkpointSequence": 0,
+                "preferences": json.loads(json.dumps(self.preferences)),
                 "deadline": body["deadline"],
                 "created": True,
             }

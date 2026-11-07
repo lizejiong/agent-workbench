@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-07",
+  "scope": "用户主动管理的跨会话回答语言、详略和格式",
+  "java": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "methods": [
+      "userPreferencesAreIsolatedVersionedAndBoundToIdempotentRuns",
+      "agentConversationHistoryIsOwnedOrderedIdempotentAndNeverReexecutes"
+    ],
+    "execution": "真实隔离PostgreSQL17/pgvector、MinIO、Spring MVC；模型HTTP协议桩",
+    "coverage": [
+      "未认证拒绝",
+      "读取默认不创建行",
+      "跨用户和同用户标识跨租户隔离",
+      "非法枚举/缺少版本拒绝",
+      "CAS冲突",
+      "重置保留递增revision/epoch",
+      "run快照绑定",
+      "偏好变更不影响幂等重提",
+      "新运行读取新版本",
+      "删除会话保留偏好",
+      "原历史分页与幂等行为"
+    ],
+    "log": ".cache/preferences-java-tests.log",
+    "packageLog": ".cache/preferences-java-package.log",
+    "build": ".cache/rag-preferences-development-20261107",
+    "command": ".\\mvnw.cmd -B -ntp -f .cache/rag-preferences-development-20261107/pom.xml -pl services/backend -am '-Dtest=KnowledgeSearchTest#userPreferencesAreIsolatedVersionedAndBoundToIdempotentRuns+agentConversationHistoryIsOwnedOrderedIdempotentAndNeverReexecutes' '-Dsurefire.failIfNoSpecifiedTests=false' test"
+  },
+  "python": {
+    "distinctPassed": 6,
+    "newTests": 2,
+    "skipped": 0,
+    "execution": "真实LangGraph/create_agent和模型请求序列化；Java与模型均为HTTP协议桩",
+    "commands": [
+      "services/agent-service/.venv/Scripts/python.exe -m pytest services/agent-service/tests/test_preferences.py services/agent-service/tests/test_tool_budget.py services/agent-service/tests/test_agent.py::test_java_history_is_reused_and_duplicate_request_never_reexecutes services/agent-service/tests/test_summary.py::test_durable_summary_inherits_evidence_and_stays_out_of_answer_stream -q --basetemp=.cache/agent-preferences-tests-20261107-a",
+      "services/agent-service/.venv/Scripts/python.exe -m pytest services/agent-service/tests/test_tool_budget.py -q --basetemp=.cache/agent-preferences-tests-20261107-b"
+    ],
+    "coverage": [
+      "同一轮两次模型调用各有一份快照背景",
+      "工具执行时更新当前偏好不改变本轮",
+      "新会话采用更新后的默认值",
+      "非法偏好在任何模型调用前失败",
+      "原动态工具预算、历史幂等和授权摘要兼容"
+    ],
+    "iteration": "首批5通过1失败：新增静态提示占用真实预算后，原18000字符前置样本不再容纳成功证据；调整为17000并仅补验受影响工具预算2项，全部通过。样本仍验证长前置文字、并行结果裁剪、快照/哈希与完整请求上限。"
+  },
+  "web": {
+    "typescriptAndProductionBuild": "passed",
+    "browser": "真实Chromium/Vite/本机Java；没有模型调用",
+    "checks": [
+      "账号菜单入口",
+      "保存及重新打开恢复三项选择",
+      "另一个授权客户端更新后旧页保存409",
+      "冲突期间禁止重复写入",
+      "重新加载新版本后可操作",
+      "恢复默认",
+      "刷新后重新登录从Java读取",
+      "375x812弹窗无横向溢出且按钮可见",
+      "localStorage和sessionStorage均为0",
+      "提示信息文字对比度"
+    ],
+    "screenshots": [
+      "output/playwright/preferences-desktop.png",
+      "output/playwright/preferences-mobile.png",
+      "output/playwright/preferences-conflict.png"
+    ],
+    "proxy": "Vite的Java偏好/重置与Python聊天分流通过；修复原宽泛/api/agent代理导致的404。临时nginx:1.28-alpine的nginx -t及真实Java偏好/契约读取通过；到宿主Python8090的聊天请求超时，Nginx Agent端到端通路未验收。临时容器已关闭。"
+  },
+  "staticChecks": {
+    "ruff": "passed",
+    "uvLockOffline": "passed",
+    "openapiLocalRefs": {
+      "passed": true,
+      "count": 75,
+      "paths": 13
+    },
+    "isolatedJavaSourceMatch": {
+      "passed": true,
+      "files": 507
+    },
+    "gitDiffCheck": "passed"
+  },
+  "localRuntime": {
+    "activated": true,
+    "schemaVersion": 14,
+    "backupCreatedBeforeMigration": true,
+    "backupArchiveListingVerified": true,
+    "backupRestorationDrill": false,
+    "backendPort": 8080,
+    "agentPort": 8090,
+    "agentHealth": "UP",
+    "delegatedHistoryRead": "passed",
+    "temporaryDelegationRevoked": true,
+    "summaryRejectsTerminalRun": "passed",
+    "activeRunsBeforeRestart": 0,
+    "messagesBeforeAndAfter": 18,
+    "documentsBeforeAndAfter": 16,
+    "chunksBeforeAndAfter": 937,
+    "preferenceDefaultsRestored": true,
+    "preferenceRevisionAfterChecks": 4,
+    "preferenceEpochAfterChecks": 1,
+    "newBusinessRuns": 0,
+    "newBusinessMessages": 0,
+    "newRealRetrievals": 0,
+    "realModelCalls": 0
+  },
+  "limitations": [
+    "尚无真实供应商风格遵循、语义或事实质量评估",
+    "协议注入通过不保证模型遵循偏好或答案正确",
+    "无自动事实抽取、后台记忆任务、模型写入工具或图恢复",
+    "重置不删除已有运行快照、答案及摘要，不取消当前执行",
+    "没有重跑全量reactor verify、前端全套测试或生产负载/多设备并发压力测试",
+    "临时Nginx到宿主Python路径超时，未完成生产Agent代理验收"
+  ],
+  "sourceSha256": {
+    "services/backend/src/main/resources/db/migration/V14__agent_preferences.sql": "6849e86f1b840f5789e9806b2e9e74938d468f179c0536c24bf6a265e4ffff2d",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/repository/AgentPreferences.java": "c59cb7f1de550ca925ed4efc6f86f504a41b38cb248ab812ff29ce268936ae6f",
+    "services/backend/src/main/java/com/lzj/rag/backend/agent/repository/ConversationLedger.java": "020022b73bff0b4d39af02c95c20c4d9f03a4905daf58055e853109421de68b8",
+    "services/agent-service/src/agent_service/context/preferences.py": "c4356551166fd979f6a5fcf73f57975cf2b5a6a49f70ace3b9c26814d751b110",
+    "services/agent-service/src/agent_service/prompts/agent-preferences-v1.txt": "534207f650640cc43eb02edd9c004073f7af59db7f2e73c1a2fe1bf35291645b",
+    "services/agent-service/src/agent_service/runtime.py": "2701a32f41c38a7a1131f5f13bd6c99ef52f10a3fec3e5b8eef395e0e2f1415d",
+    "services/agent-service/tests/test_preferences.py": "d10a6f9e8c885216a5f12088429f1bbfb5b264417893fa99ac8b8d6a158f3baa",
+    "web/src/chat/AnswerPreferences.tsx": "af3881291cc36585382c45d9b89d075195e5e95e39b2d005943fa411d8d1c3be",
+    "web/vite.config.ts": "4b0ac67556f3bc7175f3d51c3b62076235876e4dd6cfd9fb5d55d9e0fcc8e647",
+    "web/nginx.conf": "dd378c151960d0f3014a14b27da33d7cc5767f429f9553e01d66fd56836cf5a3"
+  }
+}

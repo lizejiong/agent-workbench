@@ -7,6 +7,7 @@ import { ErrorPanel } from '../components';
 import { useApi, useResource, useSession } from '../state';
 import type { KnowledgeBase } from '../types';
 import Answer from './Answer';
+import AnswerPreferences from './AnswerPreferences';
 import { useChat } from './state';
 import './chat.css';
 
@@ -17,6 +18,7 @@ export default function Chat() {
   const screens = Grid.useBreakpoint(); const mobile = screens.md === false;
   const [collapsed, setCollapsed] = useState(false); const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false); const [search, setSearch] = useState('');
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const input = useRef<HTMLTextAreaElement>(null); const latestTurn = useRef<HTMLDivElement>(null);
   const sidebar = useRef<HTMLElement>(null); const toggle = useRef<HTMLButtonElement>(null);
   const active = chat.conversations.find(item => item.id === chat.activeId) || chat.conversations[0];
@@ -76,7 +78,7 @@ export default function Chat() {
             {chat.listLoading && <p className="chat-history-empty">正在加载历史…</p>}
           </div>
         </div>
-        <div className="chat-sidebar-footer"><Dropdown trigger={['click']} menu={{ items: [{ key: 'logout', icon: <LogoutOutlined />, label: '退出登录' }], onClick: session.logout }}>
+        <div className="chat-sidebar-footer"><Dropdown trigger={['click']} menu={{ items: [{ key: 'preferences', icon: <SettingOutlined />, label: '回答偏好' }, { type: 'divider' }, { key: 'logout', icon: <LogoutOutlined />, label: '退出登录' }], onClick: ({ key }) => { if (key === 'logout') session.logout(); else if (key === 'preferences') { setMobileOpen(false); setPreferencesOpen(true); } } }}>
           <button type="button" className="chat-profile" aria-label={`${session.username}，账号菜单`}><span className="chat-avatar">{session.username.slice(0, 1).toUpperCase()}</span><span className="chat-profile-copy"><strong>{session.username}</strong><small>个人工作空间</small></span><EllipsisOutlined /></button>
         </Dropdown></div>
       </aside>
@@ -121,5 +123,6 @@ export default function Chat() {
         {empty && <footer className="chat-bottom-note">回答可能存在偏差，重要信息请核对来源。</footer>}
       </main>
     </div>
+    {preferencesOpen && <AnswerPreferences onClose={() => setPreferencesOpen(false)} />}
   </ConfigProvider>;
 }

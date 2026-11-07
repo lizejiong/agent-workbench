@@ -155,6 +155,18 @@ for methods in [paths[summary_path], paths[summary_path + "/use"]]:
     for op in methods.values():
         op["responses"]["413"] = {"description": "Summary content or source dependency budget exceeded"}
 responses.update({"prepareAgentSummary": "SummaryPrepared", "saveAgentSummary": "SummarySaved", "useAgentSummary": "SummaryUsed"})
+schemas["Preferences"] = obj({"revision": {"type": "integer", "minimum": 0}, "epoch": {"type": "integer", "minimum": 0},
+    "language": {**TEXT, "enum": ["AUTO", "ZH_CN", "EN"]}, "detail": {**TEXT, "enum": ["BALANCED", "CONCISE", "DETAILED"]},
+    "format": {**TEXT, "enum": ["AUTO", "PARAGRAPHS", "BULLETS"]}, "updatedAt": {**TIME, "nullable": True}},
+    ["revision", "epoch", "language", "detail", "format", "updatedAt"])
+schemas["PreferencesWrite"] = obj({"expectedRevision": {"type": "integer", "minimum": 0},
+    **{key: schemas["Preferences"]["properties"][key] for key in ["language", "detail", "format"]}}, ["expectedRevision", "language", "detail", "format"])
+schemas["PreferencesReset"] = obj({"expectedRevision": {"type": "integer", "minimum": 0}}, ["expectedRevision"])
+schemas["Run"]["properties"]["preferences"] = ref("Preferences")
+schemas["Run"]["required"].append("preferences")
+paths["/api/agent/preferences"] = {"get": operation("getAgentPreferences"), "put": operation("saveAgentPreferences", "PreferencesWrite")}
+paths["/api/agent/preferences/reset"] = {"post": operation("resetAgentPreferences", "PreferencesReset")}
+responses.update({"getAgentPreferences": "Preferences", "saveAgentPreferences": "Preferences", "resetAgentPreferences": "Preferences"})
 for path, methods in paths.items():
     for operation_value in methods.values():
         name = responses.get(operation_value["operationId"])

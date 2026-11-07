@@ -23,7 +23,9 @@ $env:KB_AGENT_ORIGIN='http://127.0.0.1:8090'
 npm run dev
 ```
 
-打开 <http://127.0.0.1:5173>，使用后端已有账号登录后进入聊天页。KB_BACKEND_ORIGIN 和 KB_AGENT_ORIGIN 只在 Vite 服务端使用，不会进入浏览器包。也可首次复制 `.env.example` 为 `.env.local`，不要覆盖已有配置。`/api/agent/*` 优先代理到 Python，其他 `/api/` 和 `/openapi/` 发往 Java，不用放开 CORS。Python 先按 [服务说明](../services/agent-service/README.md) 配置并启动，Java 需启用原内部委托能力；未启动 Python 时仍可从聊天页进入后台。生产使用 HTTPS；凭据只存内存，不写入 URL、Cookie、localStorage/sessionStorage，刷新需重新登录。
+打开 <http://127.0.0.1:5173>，使用后端已有账号登录后进入聊天页。KB_BACKEND_ORIGIN 和 KB_AGENT_ORIGIN 只在 Vite 服务端使用，不会进入浏览器包。也可首次复制 `.env.example` 为 `.env.local`，不要覆盖已有配置。仅 `/api/agent/chat` 及其流路径代理到 Python，偏好和其他 `/api/`、`/openapi/` 发往 Java，不用放开 CORS。Python 先按 [服务说明](../services/agent-service/README.md) 配置并启动，Java 需启用原内部委托能力；未启动 Python 时仍可从聊天页进入后台。生产使用 HTTPS；凭据只存内存，不写入 URL、Cookie、localStorage/sessionStorage，刷新需重新登录。
+
+账号菜单提供“回答偏好”，设置语言/详略/格式并恢复默认，Java V14统一保存、按新run生效，版本冲突先重新加载。它不自动记录聊天事实，也不缓存到浏览器。契约与升级顺序见 [PREFERENCES.md](../docs/rag/PREFERENCES.md)。
 
 登录预填：在 Git 忽略的 `.env.local` 设置 `KB_LOGIN_DEFAULT_USERNAME`、`KB_LOGIN_DEFAULT_PASSWORD`。开发和生产构建均将其作为可编辑的表单初值，仍需点击登录；未设置或清空时为空白。预填值会随前端资源下发，访问者可读取，不属于保密凭据；不要提交真实值，也不要填入模型或存储密钥。修改后重启开发服务或重新构建生产包；仅修改容器运行时环境不会改变已生成的静态文件。
 

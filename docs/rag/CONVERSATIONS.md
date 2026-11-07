@@ -1,5 +1,9 @@
 # Agent 会话、历史与流式执行
 
+## 用户回答偏好增量（2026-11-07）
+
+V14 新增按tenant/owner保存的用户表达偏好，run 增加不可变 preferences 快照。Java 在取得执行权时绑定，重复请求保留原版本；当前轮内更新偏好不改变该运行。内部/公开 run 和 SSE meta 返回该快照，未增加SSE事件或聊天请求参数。跨会话设置与重置契约见 [PREFERENCES.md](PREFERENCES.md)。
+
 ## 当前增量：有序内容块（2026-11-06）
 
 V12 增加消息 blocks/eventSeq；Python 保存有序块，Java 校验追加与证据归属并按当前权限返回工具结果。Web 通过请求头选择 SSE v2，统一渲染实时与历史。完整新协议见 [TIMELINE.md](TIMELINE.md)。下文原 SSE 表描述默认 v1，仍保留兼容；业务会话、取消、授权及持久化边界继续适用。

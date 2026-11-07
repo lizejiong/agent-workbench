@@ -20,7 +20,7 @@ async def test_parallel_new_results_fit_remaining_window_and_persist_exact_excer
 ):
     fixture = ProtocolFixture()
     fixture.reverse_tools = True
-    fixture.tool_preamble = "过程说明。" + "p" * 18000
+    fixture.tool_preamble = "过程说明。" + "p" * 17000
     fixture.evidence_content = (
         '授权资料：保留编号 A-42 与限制 "不要提交"，路径 \\backup。\n' * 700
     )

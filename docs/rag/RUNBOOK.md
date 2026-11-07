@@ -1,5 +1,9 @@
 # RAG 运行手册
 
+## 回答偏好升级（2026-11-07）
+
+先备份PG并部署Java V14，再更新Python/Web；无新增依赖或环境变量。设置位于聊天页账号菜单，404检查代理：仅 `/api/agent/chat` 及其流路径走Python，preferences及reset走Java；Vite和Nginx均已调整。409先重新加载，INVALID_PREFERENCES检查两端版本；不要自动重试写入或整轮生成。契约和实际验证见 [PREFERENCES.md](PREFERENCES.md)、[PREFERENCES_VALIDATION.json](PREFERENCES_VALIDATION.json)。下文按日期保留历史要求，当前版本需V14。
+
 ## 上下文第一轮升级（2026-11-07）
 
 第一轮只需要支持history turns视图的Java；当前含摘要的版本需按文末完成V13迁移后再升级Python，不改Web。旧Python仍可读取原history数组，新Python遇到旧Java响应会明确拒绝INVALID_HISTORY。Java打包继续使用未被运行进程占用的隔离目录。
@@ -26,7 +30,7 @@ AGENT_TOKEN_COUNTER默认utf8保守估计；只有确认目标模型的分词方
 
 服务身份/用户委托继续使用原 `kb.rag.internal` 配置。每次 Python 执行都按当前用户取得会话绑定委托，不能使用固定万能用户。Java 不可用时停止模型执行或保存并准确报告失败，不切换到 Python 本地历史库。AGENT_STATE_DIR 只能供一个 Python 进程独占；重启会清理遗留执行图，Java 运行按持久 deadline 结算，不自动重放。
 
-代理中 `/api/agent/*` 发往 Python，`/api/conversations/*` 发往 Java。排障先用当前用户 GET 会话消息或 run；RUNNING 在 deadline 后最多约5秒清扫为 TIMED_OUT，部分文本保留。检查 meta 的 runId/消息 ID 与 Java requestId/traceId；这些关联字段不授予权限。checkpoint 冲突409通常表示重复标识内容变化或旧执行，不能通过新 ID 盲目重放业务操作。
+代理中 `/api/agent/chat` 及其流路径发往 Python，偏好及 `/api/conversations/*` 发往 Java。排障先用当前用户 GET 会话消息或 run；RUNNING 在 deadline 后最多约5秒清扫为 TIMED_OUT，部分文本保留。检查 meta 的 runId/消息 ID 与 Java requestId/traceId；这些关联字段不授予权限。checkpoint 冲突409通常表示重复标识内容变化或旧执行，不能通过新 ID 盲目重放业务操作。
 
 SSE 无 done、persisted=false 或代理断连时先读 Java，禁止把全部失败当作无资料。取消后短预算保存可能滞后，Web 只读复查；异常终态工具显示 UNAVAILABLE，不显示成仍执行。删除清除业务消息/快照，图由 Python 生命周期清理。生产 Nginx、真实模型与容量仍需单独验收。
 

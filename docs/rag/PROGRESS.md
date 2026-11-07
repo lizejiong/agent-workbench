@@ -1,5 +1,11 @@
 # RAG 进度
 
+## 2026-11-07：跨会话回答偏好（已完成）
+
+先将此前5个提交推送至 origin/main（截至5b30691），再完成本轮增量。Java V14 保存语言/详略/格式，按 tenant+owner 隔离，版本冲突拒绝旧页覆盖，重置保留单调 revision/epoch；run 绑定快照保证当前轮和幂等重提一致。Python 在摘要/主模型调用前校验，只按枚举生成背景消息，沿用预算和中文版本化提示词，无自动事实抽取。Web 账号菜单可编辑、恢复默认和冲突后重新加载；实际浏览器发现宽泛 Agent 代理误发 Java 接口，已同步收窄 Vite/Nginx 聊天分流。
+
+Java 定向2项通过、0跳过，真实隔离PG/MinIO与模型HTTP桩；Python 6个相关独立场景通过（一次超长预算样本调整后只补验受影响2项），真实LangGraph及HTTP桩。Web TypeScript/生产构建、ruff、锁检查通过；真实浏览器验证保存回读、刷新重新登录、并发版本冲突、重置及375px布局，未执行模型。完整分层与限制见 [PREFERENCES_VALIDATION.json](PREFERENCES_VALIDATION.json)。本机备份后完成V14并启动新Java/Agent，原18条消息、16文档和937块保留。没有重跑全量verify或评估真实供应商风格效果；本轮结束。
+
 ## 2026-11-07：新工具结果动态预算补充（已完成）
 
 - 新增Python context/tool_results，在主模型返回工具批次后计算下一次完整请求基线，结合系统提示、Schema、历史/摘要、已生成文字、参数和待执行结果占位，按原批次均分剩余估计Token及字节；已有旧批次投影规则继续复用。同批完成顺序不改变额度，不新增ReAct或Python检索算法。
