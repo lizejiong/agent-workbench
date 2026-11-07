@@ -1,5 +1,9 @@
 # RAG API
 
+## 聊天来源展示（2026-11-07）
+
+本轮无接口变更。工具区读取 blocks[].result.evidence，答案来源读取 citations；文档聚合键为 kbId/documentId/generation，引用定位仍使用完整 evidenceId。正文预览与抽屉只展示服务端已返回的授权快照，下载沿用原同源文档接口。详见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。
+
 ## Agent SSE v2 与消息内容块（2026-11-06）
 
 `POST /api/agent/chat/stream` 请求头 `X-Agent-Stream-Version: 2`；Web 默认使用。meta/message/block/error/finish/cancel/done 带 runId、助手 messageId 与递增 seq。Java 消息增加有序 blocks/eventSeq，工具结果读取时按当前权限从 evidenceIds 组装。省略版本仍支持旧 meta/delta/tool/error/done。完整字段、状态和不支持事件重放的边界见 [TIMELINE.md](TIMELINE.md)。

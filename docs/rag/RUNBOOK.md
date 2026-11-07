@@ -1,5 +1,9 @@
 # RAG 运行手册
 
+## 工具与引用展示验收（2026-11-07）
+
+更新 Web 即可，不需要数据库迁移或重启 Java/Python。`cd web` 后执行 `npm test -- src/chat/sourcePresentation.test.ts src/chat/format.test.ts src/chat/stream.test.ts` 与 `npm run build`。浏览器选择已有工具记录，检查折叠/展开、引用悬浮与键盘预览、点击精确片段、同版本片段切换、刷新恢复与375px布局；历史加载不应新增 Agent 执行请求。故障提示不等同于“资料不存在”，无位置元数据时不显示编造的页码。详情见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。
+
 ## 有序块升级与排障（2026-11-06）
 
 先备份 PostgreSQL，部署 Java 并确认 V12，再重启 Python 单 worker，最后更新 Web。必须在未被运行进程占用的隔离目录构建 JAR。旧消息 blocks 为空不会补造执行顺序。检查 v2 响应头、runId/messageId/seq、Java blocks/eventSeq；缺帧或断连仅查询历史，不重放整个 Agent 请求。详见 [TIMELINE.md](TIMELINE.md)。

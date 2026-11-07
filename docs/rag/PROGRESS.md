@@ -1,5 +1,14 @@
 # RAG 进度
 
+## 2026-11-07：聊天工具与引用展示（已完成）
+
+- Web 工具卡改为默认折叠的轻量状态行，保留查询摘要、耗时、证据/文档数量，失败、中断和降级提示始终可见。先展开文档与片段，再按需查看已脱敏调用参数；工具身份、真实批次和出现顺序不变。
+- 正文引用支持悬浮/键盘聚焦预览及点击打开来源抽屉；来源列表按 kbId/documentId/generation 聚合，保留全部独立 evidenceId。答案底部只统计实际引用，工具区域展示实际取得的证据。抽屉精确选择片段并支持同版本文档片段切换，明确区分证据快照与当前原文件。
+- 复用现有 Ant Design、Context、SSE 和授权快照，不新增依赖、不改 Java/Python/数据库、不增加证据缓存或审批流程。设计参考与组件说明见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。
+- 定向验证：`npm test -- src/chat/sourcePresentation.test.ts src/chat/format.test.ts src/chat/stream.test.ts`，3 文件共8项通过；`npm run build` 通过。新增3项检查聚合边界、跨调用标识、来源定位及人工维护内容；复用原引用与事件检查，没有运行全量测试或后端测试。
+- Playwright 使用真实本地 Java/Vite 和既有“检索时间线演示”历史：4次工具调用（2次失败提示可见），同文档聚合为1份并保留4条引用，预览/键盘操作/片段切换、桌面及375px工具和抽屉布局、刷新重新登录后的顺序恢复全部通过。检查期间 Agent 执行 POST 为0，浏览器无异常或控制台错误；未重新调用模型，也未据此宣称新的供应商联调或检索效果提升。
+- 截图保存在忽略目录 `output/playwright/source-ui-{preview,drawer,desktop,mobile-drawer,mobile}.png`。本轮在展示范围结束。
+
 ## 2026-11-06：Agent 有序内容块与时间线（已完成）
 
 - Python 沿用官方 LangGraph `create_agent`，增加稳定块、真实工具调用批次、状态与耗时，模型文本流和完整消息相互校准，避免完成回调重复正文。SSE 按 `X-Agent-Stream-Version` 协商 v1/v2；v2 带 runId/messageId/blockId/seq，区分 finish/cancel 与 done。

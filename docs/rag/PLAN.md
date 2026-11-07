@@ -1,5 +1,9 @@
 # RAG 服务计划
 
+## 2026-11-07：工具与引用的展示优化
+
+复用现有 Web 时间线和授权证据，完成紧凑工具状态行、分层详情、引用预览、按知识库/文档/版本聚合与证据片段选择。组件映射和社区参考见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。本轮限于展示层，不扩展检索、Agent 或审批能力。
+
 ## 2026-11-06：有序 Agent 时间线
 
 Python 适配现有 LangGraph 事件，Java V12 持久化 blocks/eventSeq，Web 使用同一套时间线组件展示实时与历史。SSE 按请求头协商 v1/v2；v2 区分内容、工具、运行终态及连接结束。设计、社区参考与约束见 [TIMELINE.md](TIMELINE.md)。当前只读检索工具不引入无后端授权的确认按钮。
