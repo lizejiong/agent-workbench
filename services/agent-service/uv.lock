@@ -16,6 +16,7 @@ dependencies = [
     { name = "langgraph-checkpoint-sqlite" },
     { name = "langsmith" },
     { name = "rag-common" },
+    { name = "tiktoken" },
     { name = "uvicorn" },
 ]
 
@@ -37,6 +38,7 @@ requires-dist = [
     { name = "langgraph-checkpoint-sqlite", specifier = ">=3,<4" },
     { name = "langsmith", specifier = ">=0.14,<1" },
     { name = "rag-common", editable = "../../packages/python-common" },
+    { name = "tiktoken", specifier = ">=0.14,<1" },
     { name = "uvicorn", specifier = ">=0.38,<1" },
 ]
 

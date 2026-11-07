@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import re
 import time
 from dataclasses import replace
 
@@ -11,6 +10,8 @@ from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
 from langsmith import tracing_context
 
 from agent_service.config import Settings
+from agent_service.context.history import select_history
+from agent_service.context.summary import background, policy, prepare_summary
 from agent_service.contracts import AgentError, ChatRequest
 from agent_service.conversations import ConversationClient
 from agent_service.graph import PROMPT_VERSION, AgentContext
@@ -19,55 +20,6 @@ from agent_service.knowledge.delegation import DelegationClient
 from agent_service.timeline import StreamEvents, Timeline
 
 logger = logging.getLogger(__name__)
-
-
-def select_history(rows, current_run, budget):
-    """最近完整消息优先；更早的用户问题形成有界提取摘要，不复用旧工具正文。"""
-    eligible = [r for r in rows if r["runId"] != current_run and r["content"].strip()]
-    recent = []
-    used = 0
-    inherited = {}
-    for row in reversed(eligible):
-        text = row["content"]
-        size = len(text.encode("utf-8"))
-        if len(recent) >= 12:
-            break
-        if used + size > budget:
-            continue
-        sources = row.get("evidence", [])
-        additional = {
-            s["evidenceId"]: s for s in sources if s["evidenceId"] not in inherited
-        }
-        if (
-            len(inherited) + len(additional) > 64
-            or len(encode([*inherited.values(), *additional.values()])) > 131072
-        ):
-            continue
-        inherited.update(additional)
-        recent.append(row)
-        used += size
-    recent.reverse()
-    selected = {r["id"] for r in recent}
-    earlier = [
-        r["content"][:160]
-        for r in eligible
-        if r["role"] == "user" and r["id"] not in selected
-    ][-8:]
-    messages = []
-    if earlier:
-        summary = "此前用户问题摘要（提取片段，仅供消解指代）：\n" + "\n".join(earlier)
-        while len(summary.encode("utf-8")) > 2048:
-            summary = summary[: len(summary) * 3 // 4]
-        messages.append(HumanMessage(content=summary))
-    for row in recent:
-        # 历史引用不注册为本轮新证据；需要引用时必须重新检索。
-        text = re.sub(r"\[K[a-f0-9]{32}_E[1-9][0-9]{0,3}\]", "", row["content"])
-        messages.append(
-            HumanMessage(content=text)
-            if row["role"] == "user"
-            else AIMessage(content=text)
-        )
-    return messages, [r for r in recent if r["role"] == "assistant"]
 
 
 class TurnWriter:
@@ -176,12 +128,15 @@ class TurnWriter:
 
 
 class AgentRuntime:
-    def __init__(self, settings: Settings, gateway, graph, prompt_hash):
+    def __init__(
+        self, settings: Settings, gateway, graph, prompt_hash, summary_model=None
+    ):
         self.settings, self.gateway, self.graph = settings, gateway, graph
         self.delegations = DelegationClient(gateway.client, settings.service_id)
         self.store = ConversationClient(gateway)
         self.prompt_hash = prompt_hash
         self.active = 0
+        self.summary_model = summary_model
 
     async def run(
         self,
@@ -285,49 +240,12 @@ class AgentRuntime:
             context.model_completed = writer.model_completed
             generation = monitor = None
             try:
-                history = await self.store.history(identity)
-                messages, assistants = select_history(
-                    history,
-                    run["runId"],
-                    min(24000, self.settings.context_byte_budget // 2),
-                )
-                for row in assistants:
-                    for snapshot in row.get("evidence", []):
-                        context.snapshots[snapshot["evidenceId"]] = {
-                            key: snapshot[key]
-                            for key in (
-                                "evidenceId",
-                                "kbId",
-                                "documentId",
-                                "chunkId",
-                                "generation",
-                                "content",
-                                "sourceContentHash",
-                                "snapshotHash",
-                                "sourceMetadata",
-                                "truncated",
-                                "toolTruncated",
-                                "versions",
-                            )
-                        }
 
-                async def authorize():
-                    if assistants:
-                        live = {
-                            r["id"]: r["content"]
-                            for r in await self.store.history(identity)
-                        }
-                        if any(live.get(r["id"]) != r["content"] for r in assistants):
-                            raise AgentError(
-                                409, "EVIDENCE_CHANGED", "历史知识已变化，请重新提问"
-                            )
-                    await writer.save()
+                async def execute():
+                    messages = await self._messages(request, run, context, writer)
+                    await self._generate(messages, run, context, writer)
 
-                context.authorize_model = authorize
-                messages.append(HumanMessage(content=request.question))
-                generation = asyncio.create_task(
-                    self._generate(messages, run, context, writer)
-                )
+                generation = asyncio.create_task(execute())
                 monitor = asyncio.create_task(writer.monitor())
                 await asyncio.wait(
                     {generation, monitor}, return_when=asyncio.FIRST_COMPLETED
@@ -454,6 +372,101 @@ class AgentRuntime:
                         "agent checkpoint cleanup unavailable run_id=%s", run["runId"]
                     )
 
+    async def _messages(self, request, run, context, writer):
+        identity = context.identity
+        summary = await prepare_summary(
+            self.store, identity, run, context, self.summary_model
+        )
+        history = await self.store.history_turns(
+            identity, run["runId"], self.settings.history_turns
+        )
+        selection = select_history(
+            history,
+            run["runId"],
+            min(24000, self.settings.context_byte_budget // 2),
+            self.settings.history_turns,
+        )
+        # 只有近期完整窗口都被保留时才绑定已追齐的摘要，避免水位间出现空洞。
+        if summary and len(selection.messages) != sum(
+            1 + bool(t.get("assistant")) for t in history
+        ):
+            summary = None
+        messages = selection.messages
+        snapshots = [s for row in selection.assistants for s in row.get("evidence", [])]
+        if summary:
+            snapshots += summary["evidence"]
+        for snapshot in snapshots:
+            context.snapshots[snapshot["evidenceId"]] = {
+                key: snapshot[key]
+                for key in (
+                    "evidenceId",
+                    "kbId",
+                    "documentId",
+                    "chunkId",
+                    "generation",
+                    "content",
+                    "sourceContentHash",
+                    "snapshotHash",
+                    "sourceMetadata",
+                    "truncated",
+                    "toolTruncated",
+                    "versions",
+                )
+            }
+        if (
+            len(context.snapshots) > 64
+            or len(encode(list(context.snapshots.values()))) > 131072
+        ):
+            raise AgentError(
+                413, "CONTEXT_BUDGET", "历史与摘要的证据依赖过多，请缩小问题范围"
+            )
+        if summary:
+            await self.store.use_summary(
+                identity,
+                {
+                    "runId": run["runId"],
+                    "revision": summary["revision"],
+                    "retainedTurns": self.settings.history_turns,
+                    "policyVersion": policy(context),
+                },
+            )
+            messages.insert(0, background(summary))
+
+        async def authorize():
+            if summary:
+                current = await self.store.summary(
+                    identity, run["runId"], self.settings.history_turns, policy(context)
+                )
+                live_summary = current.get("summary")
+                if (
+                    not current["caughtUp"]
+                    or not live_summary
+                    or live_summary["revision"] != summary["revision"]
+                    or live_summary["sourceHash"] != summary["sourceHash"]
+                ):
+                    raise AgentError(
+                        409, "EVIDENCE_CHANGED", "摘要来源已变化，请重新提问"
+                    )
+            if selection.rows:
+                turns = await self.store.history_turns(
+                    identity, run["runId"], self.settings.history_turns
+                )
+                live = {
+                    r["id"]: r["content"]
+                    for turn in turns
+                    for r in [turn["user"], turn.get("assistant")]
+                    if r
+                }
+                if any(live.get(r["id"]) != r["content"] for r in selection.rows):
+                    raise AgentError(
+                        409, "EVIDENCE_CHANGED", "历史知识已变化，请重新提问"
+                    )
+            await writer.save()
+
+        context.authorize_model = authorize
+        messages.append(HumanMessage(content=request.question))
+        return messages
+
     async def _generate(self, messages, run, context, writer):
         config = {
             "configurable": {"thread_id": run["runId"]},
@@ -473,6 +486,8 @@ class AgentRuntime:
                     if (
                         isinstance(message, AIMessageChunk)
                         and metadata.get("langgraph_node") == "model"
+                        and metadata.get("lc_source") != "summarization"
+                        and "context-summary" not in metadata.get("tags", [])
                     ):
                         text = message.text
                         if text:

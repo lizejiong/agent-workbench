@@ -19,6 +19,7 @@ dependencies = [
   "langgraph-checkpoint-sqlite>=3,<4",
   "aiosqlite>=0.22,<1",
   "langsmith>=0.14,<1",
+  "tiktoken>=0.14,<1",
 ]
 
 [tool.uv.sources]

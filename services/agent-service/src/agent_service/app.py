@@ -18,6 +18,7 @@ from rag_common.web import install_web
 from starlette.datastructures import MutableHeaders
 
 from agent_service.config import Settings
+from agent_service.context.budget import RequestBudget
 from agent_service.contracts import AgentError, AgentReply, ChatRequest
 from agent_service.graph import build_graph
 from agent_service.knowledge.adapter import KnowledgeGateway
@@ -45,6 +46,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         config = settings or Settings.from_env()
+        RequestBudget(config)  # 计数器配置错误在启动时失败，不留下孤立运行。
         config.state_dir.mkdir(parents=True, exist_ok=True)
         async with AsyncExitStack() as stack:
             java = await stack.enter_async_context(
@@ -101,7 +103,7 @@ def create_app(
                 api_key=config.model_api_key,
                 base_url=config.model_base_url,
                 max_retries=0,
-                max_completion_tokens=1024,
+                max_completion_tokens=config.max_output_tokens,
                 timeout=40,
                 http_async_client=model_http,
                 http_client=model_sync,
@@ -114,7 +116,9 @@ def create_app(
                 config.service_token,
                 token_budget=config.tool_byte_budget,
             )
-            app.state.runtime = AgentRuntime(config, gateway, graph, prompt_hash)
+            app.state.runtime = AgentRuntime(
+                config, gateway, graph, prompt_hash, summary_model=model
+            )
             try:
                 yield
             finally:

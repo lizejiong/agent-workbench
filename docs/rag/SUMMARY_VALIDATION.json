@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-07",
+  "scope": "上下文第二轮：受授权持久摘要及派生依赖",
+  "python": {
+    "distinctTestsPassed": 17,
+    "summaryTests": 5,
+    "existingAgentTests": 12,
+    "execution": "真实LangGraph/create_agent；Java和模型为HTTP协议桩；最终文本校验调整后仅复跑摘要5项",
+    "commands": [
+      "python -m pytest services/agent-service/tests/test_summary.py services/agent-service/tests/test_agent.py -q --basetemp=.cache/agent-summary-tests-20261107-b",
+      "python -m pytest services/agent-service/tests/test_summary.py -q --basetemp=.cache/agent-summary-tests-20261107-c"
+    ],
+    "coverage": [
+      "Java契约桩持久修订与新运行实例重建读取",
+      "增量摘要保留已有原文约束与编号",
+      "摘要依赖继承",
+      "无工具且不进入答案SSE",
+      "trace关联",
+      "非法JSON与调用超时不推进水位",
+      "为主Agent保留调用预算",
+      "Java取消使摘要HTTP取消且不生成答案"
+    ]
+  },
+  "java": {
+    "newIntegrationTestsPassed": 1,
+    "earlierHistoryRegressionPassed": 1,
+    "finalFailures": 0,
+    "finalErrors": 0,
+    "skipped": 0,
+    "methods": [
+      "agentSummaryCommitReuseAndDerivedAnswersKeepAuthorizationLineage",
+      "agentContextHistoryPagesWholeRunsAtFixedOwnedBoundary"
+    ],
+    "infrastructure": "真实隔离PostgreSQL17/pgvector和MinIO；模型HTTP协议桩",
+    "coverage": [
+      "提交前chunk禁用拒绝旧来源",
+      "恢复有效版本后提交",
+      "来源成员校验",
+      "CAS与重复提交",
+      "跨用户会话/外部run拒绝",
+      "策略版本隔离",
+      "绑定摘要后不准省略依赖",
+      "派生答案撤权隐藏",
+      "会话删除清理摘要",
+      "原始记录保留"
+    ],
+    "testLog": ".cache/summary-java-scope-verified.log",
+    "earlierRegressionLog": ".cache/summary-java-tests.log",
+    "buildDirectory": ".cache/rag-summary-final-20261107",
+    "sourceFilesVerified": 503,
+    "packageLog": ".cache/summary-java-final-package.log",
+    "migration": "V13__agent_context_summaries.sql",
+    "package": "passed"
+  },
+  "checks": {
+    "ruff": "passed",
+    "uvLockOffline": "passed",
+    "gitDiffCheck": "passed",
+    "openApiReferences": "passed",
+    "openApiReferenceCount": 66
+  },
+  "localRuntime": {
+    "activated": true,
+    "schemaVersion": 13,
+    "backendPort": 8080,
+    "agentPort": 8090,
+    "activeRunsBeforeRestart": 0,
+    "authenticatedConversationRead": "passed",
+    "delegatedHistoryRead": "passed",
+    "summarySchema": "passed",
+    "summaryRejectsTerminalRun": "passed",
+    "temporaryDelegationRevoked": true,
+    "agentHealth": "UP",
+    "backup": ".cache/local-runtime-20261105/before-v13-20261107.dump",
+    "backupValidation": "archive listing and data extraction verified; no restoration drill",
+    "existingDataCountsPreserved": {
+      "messages": 18,
+      "knowledgeBases": 3,
+      "documents": 16,
+      "chunks": 937
+    },
+    "newBusinessRuns": 0,
+    "newBusinessMessages": 0,
+    "realModelCalls": 0,
+    "summariesGeneratedUsingRealProvider": 0
+  },
+  "defaults": {
+    "enabled": true,
+    "retainedTurns": 6,
+    "maxSourceTurnsPerAttempt": 8,
+    "summaryTimeoutSeconds": 10,
+    "maxSummaryBytes": 8192,
+    "maxSourceMessages": 512,
+    "maxSummaryEvidence": 64,
+    "maxEvidenceBytes": 131072
+  },
+  "limitations": [
+    "有损摘要不保证全部约束、事实或语义完整",
+    "未进行真实供应商效果、成本、Token误差或容量评估",
+    "积压未追齐或依赖超额时回退近期历史",
+    "无后台总结、长期记忆或图恢复",
+    "未重跑不受影响的前端与全仓库检查"
+  ]
+}

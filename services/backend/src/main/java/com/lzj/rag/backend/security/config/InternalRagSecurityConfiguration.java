@@ -61,6 +61,9 @@ public class InternalRagSecurityConfiguration {
                         .requestMatchers(HttpMethod.POST,"/internal/agent/conversations/*/runs").hasRole("INTERNAL_RAG")
                         .requestMatchers(HttpMethod.GET,"/internal/agent/conversations/*/history","/internal/agent/conversations/*/runs/*").hasRole("INTERNAL_RAG")
                         .requestMatchers(HttpMethod.PATCH,"/internal/agent/conversations/*/runs/*").hasRole("INTERNAL_RAG")
+                        .requestMatchers(HttpMethod.GET,"/internal/agent/conversations/*/context-summary").hasRole("INTERNAL_RAG")
+                        .requestMatchers(HttpMethod.PUT,"/internal/agent/conversations/*/context-summary").hasRole("INTERNAL_RAG")
+                        .requestMatchers(HttpMethod.POST,"/internal/agent/conversations/*/context-summary/use").hasRole("INTERNAL_RAG")
                         .anyRequest().denyAll())
                 .build();
     }

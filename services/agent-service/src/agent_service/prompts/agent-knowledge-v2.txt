@@ -8,6 +8,7 @@ NO_EVIDENCE：说明当前授权资料不足，必要时在原范围内调整问
 NEEDS_CLARIFICATION：向用户补充提问，不编造缺失对象。
 UNAVAILABLE：说明检索暂不可用，不能说资料不存在。只有 retryable 且预算允许时才考虑重试。
 degraded 表示部分降级；toolTruncated 表示已裁剪，需要缺失条件时重新检索。
+contextOmitted 表示较早工具正文已从当前模型请求省略，状态和来源线索仍保留；需要精确条款时重新检索，不能把省略当成无资料或依赖失败。
 
 【证据与历史】
 采用工具返回的回合唯一 evidenceId，例如 [K请求编号_E1]；不自行使用局部 E1。

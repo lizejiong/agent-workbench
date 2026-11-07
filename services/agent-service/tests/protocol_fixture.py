@@ -39,6 +39,11 @@ class ProtocolFixture:
         self.truncate_answer = False
         self.narrate_tools = False
         self.reverse_tools = False
+        self.summary_records = {}
+        self.invalid_summary = False
+        self.block_summary = False
+        self.summary_started = asyncio.Event()
+        self.summary_closed = asyncio.Event()
 
     async def java(self, request):
         self.java_requests.append(request)
@@ -141,6 +146,51 @@ class ProtocolFixture:
         body = json.loads(request.content)
         self.model_requests.append(body)
         self.model_headers.append(dict(request.headers))
+        if not body.get("tools"):
+            assert body["response_format"] == {"type": "json_object"}
+            self.summary_started.set()
+            if self.block_summary:
+                try:
+                    await asyncio.Event().wait()
+                finally:
+                    self.summary_closed.set()
+            source = json.loads(body["messages"][-1]["content"])
+            first = source["turns"][0]["messages"][0]
+            content = {
+                "goals": [
+                    {"text": "整理备份方案 A-42", "sourceMessageIds": [first["id"]]}
+                ],
+                "constraints": (source.get("summary") or {}).get("constraints", [])
+                + [{"text": first["content"], "sourceMessageIds": [first["id"]]}],
+                "facts": [],
+                "openQuestions": [],
+            }
+            return httpx.Response(
+                200,
+                json={
+                    "id": "summary-fixture",
+                    "object": "chat.completion",
+                    "created": 1,
+                    "model": "fixture-agent",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {
+                                "role": "assistant",
+                                "content": "invalid-json"
+                                if self.invalid_summary
+                                else json.dumps(content, ensure_ascii=False),
+                            },
+                            "finish_reason": "stop",
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 10,
+                        "completion_tokens": 10,
+                        "total_tokens": 20,
+                    },
+                },
+            )
         tools = body["tools"]
         assert len(tools) == 1
         assert set(tools[0]["function"]["parameters"]["properties"]) == {"query"}
@@ -319,7 +369,58 @@ class ProtocolFixture:
         conversation_id = path.split("/")[4]
         assert conversation_id == grant["agentSessionId"]
         rows = self.messages[conversation_id]
+        if "/context-summary" in path:
+            return self.summary(request, rows, body)
         if path.endswith("/history"):
+            if request.url.params.get("view") == "turns":
+                active = self.runs[request.url.params["runId"]]
+                upper = next(
+                    row["sequence"]
+                    for row in rows
+                    if row["id"] == active["userMessageId"]
+                )
+                before = min(
+                    upper, int(request.url.params.get("beforeSequence", upper))
+                )
+                size = int(request.url.params.get("size", "4"))
+                candidates = [
+                    r
+                    for r in reversed(rows)
+                    if r["role"] == "user" and r["sequence"] < before
+                ]
+                turns = []
+                for user in reversed(candidates[:size]):
+                    assistant = next(
+                        r
+                        for r in rows
+                        if r["runId"] == user["runId"] and r["role"] == "assistant"
+                    )
+                    turns.append(
+                        {
+                            "runId": user["runId"],
+                            "status": self.runs[user["runId"]]["status"],
+                            "user": user,
+                            "assistant": assistant
+                            if assistant["status"] == "COMPLETED"
+                            and self.status == "READY"
+                            else None,
+                            "sourcesRestricted": self.status != "READY",
+                        }
+                    )
+                return httpx.Response(
+                    200,
+                    json={
+                        "code": "0",
+                        "data": {
+                            "turns": turns,
+                            "upperSequence": upper,
+                            "hasMore": len(candidates) > size,
+                            "nextBeforeSequence": candidates[:size][-1]["sequence"]
+                            if candidates
+                            else 0,
+                        },
+                    },
+                )
             history = [
                 {
                     **{k: row[k] for k in ("id", "role", "content", "runId")},
@@ -377,6 +478,7 @@ class ProtocolFixture:
                         "role": "user",
                         "content": body["question"],
                         "status": "COMPLETED",
+                        "sequence": len(rows) + 1,
                     },
                     {
                         "id": assistant,
@@ -384,6 +486,7 @@ class ProtocolFixture:
                         "role": "assistant",
                         "content": "",
                         "status": "RUNNING",
+                        "sequence": len(rows) + 2,
                         "citations": [],
                         "evidence": [],
                         "tools": [],
@@ -435,4 +538,86 @@ class ProtocolFixture:
                 }
         return httpx.Response(
             200, json={"code": "0", "data": {"run": run, "message": view}}
+        )
+
+    def summary(self, request, rows, body):
+        """仅模拟摘要 HTTP 契约；真实来源校验、CAS、撤权和派生依赖由 Java 测试覆盖。"""
+        conversation_id = request.url.path.split("/")[4]
+        records = self.summary_records.setdefault(conversation_id, [])
+        if request.url.path.endswith("/use"):
+            self.runs[body["runId"]]["summaryRevision"] = body["revision"]
+            return httpx.Response(
+                200, json={"code": "0", "data": {"revision": body["revision"]}}
+            )
+        if request.method == "PUT":
+            previous = records[-1] if records else None
+            through = self._summary_candidates[conversation_id]
+            deps = {
+                s["evidenceId"]: s
+                for r in rows
+                if r["sequence"] <= through
+                for s in r.get("evidence", [])
+            }
+            records.append(
+                {
+                    "revision": len(records) + 1,
+                    "throughSequence": through,
+                    "sourceHash": body["sourceHash"],
+                    "content": body["content"],
+                    "evidence": list(deps.values()),
+                    "policyVersion": body["policyVersion"],
+                    "model": body["model"],
+                    "promptHash": body["promptHash"],
+                    "sources": (previous or {}).get("sources", []),
+                }
+            )
+            return httpx.Response(200, json={"code": "0", "data": records[-1]})
+        active = self.runs[request.url.params["runId"]]
+        upper = next(r["sequence"] for r in rows if r["id"] == active["userMessageId"])
+        retain = int(request.url.params["retainedTurns"])
+        users = [r for r in rows if r["role"] == "user" and r["sequence"] < upper]
+        cutoff = users[max(0, len(users) - retain)]["sequence"] if users else upper
+        base = (
+            records[-1]
+            if records
+            and self.status == "READY"
+            and records[-1]["policyVersion"] == request.url.params["policyVersion"]
+            else None
+        )
+        after = base["throughSequence"] if base else 0
+        candidates = [r for r in users if after < r["sequence"] < cutoff]
+        turns = []
+        for user in candidates[:8]:
+            assistant = next(
+                r
+                for r in rows
+                if r["runId"] == user["runId"] and r["role"] == "assistant"
+            )
+            turns.append(
+                {
+                    "runId": user["runId"],
+                    "status": self.runs[user["runId"]]["status"],
+                    "user": user,
+                    "assistant": assistant
+                    if assistant["status"] == "COMPLETED" and self.status == "READY"
+                    else None,
+                }
+            )
+        through = turns[-1]["user"]["sequence"] + 1 if turns else after
+        self._summary_candidates = getattr(self, "_summary_candidates", {})
+        self._summary_candidates[conversation_id] = through
+        return httpx.Response(
+            200,
+            json={
+                "code": "0",
+                "data": {
+                    "expectedRevision": len(records),
+                    "summary": base,
+                    "turns": turns,
+                    "sourceHash": digest(str((len(records), through, self.status))),
+                    "throughSequence": through,
+                    "hasMore": len(candidates) > 8,
+                    "caughtUp": not turns and base is not None,
+                },
+            },
         )

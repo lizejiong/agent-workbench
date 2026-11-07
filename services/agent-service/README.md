@@ -10,6 +10,7 @@
 | runtime.py | Java 执行权、历史预算、原生增量、分批保存、取消和引用校验 |
 | conversations.py | Java 业务会话受授权 HTTP 客户端 |
 | graph.py | 官方图、query-only 工具、可信上下文、模型/工具调用预算 |
+| context/ | 完整历史轮次、模型请求预算、工具请求投影及受授权摘要 |
 | knowledge/delegation.py | 按当前用户申请会话绑定短期委托并撤销 |
 | knowledge/adapter.py | 唯一 Java 知识适配器、来源映射及受控结果 |
 | prompts/agent-*-v2.txt | 当前中文提示词；文件列表/版本在 graph.py 集中定义并记录 SHA-256 |
@@ -18,7 +19,7 @@ Python 3.12+，uv.lock 锁定现有 LangChain 1.4.7、LangGraph 1.2.19、langcha
 
 ## 启动
 
-先启动已迁移 V11 的 Java，并按 [RAG RUNBOOK](../../docs/rag/RUNBOOK.md) 配好原内部接口服务凭证。
+先启动支持 `history?view=turns` 和 `context-summary` 且已迁移 V13 的 Java，再更新 Python，并按 [RAG RUNBOOK](../../docs/rag/RUNBOOK.md) 配好原内部接口服务凭证。摘要需要V13迁移，关闭新增摘要调用仍可使用近期完整历史。
 
 ```powershell
 uv sync --project services/agent-service --locked
@@ -42,15 +43,15 @@ Web/客户端先以当前用户 Basic 调用 Java POST /api/conversations，拿�
 {"conversationId":"00000000-0000-0000-0000-000000000001","requestId":"00000000-0000-0000-0000-000000000002","messageId":"00000000-0000-0000-0000-000000000003","question":"PostgreSQL 如何备份？"}
 ```
 
-流返回 meta、delta、tool、error、done；正常结束和错误均读取 Java 权威状态。需要幂等重提时保留原三标识，服务端返回已有运行，绝不重执行；不支持 Last-Event-ID 事件重放。普通 POST /api/agent/chat 保留 JSON 及旧 sessionId 别名；旧无标识首次请求会通过 Java 创建会话，不能保证两次无 ID HTTP 是同一操作。
+默认流保留v1 meta、delta、tool、error、done；请求头 `X-Agent-Stream-Version: 2` 使用Web当前的有序块协议。正常结束和错误均读取 Java 权威状态。需要幂等重提时保留原三标识，服务端返回已有运行，绝不重执行；不支持 Last-Event-ID 事件重放。普通 POST /api/agent/chat 保留 JSON 及旧 sessionId 别名；旧无标识首次请求会通过 Java 创建会话，不能保证两次无 ID HTTP 是同一操作。
 
 每轮重新认证并申请绑定会话、服务和固定知识范围的短期委托。租户/用户、委托、服务令牌和截止时间不进入模型工具参数。Python 经服务身份 + 委托读写 Java，不直接写业务表，也不再维护 Python 会话租约。
 
-从 Java 最近60条有效完成消息中选最多12条、最多24000字节（受总预算进一步限制）；较早最多8条用户问题提取为2048字节摘要。助手历史须通过当前证据授权检查，其依赖继承到新回答，旧工具正文不作为历史消息送模。最终引用只能使用本轮实际检索的唯一 K 编号。
+从Java分页读取以当前run固定边界之前的完整轮次，默认选择最近6轮、最多24000字节（受总预算进一步限制）；不再注入160字符的问题摘录。历史过大按完整轮次停止，最近一轮自身超额则明确报错。不可用助手答复不送模，其用户请求仅作为标注背景。有效助手的证据依赖继承到新回答，旧工具正文不作为跨轮历史消息送模；最终引用只使用本轮实际检索的唯一K编号。
 
 每 run 新建图，图按 runId checkpoint，结束清理、进程启动清理遗留；不会加载历史后重放未完成工具。一个 state_dir 只能由一个进程使用。旧 sessions.sqlite 不导入、不再读写；旧服务升级后这些 ID 不属于 Java 会话，需新建对话。实际业务历史保存在 Java 数据库并按其备份/删除策略管理。
 
-默认并发4（无等待队列）、总预算60秒/上限120秒、8次模型/6次工具调用、工具4096 UTF-8字节、总上下文60000字节、输出1024模型 token、SDK重试0。上下文为保守字节预算，并非精确 tokenizer。正文约0.4–0.5秒保存一批，终态立即写入。取消关闭图与 HTTP，另用最多3.5秒尽力保存末尾，撤销委托另有0.5秒；保存失败不承诺末尾必达或供应商立即停止计费。
+默认并发4（无等待队列）、总预算60秒/上限120秒、8次模型/6次工具调用、工具4096 UTF-8字节、请求字节硬上限60000、输出1024模型Token、SDK重试0。应用窗口上限32768、安全预留2048，按完整系统提示/工具Schema/消息估计输入；默认utf8保守估计，显式匹配encoding时可使用tiktoken，计数仍不保证与供应商完全一致。压力下只投影较早已完成的检索批次，保护最近两批，不改原始图消息或Java快照。配置、估计边界及后续范围见 [上下文说明](../../docs/rag/CONTEXT_MANAGEMENT.md)。正文约0.4–0.5秒保存一批，终态立即写入。取消关闭图与HTTP，另用最多3.5秒尽力保存末尾，撤销委托另有0.5秒；保存失败不承诺末尾必达或供应商立即停止计费。
 
 运行、证据、权限、错误与兼容边界的完整说明见 [会话 API](../../docs/rag/CONVERSATIONS.md)，浏览器代理见 [Web 文档](../../docs/web/CHAT.md)。
 
@@ -62,3 +63,7 @@ uv run --project services/agent-service --locked ruff check services/agent-servi
 ```
 
 只运行与变更相关的检查，不默认 Maven 全量 verify。真实 Java/PG/MinIO/Python 流式验收和供应商协议桩明确分层，见 [验证回执](../../docs/rag/CONVERSATION_VALIDATION.json)。真实模型效果、业务工具、人机恢复和生产部署仍未验收。
+
+## 会话摘要
+
+默认 `AGENT_SUMMARY_ENABLED=true`、`AGENT_SUMMARY_TIMEOUT=10`。需要先部署 Java V13；复用主模型和连接池，模型须支持JSON object。每轮最多一次无工具摘要调用，共享总deadline/调用预算并为主Agent留两次调用，失败退回近期完整历史。Java保存不可变修订及来源/证据依赖；未追齐旧历史时不使用半段摘要。原始会话保持完整，摘要不会进入答案SSE，不会开启图恢复或长期记忆。完整说明见 [CONTEXT_SUMMARIES.md](../../docs/rag/CONTEXT_SUMMARIES.md)。

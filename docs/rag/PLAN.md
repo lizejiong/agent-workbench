@@ -1,5 +1,13 @@
 # RAG 服务计划
 
+## 已实现：上下文第一轮（2026-11-07）
+
+完整轮次分页与选择、显式模型请求Token估计和字节兜底、工具请求投影已完成；保持Java权威历史、现有create_agent、授权证据及runId检查点。第一轮无新增数据库迁移；第二轮已增加V13受授权摘要，长期记忆未实现。实际行为与配置见 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)，验证见PROGRESS；摘要第二轮详见文末；本轮不自动推进图恢复。
+
+## 调研归档：Agent 上下文管理（2026-11-07）
+
+结合用户附件、当前锁定的 LangChain/LangGraph、Pi 与 OpenHands，形成 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)。建议先交付完整轮次选择、模型请求 Token预算与受控工具投影，再增加 Java 保存的受授权会话摘要。继续保留原始历史、runId图隔离及证据撤权规则；长期记忆与中断恢复各自独立排期。此处保留调研顺序；第一、二轮已交付，实际行为与剩余范围以各交付节为准。
+
 ## 2026-11-07：工具与引用的展示优化
 
 复用现有 Web 时间线和授权证据，完成紧凑工具状态行、分层详情、引用预览、按知识库/文档/版本聚合与证据片段选择。组件映射和社区参考见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。本轮限于展示层，不扩展检索、Agent 或审批能力。
@@ -142,3 +150,7 @@ R1 的总预算从进入检索引擎开始，以 monotonic clock 计时，覆盖
 ## 技术依据
 
 ES Java Client 8.18.8 的异步传输取消会传至 HTTP Future，依据[固定版本源码](https://github.com/elastic/elasticsearch-java/blob/v8.18.8/java-client/src/main/java/co/elastic/clients/transport/ElasticsearchTransportBase.java)。底层[HTTP 客户端实现](https://github.com/elastic/elasticsearch-java/blob/v8.18.8/java-client/src/main/java/co/elastic/clients/transport/rest_client/RestClientHttpClient.java)再转至 Cancellable；仅配置 socket timeout 无法代替本次总 deadline 和中断传播。
+
+## 上下文第二轮交付（2026-11-07）
+
+已接入受授权持久摘要：Python context/summary复用现有模型客户端和总预算，Java agent模块负责准备来源、CAS写入、运行绑定、派生依赖及失效；V13保存不可变修订，不引入新框架。契约与技术映射见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)。本轮在摘要范围结束，长期记忆、动态新工具输出预算和中断恢复需后续单独确定。

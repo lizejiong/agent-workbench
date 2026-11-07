@@ -1,5 +1,17 @@
 # RAG 运行手册
 
+## 上下文第一轮升级（2026-11-07）
+
+第一轮只需要支持history turns视图的Java；当前含摘要的版本需按文末完成V13迁移后再升级Python，不改Web。旧Python仍可读取原history数组，新Python遇到旧Java响应会明确拒绝INVALID_HISTORY。Java打包继续使用未被运行进程占用的隔离目录。
+
+上下文环境变量在 `.env.example` 明确列出，但程序不自动读取该文件：AGENT_MODEL_CONTEXT_TOKENS=32768、AGENT_MAX_OUTPUT_TOKENS=1024、AGENT_CONTEXT_SAFETY_TOKENS=2048、AGENT_CONTEXT_BYTE_BUDGET=60000、AGENT_CONTEXT_SOFT_RATIO=0.8、AGENT_HISTORY_TURNS=6、AGENT_MAX_MODEL_CALLS=8、AGENT_MAX_TOOL_CALLS=6、AGENT_TOOL_BYTE_BUDGET=4096。AGENT_MODEL_PROVIDER为追踪标识；窗口是部署方确认的应用上限，不根据模型名称猜测。
+
+AGENT_TOKEN_COUNTER默认utf8保守估计；只有确认目标模型的分词方式才设为tiktoken并配置AGENT_TOKEN_ENCODING。不能仅因供应商兼容OpenAI协议就填OpenAI encoding。编码器配置在启动时检查；首次加载BPE资源可能需要预置tiktoken缓存。所有计数仍包含协议估算及安全预留，usage存在时只在本轮向上校准，不保证精确Token计费。计数器配置错误会启动失败，不留下RUNNING业务请求。
+
+排障：根据traceId查agent_context日志中的策略版本、输入字节/估计Token/计数器/投影批次。CONTEXT_BUDGET表示当前受保护输入无法在预算内继续，请缩小问题或新建会话；不能改报NO_EVIDENCE。CONTEXT_PROTOCOL检查工具ID和完整批次；INVALID_HISTORY检查Java版本和分页游标。当前不保留超过预算的近期轮次片段，不提供长期记忆；受授权摘要按文末第二轮配置启用。
+
+定向验证：`services/agent-service/.venv/Scripts/python.exe -m pytest services/agent-service/tests/test_context.py services/agent-service/tests/test_agent.py -q --basetemp=<工作区内全新专用目录>`；Java仅运行KnowledgeSearchTest的完整轮次分页、历史授权/撤权与会话幂等方法。依赖锁检查 `uv lock --check --offline --project services/agent-service`。
+
 ## 工具与引用展示验收（2026-11-07）
 
 更新 Web 即可，不需要数据库迁移或重启 Java/Python。`cd web` 后执行 `npm test -- src/chat/sourcePresentation.test.ts src/chat/format.test.ts src/chat/stream.test.ts` 与 `npm run build`。浏览器选择已有工具记录，检查折叠/展开、引用悬浮与键盘预览、点击精确片段、同版本片段切换、刷新恢复与375px布局；历史加载不应新增 Agent 执行请求。故障提示不等同于“资料不存在”，无位置元数据时不显示编造的页码。详情见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。
@@ -195,3 +207,16 @@ curl.exe --user "$($env:KB_SMOKE_USER):$($env:KB_SMOKE_PASSWORD)" http://localho
 不记录完整 query、资料正文、账号密码或模型原始响应。普通返回只含脱敏 trace，operator 指标权限沿用原规则。响应禁缓存不等于外部客户端无法保存已获授权资料，撤权无法收回此前已下发的内容；本服务不维护可绕过复核的结果缓存。
 
 模拟故障、真实 PG/MinIO/ES、真实供应商模型和语义效果分别记录，结果见 PROGRESS 与 EVALUATION。本轮不宣称应用镜像、生产网络、LLM 答案质量或负载已验收。
+
+## 受授权摘要启用与验收（2026-11-07）
+
+先备份业务PostgreSQL，部署含Flyway V13的Java服务，再启动Python。不要在运行中的JAR目录执行重新打包；继续使用隔离构建目录。Python读取 `AGENT_SUMMARY_ENABLED=true`、`AGENT_SUMMARY_TIMEOUT=10`；主模型须支持JSON object，调用失败会有界回退近期完整历史。配置false可关闭新增摘要调用，原记录仍保留。排障、字段和限制见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)。
+
+定向命令（PowerShell，repo根目录；pytest使用新的工作区basetemp避免宿主临时目录权限问题）：
+
+```powershell
+services/agent-service/.venv/Scripts/python.exe -m pytest services/agent-service/tests/test_summary.py services/agent-service/tests/test_agent.py -q --basetemp=.cache/agent-summary-tests-<本次唯一标识>
+.\mvnw.cmd -B -ntp -f .cache/<隔离构建>/pom.xml '-Dmaven.repo.local=<Maven缓存绝对路径>' -pl services/backend -am '-Dtest=KnowledgeSearchTest#agentSummaryCommitReuseAndDerivedAnswersKeepAuthorizationLineage' '-Dsurefire.failIfNoSpecifiedTests=false' test
+```
+
+先用隔离依赖和协议桩验证；真实模型验收另行记录摘要提示版本、模型、额外耗时和调用量。健康接口成功不能证明摘要质量，加载已有会话不应发起Agent POST。

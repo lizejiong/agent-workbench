@@ -43,6 +43,11 @@ class ConversationClient:
                     "CONVERSATION_SCOPE_CHANGED",
                     "EVIDENCE_CHANGED",
                     "CITATION_INVALID",
+                    "CONTEXT_BUDGET",
+                    "AGENT_SUMMARY_CONFLICT",
+                    "AGENT_SUMMARY_SOURCES",
+                    "AGENT_SUMMARY_DEPENDENCIES",
+                    "AGENT_RUN_ENDED",
                 }:
                     code = candidate
             except (ValueError, AttributeError):
@@ -101,9 +106,75 @@ class ConversationClient:
             "GET", self.path(identity) + "/history", identity=identity
         )
 
+    async def history_turns(self, identity, run_id, limit):
+        turns, before, upper = [], None, None
+        while len(turns) < limit:
+            size = min(4, limit - len(turns))
+            path = (
+                self.path(identity) + f"/history?view=turns&runId={run_id}&size={size}"
+            )
+            if before is not None:
+                path += f"&beforeSequence={before}"
+            page = await self._read("GET", path, identity=identity)
+            try:
+                boundary = page["upperSequence"]
+                cursor = page["nextBeforeSequence"]
+                rows = page["turns"]
+                if (
+                    not isinstance(boundary, int)
+                    or boundary < 1
+                    or upper is not None
+                    and upper != boundary
+                    or not isinstance(rows, list)
+                    or len(rows) > size
+                    or not isinstance(cursor, int)
+                    or cursor < 0
+                    or before is not None
+                    and rows
+                    and cursor >= before
+                    or rows
+                    and cursor >= boundary
+                    or not rows
+                    and page["hasMore"]
+                ):
+                    raise ValueError
+                upper = boundary
+                turns = rows + turns
+                if not page["hasMore"] or not rows:
+                    return turns
+                before = cursor
+            except (KeyError, TypeError, ValueError) as exc:
+                raise AgentError(502, "INVALID_HISTORY", "历史分页响应无效") from exc
+        return turns
+
     async def state(self, identity, run_id):
         return await self._read(
             "GET", self.path(identity) + f"/runs/{run_id}", identity=identity
+        )
+
+    async def summary(self, identity, run_id, retained, policy):
+        return await self._read(
+            "GET",
+            self.path(identity)
+            + f"/context-summary?runId={run_id}&retainedTurns={retained}"
+            + f"&policyVersion={policy}",
+            identity=identity,
+        )
+
+    async def save_summary(self, identity, body):
+        return await self._read(
+            "PUT",
+            self.path(identity) + "/context-summary",
+            identity=identity,
+            body=body,
+        )
+
+    async def use_summary(self, identity, body):
+        return await self._read(
+            "POST",
+            self.path(identity) + "/context-summary/use",
+            identity=identity,
+            body=body,
         )
 
     async def save(self, identity, run_id, snapshot):

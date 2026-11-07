@@ -1,5 +1,11 @@
 # RAG API
 
+## Agent完整轮次上下文（2026-11-07）
+
+原 `GET /internal/agent/conversations/{id}/history` 省略参数仍返回消息数组。新增 `view=turns&runId=<UUID>&size=4&beforeSequence=<可选正整数>`；size为1–8，runId必须属于当前委托会话和服务。响应为 `{turns:[{runId,status,user,assistant,sourcesRestricted}],upperSequence,hasMore,nextBeforeSequence}`，消息含id/role/content/runId/sequence/status/evidence；assistant不可用时为null。上界由Java查该run用户消息sequence确定，排除该轮及之后记录，客户端游标只能缩小范围。继续服务身份+用户委托、no-store及现有404隔离；无效视图、缺少runId或超额size为400。公开聊天、消息、SSE协议不变。
+
+Python完整模型请求超额返回CONTEXT_BUDGET；无配对工具记录返回CONTEXT_PROTOCOL，不发送不完整请求，也不自动重试整轮。`contextOmitted`仅存在于模型工具请求投影中，不新增SSE事件或改写Java工具记录。模型估计与权限边界见 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)。
+
 ## 聊天来源展示（2026-11-07）
 
 本轮无接口变更。工具区读取 blocks[].result.evidence，答案来源读取 citations；文档聚合键为 kbId/documentId/generation，引用定位仍使用完整 evidenceId。正文预览与抽屉只展示服务端已返回的授权快照，下载沿用原同源文档接口。详见 [CHAT_PRESENTATION.md](CHAT_PRESENTATION.md)。
@@ -232,3 +238,7 @@ HTTP：401 服务/委托无效或过期，403 scope 超出委托，404 当前资
 `POST /internal/rag/requests/{requestId}/cancel` 无业务请求体，与主请求使用同一服务/委托，独立控制请求 deadline，返回 202。路径 requestId 为目标；控制请求 X-Request-Id 可省略，由标准过滤器生成，适配器显式生成新 ID。只取消该委托的目标请求；跨委托目标无效果，不披露存在性。取消先到留墓碑阻止同 requestId 开始；跨实例按控制记录传播。Python 取消当前 HTTP 后最多用 0.5s 通知，保留 CancelledError；通知失败由原 Java deadline 封顶，JDBC/供应商即时终止不保证。控制记录不保存问题或 Agent 消息；委托过期一天后分批清理并级联删除控制记录。
 
 Python 模型结果使用 `K{requestId去连字符}_E1` 等唯一引用，保留 localEvidenceId 和真实 doc/chunk/generation/hash/定位。每回合注册表只接受实际下发的证据，业务工具使用其他命名空间；裁剪标记 toolTruncated/toolContentHash，不改变 Java snapshotHash。图恢复前必须由宿主验证身份、清理旧敏感工具消息、注入新委托并重新确认当前权限/版本；适配器提供 reconfirm，无法精确确认则拒绝旧证据。Java 不修改 LangGraph 检查点，Python 不写知识表。当前只完成可运行适配器与跨语言 HTTP 契约验证，未完成真实主 Agent 决策、业务工具和图恢复联调。
+
+## 上下文摘要内部接口（2026-11-07）
+
+新增受委托 `GET/PUT /internal/agent/conversations/{id}/context-summary`、`POST .../context-summary/use`。Java 计算固定运行上界、来源指纹、水位和证据依赖，Python 只提交经过结构校验的派生内容。采用摘要的回答必须继承其依赖；失效摘要不返回正文，不生成新的公开SSE事件。完整字段、状态与上限见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)，机器契约同步至 Java `openapi/conversations.json`。

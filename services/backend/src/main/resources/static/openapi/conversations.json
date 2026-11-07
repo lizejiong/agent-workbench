@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Java Agent Conversation API",
-    "version": "2026-11-06",
+    "version": "2026-11-07",
     "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"
   },
   "paths": {
@@ -717,7 +717,14 @@
                       "type": "object",
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/History"
+                          "oneOf": [
+                            {
+                              "$ref": "#/components/schemas/History"
+                            },
+                            {
+                              "$ref": "#/components/schemas/ContextHistoryPage"
+                            }
+                          ]
                         }
                       }
                     }
@@ -776,6 +783,47 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "messages",
+                "turns"
+              ],
+              "default": "messages"
+            }
+          },
+          {
+            "in": "query",
+            "name": "runId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "view=turns requires an owned run; its user-message sequence is the exclusive history boundary"
+          },
+          {
+            "in": "query",
+            "name": "beforeSequence",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Exclusive cursor, capped at the server-resolved run boundary"
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8,
+              "default": 4
+            },
+            "description": "Number of whole runs for view=turns"
           }
         ]
       }
@@ -971,6 +1019,323 @@
           {
             "in": "path",
             "name": "runId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/internal/agent/conversations/{id}/context-summary": {
+      "get": {
+        "operationId": "prepareAgentSummary",
+        "security": [
+          {
+            "serviceBearer": [],
+            "serviceId": [],
+            "delegation": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Result"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SummaryPrepared"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing or expired authentication/delegation"
+          },
+          "404": {
+            "description": "Not owned, deleted or unavailable"
+          },
+          "409": {
+            "description": "Idempotency, run state or evidence conflict"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "413": {
+            "description": "Summary content or source dependency budget exceeded"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Rag-Deadline",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Request-Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "traceparent",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "runId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "retainedTurns",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 24,
+              "default": 6
+            }
+          },
+          {
+            "in": "query",
+            "name": "policyVersion",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "put": {
+        "operationId": "saveAgentSummary",
+        "security": [
+          {
+            "serviceBearer": [],
+            "serviceId": [],
+            "delegation": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Result"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SummarySaved"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing or expired authentication/delegation"
+          },
+          "404": {
+            "description": "Not owned, deleted or unavailable"
+          },
+          "409": {
+            "description": "Idempotency, run state or evidence conflict"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "413": {
+            "description": "Summary content or source dependency budget exceeded"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummaryWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Rag-Deadline",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Request-Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "traceparent",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/internal/agent/conversations/{id}/context-summary/use": {
+      "post": {
+        "operationId": "useAgentSummary",
+        "security": [
+          {
+            "serviceBearer": [],
+            "serviceId": [],
+            "delegation": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Result"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SummaryUsed"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Missing or expired authentication/delegation"
+          },
+          "404": {
+            "description": "Not owned, deleted or unavailable"
+          },
+          "409": {
+            "description": "Idempotency, run state or evidence conflict"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "413": {
+            "description": "Summary content or source dependency budget exceeded"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummaryUse"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Rag-Deadline",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Request-Id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "traceparent",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
             "required": true,
             "schema": {
               "type": "string",
@@ -1945,6 +2310,126 @@
           "additionalProperties": false
         }
       },
+      "ContextHistoryMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "COMPLETED",
+              "CANCELLED",
+              "FAILED",
+              "TIMED_OUT"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VisibleEvidence"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "runId",
+          "role",
+          "content",
+          "sequence",
+          "status",
+          "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "ContextHistoryTurn": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "COMPLETED",
+              "CANCELLED",
+              "FAILED",
+              "TIMED_OUT"
+            ]
+          },
+          "user": {
+            "$ref": "#/components/schemas/ContextHistoryMessage"
+          },
+          "assistant": {
+            "$ref": "#/components/schemas/ContextHistoryMessage",
+            "nullable": true
+          },
+          "sourcesRestricted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "runId",
+          "status",
+          "user",
+          "assistant",
+          "sourcesRestricted"
+        ],
+        "additionalProperties": false
+      },
+      "ContextHistoryPage": {
+        "type": "object",
+        "properties": {
+          "turns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContextHistoryTurn"
+            },
+            "maxItems": 8
+          },
+          "upperSequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "nextBeforeSequence": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "turns",
+          "upperSequence",
+          "nextBeforeSequence",
+          "hasMore"
+        ],
+        "additionalProperties": false
+      },
       "Delegation": {
         "type": "object",
         "properties": {
@@ -2001,6 +2486,302 @@
           "userId",
           "kbIds",
           "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "SummaryItem": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "sourceMessageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 8
+          }
+        },
+        "required": [
+          "text",
+          "sourceMessageIds"
+        ],
+        "additionalProperties": false
+      },
+      "SummaryContent": {
+        "type": "object",
+        "properties": {
+          "goals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SummaryItem"
+            },
+            "maxItems": 12
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SummaryItem"
+            },
+            "maxItems": 12
+          },
+          "facts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SummaryItem"
+            },
+            "maxItems": 12
+          },
+          "openQuestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SummaryItem"
+            },
+            "maxItems": 12
+          }
+        },
+        "required": [
+          "goals",
+          "constraints",
+          "facts",
+          "openQuestions"
+        ],
+        "additionalProperties": false
+      },
+      "ContextSummary": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "throughSequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "messageId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "hash": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "messageId",
+                "hash"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 512
+          },
+          "content": {
+            "$ref": "#/components/schemas/SummaryContent"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Snapshot"
+            },
+            "maxItems": 64
+          },
+          "model": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "promptHash": {
+            "type": "string"
+          },
+          "policyVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "throughSequence",
+          "sourceHash",
+          "sources",
+          "content",
+          "evidence",
+          "model",
+          "promptVersion",
+          "promptHash",
+          "policyVersion"
+        ],
+        "additionalProperties": false
+      },
+      "SummaryPrepared": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ContextSummary",
+            "nullable": true
+          },
+          "turns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContextHistoryTurn"
+            },
+            "maxItems": 8
+          },
+          "sourceHash": {
+            "type": "string"
+          },
+          "throughSequence": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "caughtUp": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "summary",
+          "turns",
+          "sourceHash",
+          "throughSequence",
+          "hasMore",
+          "caughtUp"
+        ],
+        "additionalProperties": false
+      },
+      "SummaryWrite": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "retainedTurns": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 24
+          },
+          "sourceHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "content": {
+            "$ref": "#/components/schemas/SummaryContent"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "promptVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "promptHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "runId",
+          "expectedRevision",
+          "retainedTurns",
+          "sourceHash",
+          "content",
+          "model",
+          "promptVersion",
+          "promptHash",
+          "policyVersion"
+        ],
+        "additionalProperties": false
+      },
+      "SummaryUse": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "retainedTurns": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 24
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "runId",
+          "revision",
+          "retainedTurns",
+          "policyVersion"
+        ],
+        "additionalProperties": false
+      },
+      "SummarySaved": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "throughSequence": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "revision",
+          "throughSequence"
+        ],
+        "additionalProperties": false
+      },
+      "SummaryUsed": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "revision"
         ],
         "additionalProperties": false
       }

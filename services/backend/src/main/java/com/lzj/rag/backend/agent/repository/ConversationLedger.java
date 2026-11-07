@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzj.rag.backend.agent.controller.AgentContracts.*;
 import com.lzj.rag.backend.agent.service.ConversationEvidence;
 import com.lzj.rag.backend.agent.service.ConversationTimeline;
+import com.lzj.rag.backend.agent.service.ConversationSummaryGuard;
 import com.lzj.rag.backend.knowledgebase.exception.KnowledgeBaseException;
 import com.lzj.rag.backend.model.catalog.EmbeddingCatalog;
 import com.lzj.rag.backend.rag.service.bo.DelegationBO;
@@ -22,9 +23,9 @@ import java.util.*;
 @Repository
 public class ConversationLedger {
     private final JdbcTemplate jdbc;private final ObjectMapper json;
-    private final HybridRetrievalService scopes;private final ConversationEvidence evidence;
-    public ConversationLedger(JdbcTemplate jdbc,ObjectMapper json,HybridRetrievalService scopes,ConversationEvidence evidence) {
-        this.jdbc=jdbc;this.json=json;this.scopes=scopes;this.evidence=evidence;
+    private final HybridRetrievalService scopes;private final ConversationEvidence evidence;private final ConversationSummaryGuard summaries;
+    public ConversationLedger(JdbcTemplate jdbc,ObjectMapper json,HybridRetrievalService scopes,ConversationEvidence evidence,ConversationSummaryGuard summaries) {
+        this.jdbc=jdbc;this.json=json;this.scopes=scopes;this.evidence=evidence;this.summaries=summaries;
     }
     @Transactional(timeout=10)
     public Conversation create(KnowledgeBasePrincipal actor,Create input) {
@@ -73,6 +74,7 @@ public class ConversationLedger {
         require(actor,id,true);
         jdbc.update("UPDATE kb_agent_run SET status='CANCELLED',error_code='CONVERSATION_DELETED',ended_at=clock_timestamp(),updated_at=clock_timestamp() WHERE conversation_id=? AND status='RUNNING'",id);
         jdbc.update("DELETE FROM kb_agent_message WHERE conversation_id=?",id);
+        jdbc.update("DELETE FROM kb_agent_context_summary WHERE conversation_id=?",id);
         jdbc.update("UPDATE kb_agent_conversation SET deleted_at=clock_timestamp(),title='已删除',kb_ids='[]',document_ids=NULL WHERE id=?",id);
         // 保留最小请求墓碑阻止重复执行；正文、工具和证据随消息物理删除。
     }
@@ -147,6 +149,12 @@ public class ConversationLedger {
         List<Snapshot> saved=decode(jdbc.queryForObject("SELECT evidence::text FROM kb_agent_message WHERE id=?",String.class,r.assistantMessageId()),new TypeReference<>(){});
         if(!input.evidence().containsAll(saved))throw conflict("AGENT_SNAPSHOT_CONFLICT");
         boolean current=evidence.visible(g.actor(),c.kbIds(),c.documentIds(),input.evidence()).size()==input.evidence().size();
+        Long revision=jdbc.queryForObject("SELECT context_summary_revision FROM kb_agent_message WHERE id=?",Long.class,r.assistantMessageId());
+        if(revision!=null) {
+            var summary=summaries.read(g.actor(),c,revision);
+            if(summary==null)current=false;
+            else if(!input.evidence().containsAll(summary.evidence()))throw conflict("AGENT_SUMMARY_DEPENDENCIES");
+        }
         if(!current && (!Set.of("CANCELLED","FAILED","TIMED_OUT").contains(input.status()) || !saved.containsAll(input.evidence())))throw conflict("EVIDENCE_CHANGED");
         String state=r.status().equals("RUNNING")?input.status():r.status();
         if(!r.status().equals("RUNNING") && Duration.between(jdbc.queryForObject("SELECT ended_at FROM kb_agent_run WHERE id=?",Timestamp.class,id).toInstant(),Instant.now()).toSeconds()>5)return r;
@@ -179,10 +187,43 @@ public class ConversationLedger {
         return rows.stream().filter(r->r.get("status").equals("COMPLETED") && !Boolean.TRUE.equals(r.get("sourcesRestricted")))
                 .map(r->Map.<String,Object>of("id",r.get("id"),"role",r.get("role"),"content",r.get("content"),"runId",r.get("runId"),"evidence",r.get("evidence"))).toList();
     }
+    @Transactional(readOnly=true,timeout=10)
+    public Map<String,Object> historyTurns(DelegationBO g,UUID id,UUID currentRun,Long before,int size) {
+        var c=delegated(g,id,false);var run=ownedRun(g,id,currentRun,false);
+        long upper=jdbc.queryForObject("SELECT sequence FROM kb_agent_message WHERE id=?",Long.class,run.userMessageId());
+        long cursor=before==null?upper:Math.min(upper,before);
+        var users=jdbc.queryForList("SELECT m.*,r.status AS execution_status FROM kb_agent_message m JOIN kb_agent_run r ON r.id=m.run_id "
+                +"WHERE m.conversation_id=? AND m.role='user' AND m.sequence<? ORDER BY m.sequence DESC LIMIT ?",id,cursor,size+1);
+        boolean more=users.size()>size;if(more)users=new ArrayList<>(users.subList(0,size));
+        var turns=new ArrayList<Map<String,Object>>();
+        for(var user:users) {
+            turns.add(contextTurn(g,c,user));
+        }
+        Collections.reverse(turns);
+        return Map.of("turns",turns,"upperSequence",upper,"hasMore",more,"nextBeforeSequence",users.isEmpty()?0L:((Number)users.get(users.size()-1).get("sequence")).longValue());
+    }
+    Map<String,Object> contextTurn(DelegationBO g,Conversation c,Map<String,Object> user) {
+        var assistantRows=jdbc.queryForList("SELECT * FROM kb_agent_message WHERE run_id=? AND conversation_id=? AND role='assistant'",user.get("run_id"),c.id());
+        var turn=new LinkedHashMap<String,Object>();
+        turn.put("runId",user.get("run_id"));turn.put("status",user.get("execution_status"));
+        turn.put("user",contextRow(view(g.actor(),c,user)));turn.put("assistant",null);turn.put("sourcesRestricted",false);
+        if(!assistantRows.isEmpty()) {
+            var assistant=view(g.actor(),c,assistantRows.get(0));
+            turn.put("sourcesRestricted",assistant.get("sourcesRestricted"));
+            if(assistant.get("status").equals("COMPLETED") && !Boolean.TRUE.equals(assistant.get("sourcesRestricted")))turn.put("assistant",contextRow(assistant));
+        }
+        return turn;
+    }
+    private Map<String,Object> contextRow(Map<String,Object> row) {
+        var result=new LinkedHashMap<String,Object>();
+        for(String key:List.of("id","role","content","runId","sequence","status","evidence"))result.put(key,row.get(key));
+        return result;
+    }
     private Map<String,Object> view(KnowledgeBasePrincipal actor,Conversation c,Map<String,Object> row) {
         List<Snapshot> snapshots=decode(row.get("evidence").toString(),new TypeReference<>(){});
         var available=evidence.visible(actor,c.kbIds(),c.documentIds(),snapshots);
         boolean restricted=available.size()!=snapshots.size();
+        if(row.get("context_summary_revision") instanceof Number revision && summaries.read(actor,c,revision.longValue())==null)restricted=true;
         List<String> selected=decode(row.get("citations").toString(),new TypeReference<>(){});
         var value=new LinkedHashMap<String,Object>();
         for(String key:List.of("id","role","content","sequence","status","model"))value.put(key,row.get(key));

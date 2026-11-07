@@ -1,5 +1,6 @@
 """使用官方 create_agent 创建 LangGraph 循环，不另写 ReAct。"""
 
+import logging
 import time
 import uuid
 from collections.abc import Awaitable, Callable
@@ -9,17 +10,19 @@ from importlib.resources import files
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware
 from langchain.tools import ToolRuntime, tool
-from langchain_core.messages import messages_to_dict
 
 from agent_service.config import Settings
+from agent_service.context.budget import RequestBudget
+from agent_service.context.projection import prepare_request
 from agent_service.contracts import AgentError, KnowledgeQuery
 from agent_service.knowledge.adapter import (
     KnowledgeGateway,
     TrustedContext,
     TurnReferences,
     digest,
-    encode,
 )
+
+logger = logging.getLogger(__name__)
 
 PROMPT_FILES = ("agent-system-v2.txt", "agent-knowledge-v2.txt")
 PROMPT_VERSION = "+".join(name.removesuffix(".txt") for name in PROMPT_FILES)
@@ -41,6 +44,10 @@ class AgentContext:
     changed: Callable | None = None
     model_completed: Callable | None = None
     authorize_model: Callable[[], Awaitable] | None = None
+    budget: RequestBudget = field(init=False)
+
+    def __post_init__(self):
+        self.budget = RequestBudget(self.settings)
 
 
 @tool
@@ -134,9 +141,6 @@ async def search_knowledge(
 
 
 class TurnLimits(AgentMiddleware):
-    def __init__(self, prompt_bytes: int):
-        self.prompt_bytes = prompt_bytes
-
     async def abefore_model(self, state, runtime):
         context = runtime.context
         context.model_calls += 1
@@ -146,19 +150,30 @@ class TurnLimits(AgentMiddleware):
             raise TimeoutError
         if context.authorize_model:
             await context.authorize_model()
-        if (
-            len(encode(messages_to_dict(state["messages"]))) + self.prompt_bytes + 2048
-            > context.settings.context_byte_budget
-        ):
-            raise AgentError(413, "CONTEXT_BUDGET", "本轮上下文过长，请缩小问题范围")
 
     async def awrap_model_call(self, request, handler):
         context = request.runtime.context
         remaining = context.identity.deadline - time.monotonic()
         if remaining <= 0:
             raise TimeoutError
+        messages, size, projected = prepare_request(request, context.budget)
+        # 计数或首次加载 tokenizer 也消耗原 deadline，不能重新开始 HTTP 预算。
+        remaining = context.identity.deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError
+        logger.info(
+            "agent_context trace_id=%s policy=%s input_bytes=%d "
+            "estimated_tokens=%d counter=%s projected_batches=%d",
+            context.identity.trace_id,
+            context.budget.version,
+            size.bytes,
+            size.tokens,
+            size.counter,
+            projected,
+        )
         response = await handler(
             request.override(
+                messages=messages,
                 model_settings={
                     **request.model_settings,
                     "timeout": min(40, remaining),
@@ -167,9 +182,10 @@ class TurnLimits(AgentMiddleware):
                             f"00-{context.identity.trace_id}-{uuid.uuid4().hex[:16]}-01"
                         ),
                     },
-                }
+                },
             )
         )
+        context.budget.observe(size, response)
         if context.model_completed:
             for message in response.result:
                 await context.model_completed(message)
@@ -185,7 +201,7 @@ def build_graph(model, saver):
         model=model,
         tools=[search_knowledge],
         system_prompt=prompt,
-        middleware=[TurnLimits(len(prompt.encode("utf-8")))],
+        middleware=[TurnLimits()],
         context_schema=AgentContext,
         checkpointer=saver,
         name="knowledge_agent",

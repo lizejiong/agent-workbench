@@ -110,11 +110,51 @@ schemas["ConversationPage"] = obj({"current": {"type": "integer"}, "size": {"typ
 schemas["MessagePage"] = obj({"records": array(ref("Message")), "hasMore": {"type": "boolean"}, "nextBeforeSequence": {"type": "integer", "format": "int64"}}, ["records", "hasMore", "nextBeforeSequence"])
 schemas["RunResult"] = obj({"run": ref("Run"), "message": ref("Message")}, ["run", "message"])
 schemas["History"] = array(obj({"id": UUID, "runId": UUID, "role": {**TEXT, "enum": ["user", "assistant"]}, "content": TEXT, "evidence": array(ref("VisibleEvidence"))}, ["id", "runId", "role", "content", "evidence"]))
+schemas["ContextHistoryMessage"] = obj({"id": UUID, "runId": UUID, "role": {**TEXT, "enum": ["user", "assistant"]}, "content": TEXT,
+    "sequence": {"type": "integer", "minimum": 1}, "status": {**TEXT, "enum": STATES}, "evidence": array(ref("VisibleEvidence"))},
+    ["id", "runId", "role", "content", "sequence", "status", "evidence"])
+schemas["ContextHistoryTurn"] = obj({"runId": UUID, "status": {**TEXT, "enum": STATES}, "user": ref("ContextHistoryMessage"),
+    "assistant": {**ref("ContextHistoryMessage"), "nullable": True}, "sourcesRestricted": {"type": "boolean"}},
+    ["runId", "status", "user", "assistant", "sourcesRestricted"])
+schemas["ContextHistoryPage"] = obj({"turns": array(ref("ContextHistoryTurn"), maxItems=8), "upperSequence": {"type": "integer", "minimum": 1},
+    "nextBeforeSequence": {"type": "integer", "minimum": 0}, "hasMore": {"type": "boolean"}}, ["turns", "upperSequence", "nextBeforeSequence", "hasMore"])
 schemas["Delegation"] = obj({"delegationId": UUID, "delegationToken": TEXT, "serviceId": TEXT, "agentSessionId": UUID, "tenantId": TEXT, "userId": TEXT, **scope, "expiresAt": TIME},
                            ["delegationId", "delegationToken", "serviceId", "agentSessionId", "tenantId", "userId", "kbIds", "expiresAt"])
 responses = {"createConversation": "Conversation", "listConversations": "ConversationPage", "getConversation": "Conversation", "renameConversation": "Conversation",
              "listConversationMessages": "MessagePage", "delegateConversation": "Delegation", "getConversationRun": "RunResult", "cancelConversationRun": "Run",
              "beginAgentRun": "Run", "getAgentContextHistory": "History", "getAgentRun": "RunResult", "checkpointAgentRun": "Run"}
+# 摘要是服务端派生记录，仅供受委托的 Agent；不是公开聊天历史或管理员日志。
+schemas["SummaryItem"] = obj({"text": {**TEXT, "minLength": 1, "maxLength": 1000}, "sourceMessageIds": array(UUID, minItems=1, maxItems=8)}, ["text", "sourceMessageIds"])
+schemas["SummaryContent"] = obj({key: array(ref("SummaryItem"), maxItems=12) for key in ["goals", "constraints", "facts", "openQuestions"]}, ["goals", "constraints", "facts", "openQuestions"])
+schemas["ContextSummary"] = obj({"revision": {"type": "integer", "minimum": 1}, "throughSequence": {"type": "integer", "minimum": 1},
+    "sourceHash": TEXT, "sources": array(obj({"messageId": UUID, "hash": TEXT}, ["messageId", "hash"]), maxItems=512),
+    "content": ref("SummaryContent"), "evidence": array(ref("Snapshot"), maxItems=64), "model": TEXT, "promptVersion": TEXT, "promptHash": TEXT, "policyVersion": TEXT},
+    ["revision", "throughSequence", "sourceHash", "sources", "content", "evidence", "model", "promptVersion", "promptHash", "policyVersion"])
+schemas["SummaryPrepared"] = obj({"expectedRevision": {"type": "integer", "minimum": 0}, "summary": {**ref("ContextSummary"), "nullable": True},
+    "turns": array(ref("ContextHistoryTurn"), maxItems=8), "sourceHash": TEXT, "throughSequence": {"type": "integer", "minimum": 0},
+    "hasMore": {"type": "boolean"}, "caughtUp": {"type": "boolean"}}, ["expectedRevision", "summary", "turns", "sourceHash", "throughSequence", "hasMore", "caughtUp"])
+schemas["SummaryWrite"] = obj({"runId": UUID, "expectedRevision": {"type": "integer", "minimum": 0},
+    "retainedTurns": {"type": "integer", "minimum": 1, "maximum": 24}, "sourceHash": {**TEXT, "pattern": "^[a-f0-9]{64}$"},
+    "content": ref("SummaryContent"), "model": {**TEXT, "minLength": 1, "maxLength": 120},
+    "promptVersion": {**TEXT, "minLength": 1, "maxLength": 120}, "promptHash": {**TEXT, "pattern": "^[a-f0-9]{64}$"},
+    "policyVersion": {**TEXT, "minLength": 1, "maxLength": 120}},
+    ["runId", "expectedRevision", "retainedTurns", "sourceHash", "content", "model", "promptVersion", "promptHash", "policyVersion"])
+schemas["SummaryUse"] = obj({"runId": UUID, "revision": {"type": "integer", "minimum": 1}, "retainedTurns": {"type": "integer", "minimum": 1, "maximum": 24},
+    "policyVersion": {**TEXT, "minLength": 1, "maxLength": 120}}, ["runId", "revision", "retainedTurns", "policyVersion"])
+schemas["SummarySaved"] = obj({"revision": {"type": "integer", "minimum": 1}, "throughSequence": {"type": "integer", "minimum": 1}}, ["revision", "throughSequence"])
+schemas["SummaryUsed"] = obj({"revision": {"type": "integer", "minimum": 1}}, ["revision"])
+summary_path = "/internal/agent/conversations/{id}/context-summary"
+paths[summary_path] = {"get": operation("prepareAgentSummary", internal=True), "put": operation("saveAgentSummary", "SummaryWrite", internal=True)}
+paths[summary_path + "/use"] = {"post": operation("useAgentSummary", "SummaryUse", internal=True)}
+paths[summary_path]["get"]["parameters"] += [
+    {"in": "query", "name": "runId", "required": True, "schema": UUID},
+    {"in": "query", "name": "retainedTurns", "schema": {"type": "integer", "minimum": 1, "maximum": 24, "default": 6}},
+    {"in": "query", "name": "policyVersion", "required": True, "schema": {**TEXT, "minLength": 1, "maxLength": 120}},
+]
+for methods in [paths[summary_path], paths[summary_path + "/use"]]:
+    for op in methods.values():
+        op["responses"]["413"] = {"description": "Summary content or source dependency budget exceeded"}
+responses.update({"prepareAgentSummary": "SummaryPrepared", "saveAgentSummary": "SummarySaved", "useAgentSummary": "SummaryUsed"})
 for path, methods in paths.items():
     for operation_value in methods.values():
         name = responses.get(operation_value["operationId"])
@@ -134,7 +174,16 @@ paths["/api/conversations/{id}/messages"]["get"]["parameters"] += [
     {"in": "query", "name": "size", "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 30}},
     {"in": "query", "name": "beforeSequence", "schema": {"type": "integer", "format": "int64", "minimum": 1}},
 ]
-document = {"openapi": "3.0.3", "info": {"title": "Java Agent Conversation API", "version": "2026-11-06", "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"},
+history = paths["/internal/agent/conversations/{id}/history"]["get"]
+history["parameters"] += [
+    {"in": "query", "name": "view", "schema": {"type": "string", "enum": ["messages", "turns"], "default": "messages"}},
+    {"in": "query", "name": "runId", "schema": UUID, "description": "view=turns requires an owned run; its user-message sequence is the exclusive history boundary"},
+    {"in": "query", "name": "beforeSequence", "schema": {"type": "integer", "minimum": 1}, "description": "Exclusive cursor, capped at the server-resolved run boundary"},
+    {"in": "query", "name": "size", "schema": {"type": "integer", "minimum": 1, "maximum": 8, "default": 4}, "description": "Number of whole runs for view=turns"},
+]
+history["responses"]["200"]["content"]["application/json"]["schema"] = {"allOf": [ref("Result"),
+    {"type": "object", "properties": {"data": {"oneOf": [ref("History"), ref("ContextHistoryPage")]}}}]}
+document = {"openapi": "3.0.3", "info": {"title": "Java Agent Conversation API", "version": "2026-11-07", "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"},
             "paths": paths, "components": {"schemas": schemas, "securitySchemes": {
                 "basicAuth": {"type": "http", "scheme": "basic"}, "serviceBearer": {"type": "http", "scheme": "bearer"},
                 "serviceId": {"type": "apiKey", "in": "header", "name": "X-Rag-Service"},

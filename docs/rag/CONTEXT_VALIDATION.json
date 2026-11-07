@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-07",
+  "scope": "上下文第一轮：完整轮次、模型请求预算与工具投影",
+  "python": {
+    "distinctTestsPassed": 18,
+    "contextTests": 6,
+    "agentTests": 12,
+    "execution": "按影响分次执行；实际LangGraph，Java/模型使用HTTP协议桩",
+    "commands": [
+      "python -m pytest tests/test_context.py tests/test_agent.py -q（context6项通过，Agent因宿主临时目录权限未执行）",
+      "python -m pytest services/agent-service/tests/test_agent.py -q --basetemp=<workspace>/.cache/agent-context-tests-20261107-b（当时11项通过）",
+      "python -m pytest services/agent-service/tests/test_agent.py -q -k context_budget_stops_before_provider_call --basetemp=<workspace>/.cache/agent-context-tests-20261107-c（新增1项通过）"
+    ],
+    "coverage": ["完整轮次与近期限制", "七轮真实图调用的历史分页", "超额Schema及完整请求", "模型调用前拒绝超额并保留用户消息", "同名并行批次逆序完成及投影不变更原记录", "无配对工具拒绝", "本轮usage校准隔离", "取消、幂等、引用和旧协议"]
+  },
+  "java": {
+    "testsPassed": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "infrastructure": "隔离真实PostgreSQL17/pgvector及MinIO；模型HTTP桩",
+    "methods": ["agentContextHistoryPagesWholeRunsAtFixedOwnedBoundary", "agentHistorySnapshotsAreReauthorizedBeforeDisplayAndModelHistory", "agentConversationHistoryIsOwnedOrderedIdempotentAndNeverReexecutes"],
+    "buildDirectory": ".cache/rag-context-development-20261107",
+    "sourceFilesVerified": 499,
+    "testLog": ".cache/context-java-tests.log",
+    "packageLog": ".cache/context-java-package.log",
+    "package": "passed",
+    "newDatabaseMigration": false
+  },
+  "checks": {"ruff": "passed", "uvLockOffline": "passed", "gitDiffCheck": "passed"},
+  "localRuntime": {
+    "activated": true,
+    "backendPort": 8080,
+    "agentPort": 8090,
+    "activeRunsBeforeRestart": 0,
+    "authenticatedConversationRead": "passed",
+    "newOpenApiSchema": "passed",
+    "delegatedHistoryRead": "passed",
+    "temporaryDelegationRevoked": true,
+    "agentHealth": "UP",
+    "newAgentExecutionRequests": 0,
+    "realModelCalls": 0
+  },
+  "limitations": ["没有语义摘要或长期记忆", "没有图恢复或新数据库表", "默认utf8为保守Token估计，tiktoken仅在明确编码时使用", "没有新增动态工具输出预算", "没有真实供应商效果、压测或Token误差/软水位调优评估", "复用Web协议，未重复运行前端测试"]
+}

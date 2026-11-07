@@ -126,6 +126,57 @@ async def test_java_history_is_reused_and_duplicate_request_never_reexecutes(tmp
 
 
 @pytest.mark.asyncio
+async def test_context_history_pages_preserve_complete_turns_and_recent_user_limit(
+    tmp_path,
+):
+    fixture = ProtocolFixture()
+    fixture.direct_answer = True
+    app = application(tmp_path, fixture)
+    async with app.router.lifespan_context(app):
+        conversation_id = None
+        for index in range(7):
+            reply = await app.state.runtime.run(
+                ChatRequest(
+                    question=f"问题{index}：先不要提交，编号A-42",
+                    conversationId=conversation_id,
+                ),
+                httpx.BasicAuth(*AUTH),
+                "a" * 32,
+            )
+            conversation_id = reply["conversationId"]
+        history = fixture.model_requests[-1]["messages"]
+        assert [m["role"] for m in history] == ["system"] + [
+            "user",
+            "assistant",
+        ] * 6 + ["user"]
+        assert all("先不要提交" in m["content"] for m in history if m["role"] == "user")
+        assert any("beforeSequence=" in str(r.url) for r in fixture.java_requests)
+        assert len(fixture.model_requests) == 7
+
+
+@pytest.mark.asyncio
+async def test_context_budget_stops_before_provider_call_and_keeps_java_user_message(
+    tmp_path,
+):
+    fixture = ProtocolFixture()
+    app = application(
+        tmp_path, fixture, model_context_tokens=4096, context_safety_tokens=512
+    )
+    async with app.router.lifespan_context(app):
+        with pytest.raises(AgentError) as error:
+            await app.state.runtime.run(
+                ChatRequest(question="先不要提交，编号A-42"),
+                httpx.BasicAuth(*AUTH),
+                "b" * 32,
+            )
+        assert error.value.code == "CONTEXT_BUDGET"
+        assert fixture.model_requests == []
+        rows = next(iter(fixture.messages.values()))
+        assert rows[0]["content"] == "先不要提交，编号A-42"
+        assert rows[1]["status"] == "FAILED" and len(rows) == 2
+
+
+@pytest.mark.asyncio
 async def test_cancel_after_model_delta_preserves_partial_answer_in_java(tmp_path):
     fixture = ProtocolFixture()
     fixture.block_answer = True
@@ -210,6 +261,7 @@ async def test_sse_disconnect_settles_partial_under_asgi_cancellation_scope(tmp_
 
 
 def application(tmp_path, fixture, **overrides):
+    overrides.setdefault("summary_enabled", False)
     settings = Settings(
         java_origin="http://127.0.0.1",
         service_id="agent-test",
@@ -318,7 +370,8 @@ async def test_session_restart_reauthenticates_and_drops_old_sensitive_context(
             assert second.status_code == 200, second.text
             new_input = fixture.model_requests[before]["messages"]
             assert [m["role"] for m in new_input] == ["system", "user", "user"]
-            assert new_input[1]["content"] == "备份步骤"
+            assert new_input[1]["content"].endswith("备份步骤")
+            assert "不代表操作已完成" in new_input[1]["content"]
             assert "授权资料：" not in json.dumps(new_input, ensure_ascii=False)
             assert second.json()["data"]["citations"] == []
             assert "资料不足" in second.json()["data"]["answer"]

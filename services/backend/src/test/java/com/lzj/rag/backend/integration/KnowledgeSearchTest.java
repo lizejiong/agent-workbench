@@ -568,7 +568,101 @@ class KnowledgeSearchTest {
         assertThat(hidden.path("blocks").isEmpty()).isTrue();
         assertThat(agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).at("/data/records/3/sourcesRestricted").asBoolean()).isTrue();
         assertThat(agentInternal("GET",root+"/history",null,grant,200).path("data").size()).isEqualTo(2);
+        var turns=agentInternal("GET",root+"/history?view=turns&runId="+derived.path("runId").asText(),null,grant,200).path("data");
+        assertThat(turns.at("/turns/0/sourcesRestricted").asBoolean()).isTrue();
+        assertThat(turns.at("/turns/0/assistant").isNull()).isTrue();
+        assertThat(turns.toString()).doesNotContain("pg_dump");
         assertThat(jdbc.queryForObject("SELECT evidence::text FROM kb_agent_message WHERE id=?",String.class,UUID.fromString(run.path("assistantMessageId").asText()))).contains("pg_dump");
+    }
+    @Test void agentContextHistoryPagesWholeRunsAtFixedOwnedBoundary()throws Exception {
+        String id=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID()),"alice",201).at("/data/id").asText();
+        String grant=agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
+        String root="/internal/agent/conversations/"+id;
+        var runs=new ArrayList<String>();
+        for(int i=0;i<4;i++) {
+            var run=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","问题"+i,"deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
+            String runId=run.path("runId").asText();runs.add(runId);
+            agentInternal("PATCH",root+"/runs/"+runId,agentSnapshot(1,i==1?"FAILED":"COMPLETED","答复"+i,List.of(),List.of()),grant,200);
+        }
+        String query=root+"/history?view=turns&runId="+runs.get(2)+"&size=1";
+        agentInternal("GET",query,null,null,401);
+        var page=agentInternal("GET",query,null,grant,200).path("data");
+        assertThat(page.path("upperSequence").asLong()).isEqualTo(5);
+        assertThat(page.path("hasMore").asBoolean()).isTrue();
+        assertThat(page.at("/turns/0/runId").asText()).isEqualTo(runs.get(1));
+        assertThat(page.at("/turns/0/user/content").asText()).isEqualTo("问题1");
+        assertThat(page.at("/turns/0/assistant").isNull()).isTrue();
+        var older=agentInternal("GET",query+"&beforeSequence="+page.path("nextBeforeSequence").asLong(),null,grant,200).path("data");
+        assertThat(older.path("hasMore").asBoolean()).isFalse();
+        assertThat(older.at("/turns/0/user/content").asText()).isEqualTo("问题0");
+        assertThat(older.at("/turns/0/assistant/content").asText()).isEqualTo("答复0");
+        assertThat(older.at("/turns/0/assistant/sequence").asLong()).isEqualTo(2);
+        assertThat(agentInternal("GET",query+"&beforeSequence=999",null,grant,200).at("/data/upperSequence").asLong()).isEqualTo(5);
+        agentInternal("GET",root+"/history?view=turns",null,grant,400);
+        agentInternal("GET",query.replace("size=1","size=9"),null,grant,400);
+        String other=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID()),"bob",201).at("/data/id").asText();
+        String otherGrant=agentPublic("POST","/api/conversations/"+other+"/delegations",Map.of("serviceId","agent-test"),"bob",201).at("/data/delegationToken").asText();
+        agentInternal("GET",query,null,otherGrant,404);
+        agentInternal("GET",root+"/history?view=turns&runId="+UUID.randomUUID(),null,grant,404);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_message WHERE conversation_id=?",Integer.class,UUID.fromString(id))).isEqualTo(8);
+    }
+    @Test void agentSummaryCommitReuseAndDerivedAnswersKeepAuthorizationLineage()throws Exception {
+        var data=dataset();
+        String id=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID(),"kbIds",List.of(data.kb())),"alice",201).at("/data/id").asText();
+        String grant=agentPublic("POST","/api/conversations/"+id+"/delegations",Map.of("serviceId","agent-test"),"alice",201).at("/data/delegationToken").asText();
+        String root="/internal/agent/conversations/"+id;
+        JsonNode found;
+        try(var client=new InternalClient()){found=client.call("/internal/rag/retrieve",Map.of("query","PostgreSQL backup","kbIds",List.of(data.kb()),"topK",1),grant,"00-"+"1".repeat(32)+"-1234567890abcdef-01","summary-source",200).path("data");}
+        var source=(com.fasterxml.jackson.databind.node.ObjectNode)found.path("evidence").get(0).deepCopy();
+        source.put("evidenceId","K"+"a".repeat(32)+"_E1");source.set("versions",found.path("versions"));source.put("toolTruncated",false);
+        for(String key:List.of("chunkIndex","documentName","fileUrl","adjacent","parentChunkId","subQueries","fusionScore","rerankScore"))source.remove(key);
+        var runs=new ArrayList<JsonNode>();
+        for(int i=0;i<3;i++) {
+            var run=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question",i==0?"先不要提交，编号 A-42":"继续"+i,"deadline",java.time.Instant.now().plusSeconds(60)),grant,200).path("data");
+            runs.add(run);
+            if(i<2)agentInternal("PATCH",root+"/runs/"+run.path("runId").asText(),agentSnapshot(1,"COMPLETED",i==0?"历史答复：使用 pg_dump。":"近期答复",i==0?List.of(source):List.of(),List.of()),grant,200);
+        }
+        String active=runs.get(2).path("runId").asText();String query=root+"/context-summary?runId="+active+"&retainedTurns=1&policyVersion=summary-test-v1";
+        agentInternal("GET",query,null,null,401);
+        var prepared=agentInternal("GET",query,null,grant,200).path("data");
+        assertThat(prepared.path("turns").size()).isEqualTo(1);assertThat(prepared.path("throughSequence").asLong()).isEqualTo(2);
+        String userId=runs.get(0).path("userMessageId").asText(),assistantId=runs.get(0).path("assistantMessageId").asText();
+        var content=Map.of("goals",List.of(Map.of("text","备份方案 A-42","sourceMessageIds",List.of(userId))),
+                "constraints",List.of(Map.of("text","先不要提交，编号 A-42","sourceMessageIds",List.of(userId))),
+                "facts",List.of(Map.of("text","历史答复指出使用 pg_dump","sourceMessageIds",List.of(assistantId))),"openQuestions",List.of());
+        var write=new LinkedHashMap<String,Object>(Map.of("runId",active,"expectedRevision",0,"retainedTurns",1,"sourceHash",prepared.path("sourceHash").asText(),
+                "content",content,"model","fixture-model","promptVersion","context-summary-v1","promptHash","a".repeat(64),"policyVersion","summary-test-v1"));
+        var bad=new LinkedHashMap<String,Object>(write);bad.put("sourceHash","b".repeat(64));agentInternal("PUT",root+"/context-summary",bad,grant,409);
+        bad.put("sourceHash",prepared.path("sourceHash").asText());bad.put("content",Map.of("goals",List.of(Map.of("text","冒充来源","sourceMessageIds",List.of(UUID.randomUUID()))),"constraints",List.of(),"facts",List.of(),"openQuestions",List.of()));
+        agentInternal("PUT",root+"/context-summary",bad,grant,409);
+        UUID chunk=UUID.fromString(source.path("chunkId").asText());
+        jdbc.update("UPDATE kb_chunk SET enabled=false WHERE id=?",chunk);
+        // 模拟摘要模型调用期间撤权：不能提交旧来源，也不推进水位。
+        agentInternal("PUT",root+"/context-summary",write,grant,409);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_context_summary",Integer.class)).isZero();
+        jdbc.update("UPDATE kb_chunk SET enabled=true WHERE id=?",chunk);
+        agentInternal("PUT",root+"/context-summary",write,grant,200);
+        agentInternal("PUT",root+"/context-summary",write,grant,409);
+        var available=agentInternal("GET",query,null,grant,200).path("data");
+        assertThat(available.path("caughtUp").asBoolean()).isTrue();assertThat(available.at("/summary/content/constraints/0/text").asText()).contains("A-42");
+        assertThat(agentInternal("GET",query.replace("summary-test-v1","summary-test-v2"),null,grant,200).at("/data/summary").isNull()).isTrue();
+        String other=agentPublic("POST","/api/conversations",Map.of("requestId",UUID.randomUUID()),"bob",201).at("/data/id").asText();
+        String otherGrant=agentPublic("POST","/api/conversations/"+other+"/delegations",Map.of("serviceId","agent-test"),"bob",201).at("/data/delegationToken").asText();
+        agentInternal("GET",query,null,otherGrant,404);
+        agentInternal("PUT","/internal/agent/conversations/"+other+"/context-summary",write,otherGrant,404);
+        agentInternal("POST",root+"/context-summary/use",Map.of("runId",active,"revision",1,"retainedTurns",1,"policyVersion","summary-test-v1"),grant,200);
+        // 派生回答不能通过省略依赖绕过以后撤权。
+        agentInternal("PATCH",root+"/runs/"+active,agentSnapshot(1,"COMPLETED","沿用摘要继续说明",List.of(),List.of()),grant,409);
+        agentInternal("PATCH",root+"/runs/"+active,agentSnapshot(1,"COMPLETED","沿用摘要继续说明",List.of(source),List.of()),grant,200);
+        jdbc.update("UPDATE kb_chunk SET enabled=false WHERE id=?",chunk);
+        var messages=agentPublic("GET","/api/conversations/"+id+"/messages",null,"alice",200).path("data").path("records");
+        assertThat(messages.get(5).path("sourcesRestricted").asBoolean()).isTrue();assertThat(messages.get(5).path("content").asText()).doesNotContain("沿用摘要");
+        var next=agentInternal("POST",root+"/runs",Map.of("requestId",UUID.randomUUID(),"messageId",UUID.randomUUID(),"question","重新提问","deadline",java.time.Instant.now().plusSeconds(30)),grant,200).path("data");
+        var invalidated=agentInternal("GET",query.replace(active,next.path("runId").asText()),null,grant,200).path("data");
+        assertThat(invalidated.path("summary").isNull()).isTrue();assertThat(invalidated.toString()).doesNotContain("pg_dump");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_message WHERE conversation_id=?",Integer.class,UUID.fromString(id))).isEqualTo(8);
+        agentPublic("DELETE","/api/conversations/"+id,null,"alice",204);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM kb_agent_context_summary WHERE conversation_id=?",Integer.class,UUID.fromString(id))).isZero();
     }
     private Map<String,Object> agentSnapshot(long sequence,String status,String text,List<?> evidence,List<String> citations) {
         return Map.of("sequence",sequence,"status",status,"content",text,"evidence",evidence,"citations",citations,"tools",List.of(),"model","fixture-model","promptVersion","test-v1","promptHash","a".repeat(64));
