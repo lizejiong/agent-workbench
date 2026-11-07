@@ -67,3 +67,7 @@ uv run --project services/agent-service --locked ruff check services/agent-servi
 ## 会话摘要
 
 默认 `AGENT_SUMMARY_ENABLED=true`、`AGENT_SUMMARY_TIMEOUT=10`。需要先部署 Java V13；复用主模型和连接池，模型须支持JSON object。每轮最多一次无工具摘要调用，共享总deadline/调用预算并为主Agent留两次调用，失败退回近期完整历史。Java保存不可变修订及来源/证据依赖；未追齐旧历史时不使用半段摘要。原始会话保持完整，摘要不会进入答案SSE，不会开启图恢复或长期记忆。完整说明见 [CONTEXT_SUMMARIES.md](../../docs/rag/CONTEXT_SUMMARIES.md)。
+
+## 动态工具结果预算
+
+`context/tool_results.py` 在原模型中间件里按完整下一次请求分配同批工具额度；知识适配器按剩余Token和字节裁剪新结果。`AGENT_TOOL_BYTE_BUDGET=4096` 是每次输出最大上限，已下发的旧证据依赖不删除；并行结果不抢占其他调用额度。策略context-v2/tool-results-v1，调试只看trace及计数；无新依赖或Java/Web协议变化。说明与限制见 [CONTEXT_MANAGEMENT.md](../../docs/rag/CONTEXT_MANAGEMENT.md)。

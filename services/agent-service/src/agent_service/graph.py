@@ -14,6 +14,8 @@ from langchain.tools import ToolRuntime, tool
 from agent_service.config import Settings
 from agent_service.context.budget import RequestBudget
 from agent_service.context.projection import prepare_request
+from agent_service.context.tool_results import POLICY_VERSION as TOOL_BUDGET_VERSION
+from agent_service.context.tool_results import allocate_results
 from agent_service.contracts import AgentError, KnowledgeQuery
 from agent_service.knowledge.adapter import (
     KnowledgeGateway,
@@ -45,6 +47,7 @@ class AgentContext:
     model_completed: Callable | None = None
     authorize_model: Callable[[], Awaitable] | None = None
     budget: RequestBudget = field(init=False)
+    tool_allowances: dict = field(default_factory=dict)
 
     def __post_init__(self):
         self.budget = RequestBudget(self.settings)
@@ -67,7 +70,15 @@ async def search_knowledge(
     }
     if context.changed:
         await context.changed("tool", context.tools[call_id])
-    result = await context.gateway.bind(context.identity, context.references)(query)
+    allowance = context.tool_allowances.get(call_id)
+    if allowance is None:
+        raise AgentError(502, "CONTEXT_PROTOCOL", "工具调用缺少当前批次预算")
+    result = await context.gateway.bind(
+        context.identity,
+        context.references,
+        byte_budget=allowance.byte_limit,
+        accepts=allowance.accepts,
+    )(query)
     context.tool_events.append(
         {
             key: result[key]
@@ -186,6 +197,22 @@ class TurnLimits(AgentMiddleware):
             )
         )
         context.budget.observe(size, response)
+        context.tool_allowances = allocate_results(
+            request.override(messages=messages),
+            response,
+            context.budget,
+            context.settings.tool_byte_budget,
+        )
+        if context.tool_allowances:
+            logger.info(
+                "agent_tool_budget trace_id=%s policy=%s calls=%d "
+                "max_result_bytes=%d max_result_estimated_tokens=%d",
+                context.identity.trace_id,
+                TOOL_BUDGET_VERSION,
+                len(context.tool_allowances),
+                min(a.byte_limit for a in context.tool_allowances.values()),
+                min(a.tokens for a in context.tool_allowances.values()),
+            )
         if context.model_completed:
             for message in response.result:
                 await context.model_completed(message)

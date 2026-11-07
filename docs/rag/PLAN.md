@@ -154,3 +154,7 @@ ES Java Client 8.18.8 的异步传输取消会传至 HTTP Future，依据[固定
 ## 上下文第二轮交付（2026-11-07）
 
 已接入受授权持久摘要：Python context/summary复用现有模型客户端和总预算，Java agent模块负责准备来源、CAS写入、运行绑定、派生依赖及失效；V13保存不可变修订，不引入新框架。契约与技术映射见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)。本轮在摘要范围结束，长期记忆、动态新工具输出预算和中断恢复需后续单独确定。
+
+## 已实现：新工具结果动态预算（2026-11-07）
+
+Python context模块在原图中间件内分配完整工具批次的剩余Token/字节空间，知识适配器在返回前裁剪并只登记实际下发证据。复用Java引擎、权限及快照写回规则，未新建检索链路。策略context-v2/tool-results-v1，无新框架、迁移或Web改动；说明及限制见 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)。该补充完成后，长期记忆和图恢复仍需独立确定。

@@ -39,6 +39,8 @@ class ProtocolFixture:
         self.truncate_answer = False
         self.narrate_tools = False
         self.reverse_tools = False
+        self.tool_preamble = ""
+        self.evidence_content = "授权资料：使用 pg_dump 进行 PostgreSQL 备份。"
         self.summary_records = {}
         self.invalid_summary = False
         self.block_summary = False
@@ -101,7 +103,7 @@ class ProtocolFixture:
         if self.java_down:
             return httpx.Response(503, text="SQL password=secret http://private-host")
         trace = request.headers["traceparent"].split("-")[1]
-        content = "授权资料：使用 pg_dump 进行 PostgreSQL 备份。"
+        content = self.evidence_content
         rows = (
             [
                 {
@@ -215,7 +217,8 @@ class ProtocolFixture:
             count = 2 if "两次" in messages[last_user]["content"] else 1
             message = {
                 "role": "assistant",
-                "content": "我先查询资料。" if self.narrate_tools else None,
+                "content": self.tool_preamble
+                or ("我先查询资料。" if self.narrate_tools else None),
                 "tool_calls": [
                     {
                         "id": f"call_{uuid.uuid4().hex}",

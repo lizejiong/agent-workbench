@@ -8,7 +8,7 @@ from langchain_core.utils.function_calling import convert_to_openai_tool
 
 from agent_service.knowledge.adapter import digest, encode
 
-POLICY_VERSION = "context-v1"
+POLICY_VERSION = "context-v2"
 
 
 @dataclass(frozen=True)
@@ -54,7 +54,16 @@ class RequestBudget:
         self.version = (
             POLICY_VERSION
             + ":"
-            + digest(repr((self.profile, self.byte_limit, self.soft_ratio)))[:16]
+            + digest(
+                repr(
+                    (
+                        self.profile,
+                        self.byte_limit,
+                        self.soft_ratio,
+                        settings.tool_byte_budget,
+                    )
+                )
+            )[:16]
         )
 
     def measure(self, request, messages=None):
@@ -74,7 +83,13 @@ class RequestBudget:
                 if isinstance(request.response_format, dict)
                 else str(request.response_format)
             )
-        wire = encode(payload)
+        return self._measure_wire(encode(payload))
+
+    def measure_message(self, message):
+        """工具增量采用同一计数器与 JSON 转义；避免逐次重算全部历史。"""
+        return self._measure_wire(encode(convert_to_openai_messages([message])))
+
+    def _measure_wire(self, wire):
         base = (
             len(self.encoding.encode(wire.decode(), disallowed_special=()))
             if self.encoding is not None

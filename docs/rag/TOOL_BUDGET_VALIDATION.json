@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-07",
+  "scope": "上下文补充：新工具结果按完整请求剩余预算裁剪",
+  "python": {
+    "distinctTestsPassed": 14,
+    "newTests": 2,
+    "finalCoreBatch": 12,
+    "earlierTargetedSmoke": 2,
+    "finalPromptOnlyRerun": 2,
+    "skipped": 0,
+    "execution": "真实LangGraph/create_agent及模型序列化；Java和模型HTTP协议桩，非真实模型效果",
+    "commands": [
+      "python -m pytest services/agent-service/tests/test_agent.py -k \"v2_timeline or context_budget_stops\" -q --basetemp=.cache/agent-tool-budget-probe-20261107-a",
+      "python -m pytest services/agent-service/tests/test_context.py services/agent-service/tests/test_tool_budget.py services/agent-service/tests/test_agent.py::test_graph_tools_delegate_identity_and_validate_unique_citations services/agent-service/tests/test_agent.py::test_auth_scope_statuses_and_sanitized_failures services/agent-service/tests/test_agent.py::test_cancel_closes_tool_http_revokes_grant_and_releases_capacity services/agent-service/tests/test_summary.py::test_durable_summary_inherits_evidence_and_stays_out_of_answer_stream -q --basetemp=.cache/agent-tool-budget-tests-20261107-c",
+      "python -m pytest services/agent-service/tests/test_tool_budget.py -q --basetemp=.cache/agent-tool-budget-tests-20261107-d"
+    ],
+    "newMethods": [
+      "test_parallel_new_results_fit_remaining_window_and_persist_exact_excerpts",
+      "test_tool_batch_without_room_for_status_fails_before_retrieval"
+    ],
+    "coverage": [
+      "同名并行工具逆序完成",
+      "完整请求余量限制新结果",
+      "中文/引号/反斜线的JSON转义",
+      "快照正文及hash与模型证据一致",
+      "只有实际下发编号可引用",
+      "超大前置输出在检索前明确拒绝",
+      "用户请求保留",
+      "近期完整轮次/旧批次投影兼容",
+      "状态/鉴权错误/取消及摘要兼容"
+    ]
+  },
+  "policies": {
+    "context": "context-v2",
+    "tools": "tool-results-v1",
+    "fixedToolByteUpperBoundDefault": 4096,
+    "allocation": "按原始批次调用数均分剩余估计Token与字节",
+    "extraPerResultMargins": {
+      "estimatedTokens": "ceil(80 * runCalibrationScale)",
+      "bytes": 64
+    },
+    "newDependencies": false,
+    "newDatabaseMigration": false,
+    "newPublicSseEvents": false
+  },
+  "checks": {
+    "ruff": "passed",
+    "uvLockOffline": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "localRuntime": {
+    "activated": true,
+    "agentPort": 8090,
+    "globalActiveRunsBeforeRestart": 0,
+    "agentHealth": "UP",
+    "authenticatedConversationRead": "passed",
+    "delegatedHistoryRead": "passed",
+    "temporaryDelegationRevoked": true,
+    "summaryRejectsTerminalRun": "passed",
+    "javaAiWebRestarted": false,
+    "newBusinessRuns": 0,
+    "newBusinessMessages": 0,
+    "newRealRetrievals": 0,
+    "realModelCalls": 0
+  },
+  "limitations": [
+    "增量Token计数不是供应商精确值，下一次送模仍检查完整请求",
+    "均分策略不是质量最优保证",
+    "截取片段不保证保留完整句子、否定或例外",
+    "未执行真实供应商效果、成本、延迟或容量评估",
+    "本轮Java写回验证是HTTP契约桩，未新增真实外部检索/写回联调",
+    "无长期记忆或图恢复"
+  ]
+}

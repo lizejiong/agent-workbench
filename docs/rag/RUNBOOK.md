@@ -220,3 +220,11 @@ services/agent-service/.venv/Scripts/python.exe -m pytest services/agent-service
 ```
 
 先用隔离依赖和协议桩验证；真实模型验收另行记录摘要提示版本、模型、额外耗时和调用量。健康接口成功不能证明摘要质量，加载已有会话不应发起Agent POST。
+
+## 动态工具预算（2026-11-07）
+
+只更新Python Agent即可，Java继续使用V13；不重建索引、不迁移数据库。`AGENT_TOOL_BYTE_BUDGET`仍默认4096、范围1024–16384，现为每次工具输出的最大上限，实际还受完整上下文剩余额度约束。上下文策略context-v2包含该配置，旧摘要按原记录重建；不需要清理原会话或检查点来绕过权限。
+
+受控日志agent_tool_budget记录trace_id、tool-results-v1、calls、max_result_bytes及max_result_estimated_tokens。CONTEXT_BUDGET可能在工具执行前结束当前批次；TOOL_RESULT_BUDGET表示无法下发足够证据，先缩小问题/结果范围，不通过扩大模型或权限参数重放原请求。查看工具卡的裁剪标记及来源，具体原文需重新检索。
+
+按影响只运行新增2项和相关历史、状态、取消、引用及摘要检查，命令与实际结果见 [TOOL_BUDGET_VALIDATION.json](TOOL_BUDGET_VALIDATION.json)。Python重启前确认没有RUNNING执行，再做鉴权history/健康只读检查，不需重复Java或前端构建。

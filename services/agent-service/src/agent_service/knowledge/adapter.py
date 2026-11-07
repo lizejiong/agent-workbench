@@ -8,6 +8,7 @@ import json
 import re
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -142,12 +143,21 @@ class KnowledgeGateway:
         self.byte_budget = token_budget
         self.max_response_bytes = max_response_bytes
 
-    def bind(self, context: TrustedContext, references: TurnReferences):
+    def bind(
+        self,
+        context: TrustedContext,
+        references: TurnReferences,
+        *,
+        byte_budget: int | None = None,
+        accepts: Callable[[dict], bool] | None = None,
+    ):
         references.ensure_context(context)
 
         async def search_knowledge(query: str) -> dict:
             """用完整独立问题取得授权知识证据；身份、范围、截止时间由运行上下文注入。"""
-            return await self.search(query, context, references)
+            return await self.search(
+                query, context, references, byte_budget=byte_budget, accepts=accepts
+            )
 
         return search_knowledge
 
@@ -192,7 +202,13 @@ class KnowledgeGateway:
             pass
 
     async def search(
-        self, query: str, context: TrustedContext, references: TurnReferences
+        self,
+        query: str,
+        context: TrustedContext,
+        references: TurnReferences,
+        *,
+        byte_budget: int | None = None,
+        accepts: Callable[[dict], bool] | None = None,
     ) -> dict:
         references.ensure_context(context)
         request_id = str(uuid.uuid4())
@@ -253,7 +269,13 @@ class KnowledgeGateway:
                     ):
                         raise ValueError("无效证据响应")
                     return self._result(
-                        envelope["data"], query.strip(), request_id, context, references
+                        envelope["data"],
+                        query.strip(),
+                        request_id,
+                        context,
+                        references,
+                        byte_budget=byte_budget,
+                        accepts=accepts,
                     )
         except asyncio.CancelledError:
             await self._cancel(context, request_id)
@@ -275,7 +297,19 @@ class KnowledgeGateway:
         request_id: str,
         context: TrustedContext,
         references: TurnReferences,
+        *,
+        byte_budget: int | None = None,
+        accepts: Callable[[dict], bool] | None = None,
     ) -> dict:
+        limit = (
+            self.byte_budget
+            if byte_budget is None
+            else min(self.byte_budget, byte_budget)
+        )
+
+        def fits(value):
+            return len(encode(value)) <= limit and (accepts is None or accepts(value))
+
         status = data["status"]
         if (
             status not in GUIDANCE
@@ -303,7 +337,7 @@ class KnowledgeGateway:
             "versionFingerprint": digest(encode(data.get("versions"))),
             "toolTruncated": False,
             "estimated": True,
-            "toolByteBudget": self.byte_budget,
+            "toolByteBudget": limit,
         }
         if status == "UNAVAILABLE":
             result["retryable"] = True
@@ -362,9 +396,7 @@ class KnowledgeGateway:
                 "scores": data.get("scores", {}).get(local),
             }
             result["evidence"].append(evidence)
-            while (
-                len(encode(result)) > self.byte_budget and len(evidence["content"]) > 32
-            ):
+            while not fits(result) and len(evidence["content"]) > 32:
                 text = evidence["content"]
                 end = max(32, len(text) * 3 // 4)
                 boundary = text.rfind("\n", 0, end)
@@ -372,7 +404,7 @@ class KnowledgeGateway:
                 evidence["toolTruncated"] = True
                 evidence["toolContentHash"] = digest(evidence["content"])
                 result["toolTruncated"] = True
-            if len(encode(result)) > self.byte_budget:
+            if not fits(result):
                 result["evidence"].pop()
                 result["toolTruncated"] = True
                 continue
@@ -392,7 +424,7 @@ class KnowledgeGateway:
             }
         if status == "READY" and not result["evidence"]:
             return self._failure(request_id, context.trace_id, "TOOL_RESULT_BUDGET")
-        if len(encode(result)) > self.byte_budget:
+        if not fits(result):
             return self._failure(request_id, context.trace_id, "TOOL_RESULT_BUDGET")
         references.sources.update(pending)
         return result

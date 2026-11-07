@@ -242,3 +242,7 @@ Python 模型结果使用 `K{requestId去连字符}_E1` 等唯一引用，保留
 ## 上下文摘要内部接口（2026-11-07）
 
 新增受委托 `GET/PUT /internal/agent/conversations/{id}/context-summary`、`POST .../context-summary/use`。Java 计算固定运行上界、来源指纹、水位和证据依赖，Python 只提交经过结构校验的派生内容。采用摘要的回答必须继承其依赖；失效摘要不返回正文，不生成新的公开SSE事件。完整字段、状态与上限见 [CONTEXT_SUMMARIES.md](CONTEXT_SUMMARIES.md)，机器契约同步至 Java `openapi/conversations.json`。
+
+## Agent 动态工具预算（2026-11-07）
+
+HTTP及SSE契约不变，模型侧search_knowledge仍只有query。工具返回既有toolByteBudget现在表示本次结果的UTF-8字节上限（可能小于配置上限）；估计Token额度还可能进一步限制正文。裁剪沿用toolTruncated/toolContentHash，READY且无任何可下发证据时返回UNAVAILABLE/errorCode=TOOL_RESULT_BUDGET，不能表示为NO_EVIDENCE。整批最小状态都无法容纳时，本轮以413/CONTEXT_BUDGET结束，用户消息和已有文字沿用原规则保存。策略与授权依赖见 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)。
