@@ -249,4 +249,4 @@ Python 模型结果使用 `K{requestId去连字符}_E1` 等唯一引用，保留
 
 ## Agent 动态工具预算（2026-11-07）
 
-HTTP及SSE契约不变，模型侧search_knowledge仍只有query。工具返回既有toolByteBudget现在表示本次结果的UTF-8字节上限（可能小于配置上限）；估计Token额度还可能进一步限制正文。裁剪沿用toolTruncated/toolContentHash，READY且无任何可下发证据时返回UNAVAILABLE/errorCode=TOOL_RESULT_BUDGET，不能表示为NO_EVIDENCE。整批最小状态都无法容纳时，本轮以413/CONTEXT_BUDGET结束，用户消息和已有文字沿用原规则保存。策略与授权依赖见 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)。
+HTTP及SSE契约不变，模型侧search_knowledge仍只有query。主Agent模型结果采用精简视图，仅含状态、降级/截断标记、guidance、受控错误/重试或澄清字段，以及证据的evidenceId、documentName、sourceMetadata、content、truncated、toolTruncated和adjacent。内部UUID、generation、哈希、评分、fileUrl及trace/预算调试字段留在宿主侧；Java快照和公开引用仍保留既有来源、版本及授权校验。适配器宿主完整结果中的toolByteBudget表示本次模型视图的UTF-8字节上限（可能小于配置上限），不再注入主Agent模型结果；估计Token额度还可能进一步限制正文。裁剪沿用toolTruncated，宿主仍保留toolContentHash及实际下发片段；READY且无任何可下发证据时返回UNAVAILABLE/errorCode=TOOL_RESULT_BUDGET，不能表示为NO_EVIDENCE。整批最小状态都无法容纳时，本轮以413/CONTEXT_BUDGET结束，用户消息和已有文字沿用原规则保存。独立KnowledgeGateway调用未指定result_view时仍使用原完整视图。策略与授权依赖见 [CONTEXT_MANAGEMENT.md](CONTEXT_MANAGEMENT.md)。

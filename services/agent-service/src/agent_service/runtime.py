@@ -15,7 +15,7 @@ from agent_service.context.preferences import preference_message
 from agent_service.context.summary import background, policy, prepare_summary
 from agent_service.contracts import AgentError, ChatRequest
 from agent_service.conversations import ConversationClient
-from agent_service.graph import PROMPT_VERSION, AgentContext
+from agent_service.graph import PROMPT_VERSION, AgentContext, planning_request
 from agent_service.knowledge.adapter import TrustedContext, encode
 from agent_service.knowledge.delegation import DelegationClient
 from agent_service.timeline import StreamEvents, Timeline
@@ -376,23 +376,38 @@ class AgentRuntime:
     async def _messages(self, request, run, context, writer):
         identity = context.identity
         preferences = preference_message(run.get("preferences"))
+        fixed = planning_request(
+            ([preferences] if preferences else [])
+            + [HumanMessage(content=request.question)]
+        )
+
+        def select_recent(ratio):
+            baseline = context.budget.measure(fixed)
+            if not context.budget.fits(baseline):
+                raise AgentError(
+                    413,
+                    "CONTEXT_BUDGET",
+                    "当前问题与固定模型输入超出预算，请缩小问题范围",
+                )
+            return select_history(
+                history,
+                run["runId"],
+                int((context.budget.byte_limit - baseline.bytes) * ratio),
+                self.settings.history_turns,
+                context.budget,
+                int((context.budget.input_limit - baseline.tokens) * ratio),
+                request=fixed,
+                retain_latest=True,
+            )
+
         # 获取上限只是读取分页边界；实际保留量由每轮的模型输入预算决定。
         history = await self.store.history_turns(
             # 多取一轮用于识别“24轮都很短但仍有更早历史”的摘要条件。
-            identity, run["runId"], self.settings.history_turns + 1
-        )
-        trigger_selection = select_history(
-            history,
+            identity,
             run["runId"],
-            int(
-                self.settings.context_byte_budget
-                * self.settings.summary_trigger_ratio
-            ),
-            self.settings.history_turns,
-            context.budget,
-            int(context.budget.input_limit * self.settings.summary_trigger_ratio),
-            allow_empty=True,
+            self.settings.history_turns + 1,
         )
+        trigger_selection = select_recent(self.settings.summary_trigger_ratio)
         # 摘要的触发由实际序列化后的历史Token份额决定；完整轮次只定义安全边界。
         needs_summary = len(trigger_selection.rows) < sum(
             1 + bool(turn.get("assistant"))
@@ -402,17 +417,7 @@ class AgentRuntime:
         selection = trigger_selection
         summary = None
         if needs_summary and self.settings.summary_enabled:
-            selection = select_history(
-                history,
-                run["runId"],
-                int(
-                    self.settings.context_byte_budget
-                    * self.settings.summary_keep_ratio
-                ),
-                self.settings.history_turns,
-                context.budget,
-                int(context.budget.input_limit * self.settings.summary_keep_ratio),
-            )
+            selection = select_recent(self.settings.summary_keep_ratio)
             summary = await prepare_summary(
                 self.store,
                 identity,
@@ -421,9 +426,22 @@ class AgentRuntime:
                 self.summary_model,
                 selection.retained_turns,
             )
-            # 积压超过单次摘要批次时还没有形成连续摘要，不能白白丢掉80%窗口。
+            # 摘要实际长度及 usage 校准都可能改变余量；绑定修订前检查完整组合。
+            if summary and not context.budget.fits(
+                context.budget.measure(
+                    fixed,
+                    [
+                        *fixed.messages[:-1],
+                        background(summary),
+                        *selection.messages,
+                        fixed.messages[-1],
+                    ],
+                )
+            ):
+                summary = None
+            # 积压、摘要失败或组合超额时，按当前校准后的余量重选连续近期历史。
             if summary is None:
-                selection = trigger_selection
+                selection = select_recent(self.settings.summary_trigger_ratio)
         # Java 以同一个 retainedTurns 计算摘要水位；只在 caughtUp 时返回可绑定摘要，
         # 因而摘要边界与这里的完整近期轮次连续。
         messages = selection.messages

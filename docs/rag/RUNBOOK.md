@@ -227,8 +227,8 @@ services/agent-service/.venv/Scripts/python.exe -m pytest services/agent-service
 
 ## 动态工具预算（2026-11-07）
 
-只更新Python Agent即可，Java继续使用V13；不重建索引、不迁移数据库。`AGENT_TOOL_BYTE_BUDGET`仍默认4096、范围1024–16384，现为每次工具输出的最大上限，实际还受完整上下文剩余额度约束。上下文策略context-v2包含该配置，旧摘要按原记录重建；不需要清理原会话或检查点来绕过权限。
+当前预算/工具视图调整只需更新Python Agent，保留现有Java版本和数据库迁移；不重建索引。`AGENT_TOOL_BYTE_BUDGET`仍默认4096、范围1024–16384，现为每次精简模型工具结果的最大上限，实际还受完整上下文剩余额度约束。上下文策略context-v3包含该配置，旧摘要按原记录重建；不需要清理原会话或检查点来绕过权限。80%/20%历史目标按扣除固定提示、工具Schema、偏好和当前问题后的剩余预算计算；最近完整轮次可超软目标，仍须满足完整请求硬限制。
 
-受控日志agent_tool_budget记录trace_id、tool-results-v1、calls、max_result_bytes及max_result_estimated_tokens。CONTEXT_BUDGET可能在工具执行前结束当前批次；TOOL_RESULT_BUDGET表示无法下发足够证据，先缩小问题/结果范围，不通过扩大模型或权限参数重放原请求。查看工具卡的裁剪标记及来源，具体原文需重新检索。
+受控日志agent_tool_budget记录trace_id、tool-results-v2、calls、max_result_bytes及max_result_estimated_tokens。主Agent模型结果省略trace、哈希和预算调试字段，排障继续通过服务日志和Java来源快照关联。CONTEXT_BUDGET可能在工具执行前结束当前批次；TOOL_RESULT_BUDGET表示无法下发足够证据，先缩小问题/结果范围，不通过扩大模型或权限参数重放原请求。查看工具卡的裁剪标记及来源，具体原文需重新检索。
 
 按影响只运行新增2项和相关历史、状态、取消、引用及摘要检查，命令与实际结果见 [TOOL_BUDGET_VALIDATION.json](TOOL_BUDGET_VALIDATION.json)。Python重启前确认没有RUNNING执行，再做鉴权history/健康只读检查，不需重复Java或前端构建。

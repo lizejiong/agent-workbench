@@ -10,6 +10,7 @@ from protocol_fixture import AUTH, ProtocolFixture
 from test_agent import application
 
 from agent_service.contracts import AgentError, ChatRequest
+from agent_service.knowledge.adapter import encode
 
 
 async def seed(runtime, fixture):
@@ -23,6 +24,98 @@ async def seed(runtime, fixture):
         "b" * 32,
     )
     return reply["conversationId"]
+
+
+@pytest.mark.asyncio
+async def test_summary_keeps_latest_complete_turn_above_soft_target(tmp_path):
+    fixture = ProtocolFixture()
+    fixture.direct_answer = True
+    app = application(tmp_path, fixture, summary_enabled=True)
+    async with app.router.lifespan_context(app):
+        runtime = app.state.runtime
+        conversation = None
+        for index in range(3):
+            reply = await runtime.run(
+                ChatRequest(
+                    question=f"问题{index}：先不要提交，编号 A-42",
+                    conversationId=conversation,
+                ),
+                httpx.BasicAuth(*AUTH),
+                "a" * 32,
+            )
+            conversation = reply["conversationId"]
+        assistants = [
+            row for row in fixture.messages[conversation] if row["role"] == "assistant"
+        ]
+        for index, row in enumerate(assistants):
+            row["content"] = f"完整答复{index}：" + "h" * 6000
+        before = len(fixture.model_requests)
+        reply = await runtime.run(
+            ChatRequest(question="按原限制继续", conversationId=conversation),
+            httpx.BasicAuth(*AUTH),
+            "b" * 32,
+        )
+        assert reply["status"] == "COMPLETED"
+        assert len(fixture.model_requests) - before == 2
+        messages = fixture.model_requests[-1]["messages"]
+        assert [m["content"] for m in messages if m["role"] == "assistant"] == [
+            assistants[-1]["content"]
+        ]
+        assert any("历史会话摘要" in m["content"] for m in messages)
+        assert fixture.runs[reply["runId"]]["summaryRevision"] == 1
+        assert len(fixture.messages[conversation]) == 8
+
+
+@pytest.mark.asyncio
+async def test_oversized_summary_combination_falls_back_without_binding(tmp_path):
+    fixture = ProtocolFixture()
+    fixture.direct_answer = True
+    original = fixture.model
+
+    async def large_summary(request):
+        response = await original(request)
+        body = json.loads(request.content)
+        if body.get("tools"):
+            return response
+        data = response.json()
+        message = data["choices"][0]["message"]
+        content = json.loads(message["content"])
+        source = json.loads(body["messages"][-1]["content"])
+        source_id = source["turns"][0]["messages"][0]["id"]
+        content["facts"] = [
+            {"text": "v" * 1000, "sourceMessageIds": [source_id]} for _ in range(7)
+        ]
+        assert len(encode(content)) <= 8192
+        message["content"] = json.dumps(content, ensure_ascii=False)
+        return httpx.Response(200, json=data)
+
+    fixture.model = large_summary
+    app = application(tmp_path, fixture, summary_enabled=True, history_turns=1)
+    async with app.router.lifespan_context(app):
+        runtime = app.state.runtime
+        conversation = await seed(runtime, fixture)
+        latest = fixture.messages[conversation][-1]
+        latest["content"] = "完整近期答复：" + "h" * 6000
+        before = len(fixture.model_requests)
+        question = "继续，先不要提交。" + "新" * 2800
+        reply = await runtime.run(
+            ChatRequest(question=question, conversationId=conversation),
+            httpx.BasicAuth(*AUTH),
+            "e" * 32,
+        )
+        assert reply["status"] == "COMPLETED"
+        assert len(fixture.model_requests) - before == 2
+        assert len(fixture.summary_records[conversation]) == 1
+        messages = fixture.model_requests[-1]["messages"]
+        assert messages[-1]["content"] == question
+        assert [m["content"] for m in messages if m["role"] == "assistant"] == [
+            latest["content"]
+        ]
+        assert not any("历史会话摘要" in m["content"] for m in messages)
+        assert "summaryRevision" not in fixture.runs[reply["runId"]]
+        assert not any(
+            r.url.path.endswith("/context-summary/use") for r in fixture.java_requests
+        )
 
 
 @pytest.mark.asyncio

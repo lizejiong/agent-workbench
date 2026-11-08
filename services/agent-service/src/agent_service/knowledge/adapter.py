@@ -38,6 +38,40 @@ def digest(value: str | bytes) -> str:
     ).hexdigest()
 
 
+def model_view(result: dict) -> dict:
+    """模型只接收回答所需字段；宿主保留完整结果并负责来源及版本校验。"""
+    view = {
+        key: result[key]
+        for key in (
+            "status",
+            "degraded",
+            "toolTruncated",
+            "guidance",
+            "clarificationQuestion",
+            "errorCode",
+            "retryable",
+        )
+        if key in result
+    }
+    view["evidence"] = [
+        {
+            key: evidence[key]
+            for key in (
+                "evidenceId",
+                "documentName",
+                "content",
+                "sourceMetadata",
+                "truncated",
+                "toolTruncated",
+                "adjacent",
+            )
+            if key in evidence
+        }
+        for evidence in result["evidence"]
+    ]
+    return view
+
+
 @dataclass(frozen=True)
 class TrustedContext:
     """只能由已认证的运行上下文构造，不从模型工具参数或检查点中的凭据恢复。"""
@@ -150,13 +184,19 @@ class KnowledgeGateway:
         *,
         byte_budget: int | None = None,
         accepts: Callable[[dict], bool] | None = None,
+        result_view: Callable[[dict], dict] | None = None,
     ):
         references.ensure_context(context)
 
         async def search_knowledge(query: str) -> dict:
             """用完整独立问题取得授权知识证据；身份、范围、截止时间由运行上下文注入。"""
             return await self.search(
-                query, context, references, byte_budget=byte_budget, accepts=accepts
+                query,
+                context,
+                references,
+                byte_budget=byte_budget,
+                accepts=accepts,
+                result_view=result_view,
             )
 
         return search_knowledge
@@ -209,6 +249,7 @@ class KnowledgeGateway:
         *,
         byte_budget: int | None = None,
         accepts: Callable[[dict], bool] | None = None,
+        result_view: Callable[[dict], dict] | None = None,
     ) -> dict:
         references.ensure_context(context)
         request_id = str(uuid.uuid4())
@@ -276,6 +317,7 @@ class KnowledgeGateway:
                         references,
                         byte_budget=byte_budget,
                         accepts=accepts,
+                        result_view=result_view,
                     )
         except asyncio.CancelledError:
             await self._cancel(context, request_id)
@@ -300,6 +342,7 @@ class KnowledgeGateway:
         *,
         byte_budget: int | None = None,
         accepts: Callable[[dict], bool] | None = None,
+        result_view: Callable[[dict], dict] | None = None,
     ) -> dict:
         limit = (
             self.byte_budget
@@ -308,6 +351,8 @@ class KnowledgeGateway:
         )
 
         def fits(value):
+            if result_view is not None:
+                value = result_view(value)
             return len(encode(value)) <= limit and (accepts is None or accepts(value))
 
         status = data["status"]

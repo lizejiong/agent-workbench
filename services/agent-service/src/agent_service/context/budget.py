@@ -8,7 +8,7 @@ from langchain_core.utils.function_calling import convert_to_openai_tool
 
 from agent_service.knowledge.adapter import digest, encode
 
-POLICY_VERSION = "context-v2"
+POLICY_VERSION = "context-v3"
 
 
 @dataclass(frozen=True)

@@ -33,15 +33,22 @@ def select_history(
     request_budget=None,
     token_limit=None,
     allow_empty=False,
+    *,
+    request=None,
+    retain_latest=False,
 ):
     """选择连续的近期完整轮次。
 
     ``budget`` 是保守的 UTF-8 兜底；给出 ``request_budget`` 时同时按与模型请求
-    相同的计数器控制历史份额。两者都只决定保留多少完整轮次，绝不拆开一轮。
+    相同的计数器控制历史份额。传入 ``request`` 时，在其最后一条当前问题之前
+    插入历史，以完整请求的增量控制份额，并检查实际硬上限。``retain_latest``
+    允许最近一轮超过软份额，但不能突破完整请求或证据依赖硬限制。
     """
     selected = []
     used = used_tokens = 0
     inherited = {}
+    messages = []
+    baseline = request_budget.measure(request) if request is not None else None
     for turn in reversed(turns):
         if turn["runId"] == current_run:
             continue
@@ -61,23 +68,47 @@ def select_history(
             for s in (assistant or {}).get("evidence", [])
             if s["evidenceId"] not in inherited
         }
-        size = len(encode([row["content"] for row in rows])) + 256
-        token_size = sum(
-            request_budget.measure_message(
-                (HumanMessage if row["role"] == "user" else AIMessage)(
-                    content=OLD_REFERENCE.sub("", row["content"]), id=row["id"]
+        candidate = []
+        for row in rows:
+            text = OLD_REFERENCE.sub("", row["content"])
+            if not assistant:
+                text = (
+                    "历史请求（该轮没有当前可用的完整答复，不代表操作已完成）：\n"
+                    + text
                 )
-            ).tokens
-            for row in rows
-        ) if request_budget else 0
-        if (
-            used + size > budget
+            message = HumanMessage if row["role"] == "user" else AIMessage
+            candidate.append(message(content=text, id=row["id"]))
+        candidate += messages
+        hard_limit = (
+            len(inherited) + len(additional) > 64
+            or len(encode([*inherited.values(), *additional.values()])) > 131072
+        )
+        if baseline is not None:
+            size = request_budget.measure(
+                request,
+                [*request.messages[:-1], *candidate, request.messages[-1]],
+            )
+            next_bytes = size.bytes - baseline.bytes
+            next_tokens = size.tokens - baseline.tokens
+            hard_limit |= not request_budget.fits(size)
+        else:
+            next_bytes = used + len(encode([row["content"] for row in rows])) + 256
+            next_tokens = used_tokens + (
+                sum(
+                    request_budget.measure_message(m).tokens
+                    for m in candidate[: len(rows)]
+                )
+                if request_budget
+                else 0
+            )
+        soft_limit = (
+            next_bytes > budget
             or request_budget is not None
             and token_limit is not None
-            and used_tokens + token_size > token_limit
-            or len(inherited) + len(additional) > 64
-            or len(encode([*inherited.values(), *additional.values()])) > 131072
-        ):
+            and next_tokens > token_limit
+        )
+        keep_over_target = retain_latest and baseline is not None and not selected
+        if hard_limit or soft_limit and not keep_over_target:
             if not selected:
                 if allow_empty:
                     return HistorySelection([], [])
@@ -87,18 +118,9 @@ def select_history(
             break  # 保留连续的近期轮次，不跳过大答复后继续拼接更早消息。
         inherited.update(additional)
         selected.append((turn, rows))
-        used += size
-        used_tokens += token_size
-    messages, retained = [], []
-    for turn, rows in reversed(selected):
+        messages = candidate
+        used, used_tokens = next_bytes, next_tokens
+    retained = []
+    for _, rows in reversed(selected):
         retained.extend(rows)
-        for row in rows:
-            text = OLD_REFERENCE.sub("", row["content"])
-            if not turn.get("assistant"):
-                text = (
-                    "历史请求（该轮没有当前可用的完整答复，不代表操作已完成）：\n"
-                    + text
-                )
-            message = HumanMessage if row["role"] == "user" else AIMessage
-            messages.append(message(content=text, id=row["id"]))
     return HistorySelection(messages, retained)

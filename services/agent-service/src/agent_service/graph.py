@@ -9,7 +9,9 @@ from importlib.resources import files
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware.types import ModelRequest
 from langchain.tools import ToolRuntime, tool
+from langchain_core.messages import SystemMessage
 
 from agent_service.config import Settings
 from agent_service.context.budget import RequestBudget
@@ -22,6 +24,7 @@ from agent_service.knowledge.adapter import (
     TrustedContext,
     TurnReferences,
     digest,
+    model_view,
 )
 
 logger = logging.getLogger(__name__)
@@ -32,6 +35,10 @@ PROMPT_FILES = (
     "agent-preferences-v1.txt",
 )
 PROMPT_VERSION = "+".join(name.removesuffix(".txt") for name in PROMPT_FILES)
+SYSTEM_PROMPT = "\n\n".join(
+    files("agent_service").joinpath("prompts", name).read_text(encoding="utf-8")
+    for name in PROMPT_FILES
+)
 
 
 @dataclass
@@ -82,6 +89,7 @@ async def search_knowledge(
         context.references,
         byte_budget=allowance.byte_limit,
         accepts=allowance.accepts,
+        result_view=model_view,
     )(query)
     context.tool_events.append(
         {
@@ -152,7 +160,7 @@ async def search_knowledge(
     context.tool_evidence[call_id] = [e["evidenceId"] for e in result["evidence"]]
     if context.changed:
         await context.changed("tool", context.tools[call_id])
-    return result
+    return model_view(result)
 
 
 class TurnLimits(AgentMiddleware):
@@ -223,18 +231,24 @@ class TurnLimits(AgentMiddleware):
         return response
 
 
-def build_graph(model, saver):
-    prompt_dir = files("agent_service").joinpath("prompts")
-    prompt = "\n\n".join(
-        prompt_dir.joinpath(name).read_text(encoding="utf-8") for name in PROMPT_FILES
+def planning_request(messages):
+    """历史选择与实际图共享系统提示及工具 Schema，先计入固定输入和当前问题。"""
+    return ModelRequest(
+        model=None,
+        system_message=SystemMessage(SYSTEM_PROMPT),
+        messages=messages,
+        tools=[search_knowledge],
     )
+
+
+def build_graph(model, saver):
     graph = create_agent(
         model=model,
         tools=[search_knowledge],
-        system_prompt=prompt,
+        system_prompt=SYSTEM_PROMPT,
         middleware=[TurnLimits()],
         context_schema=AgentContext,
         checkpointer=saver,
         name="knowledge_agent",
     )
-    return graph, digest(prompt)
+    return graph, digest(SYSTEM_PROMPT)

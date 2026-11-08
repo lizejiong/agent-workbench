@@ -10,9 +10,9 @@ from langchain_core.messages import AIMessage, ToolMessage
 from agent_service.context.budget import RequestBudget, RequestSize
 from agent_service.context.projection import prepare_request
 from agent_service.contracts import AgentError
-from agent_service.knowledge.adapter import GUIDANCE, encode
+from agent_service.knowledge.adapter import GUIDANCE, encode, model_view
 
-POLICY_VERSION = "tool-results-v1"
+POLICY_VERSION = "tool-results-v2"
 
 
 @dataclass(frozen=True)
@@ -77,15 +77,17 @@ def allocate_results(
         )
         for index, call in enumerate(calls)
     }
-    minimum = {
-        "status": "UNAVAILABLE",
-        "requestId": "00000000-0000-0000-0000-000000000000",
-        "traceId": "f" * 32,
-        "errorCode": "X" * 64,
-        "retryable": False,
-        "evidence": [],
-        "guidance": GUIDANCE["UNAVAILABLE"],
-    }
+    minimum = model_view(
+        {
+            "status": "UNAVAILABLE",
+            "requestId": "00000000-0000-0000-0000-000000000000",
+            "traceId": "f" * 32,
+            "errorCode": "X" * 64,
+            "retryable": False,
+            "evidence": [],
+            "guidance": GUIDANCE["UNAVAILABLE"],
+        }
+    )
     if any(not allowance.accepts(minimum) for allowance in allowances.values()):
         raise AgentError(
             413,
