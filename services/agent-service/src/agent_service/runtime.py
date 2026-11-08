@@ -376,23 +376,56 @@ class AgentRuntime:
     async def _messages(self, request, run, context, writer):
         identity = context.identity
         preferences = preference_message(run.get("preferences"))
-        summary = await prepare_summary(
-            self.store, identity, run, context, self.summary_model
-        )
+        # 获取上限只是读取分页边界；实际保留量由每轮的模型输入预算决定。
         history = await self.store.history_turns(
-            identity, run["runId"], self.settings.history_turns
+            # 多取一轮用于识别“24轮都很短但仍有更早历史”的摘要条件。
+            identity, run["runId"], self.settings.history_turns + 1
         )
-        selection = select_history(
+        trigger_selection = select_history(
             history,
             run["runId"],
-            min(24000, self.settings.context_byte_budget // 2),
+            int(
+                self.settings.context_byte_budget
+                * self.settings.summary_trigger_ratio
+            ),
             self.settings.history_turns,
+            context.budget,
+            int(context.budget.input_limit * self.settings.summary_trigger_ratio),
+            allow_empty=True,
         )
-        # 只有近期完整窗口都被保留时才绑定已追齐的摘要，避免水位间出现空洞。
-        if summary and len(selection.messages) != sum(
-            1 + bool(t.get("assistant")) for t in history
-        ):
-            summary = None
+        # 摘要的触发由实际序列化后的历史Token份额决定；完整轮次只定义安全边界。
+        needs_summary = len(trigger_selection.rows) < sum(
+            1 + bool(turn.get("assistant"))
+            for turn in history
+            if turn["runId"] != run["runId"]
+        )
+        selection = trigger_selection
+        summary = None
+        if needs_summary and self.settings.summary_enabled:
+            selection = select_history(
+                history,
+                run["runId"],
+                int(
+                    self.settings.context_byte_budget
+                    * self.settings.summary_keep_ratio
+                ),
+                self.settings.history_turns,
+                context.budget,
+                int(context.budget.input_limit * self.settings.summary_keep_ratio),
+            )
+            summary = await prepare_summary(
+                self.store,
+                identity,
+                run,
+                context,
+                self.summary_model,
+                selection.retained_turns,
+            )
+            # 积压超过单次摘要批次时还没有形成连续摘要，不能白白丢掉80%窗口。
+            if summary is None:
+                selection = trigger_selection
+        # Java 以同一个 retainedTurns 计算摘要水位；只在 caughtUp 时返回可绑定摘要，
+        # 因而摘要边界与这里的完整近期轮次连续。
         messages = selection.messages
         snapshots = [s for row in selection.assistants for s in row.get("evidence", [])]
         if summary:
@@ -428,7 +461,7 @@ class AgentRuntime:
                 {
                     "runId": run["runId"],
                     "revision": summary["revision"],
-                    "retainedTurns": self.settings.history_turns,
+                    "retainedTurns": selection.retained_turns,
                     "policyVersion": policy(context),
                 },
             )
@@ -437,7 +470,10 @@ class AgentRuntime:
         async def authorize():
             if summary:
                 current = await self.store.summary(
-                    identity, run["runId"], self.settings.history_turns, policy(context)
+                    identity,
+                    run["runId"],
+                    selection.retained_turns,
+                    policy(context),
                 )
                 live_summary = current.get("summary")
                 if (
@@ -451,7 +487,7 @@ class AgentRuntime:
                     )
             if selection.rows:
                 turns = await self.store.history_turns(
-                    identity, run["runId"], self.settings.history_turns
+                    identity, run["runId"], self.settings.history_turns + 1
                 )
                 live = {
                     r["id"]: r["content"]

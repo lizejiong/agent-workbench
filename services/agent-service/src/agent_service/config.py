@@ -45,8 +45,12 @@ class Settings:
     context_safety_tokens: int = 2048
     token_counter: str = "utf8"
     token_encoding: str = ""
-    context_soft_ratio: float = 0.8
-    history_turns: int = 6
+    # 旧工具正文、会话摘要和近期原文是三种不同的预算动作，不能共用一个水位。
+    tool_projection_ratio: float = 0.5
+    summary_trigger_ratio: float = 0.8
+    summary_keep_ratio: float = 0.2
+    # 仅是读取和安全上限；最近原文保留量由 summary_keep_ratio 决定。
+    history_turns: int = 24
     summary_enabled: bool = True
     summary_timeout: float = 10
 
@@ -78,9 +82,10 @@ class Settings:
             and not self.token_encoding
         ):
             raise ValueError("Token计数器须显式配置，tiktoken须指定匹配的encoding")
-        if (
-            not 0.5 <= self.context_soft_ratio <= 0.95
-            or not 1 <= self.history_turns <= 24
+        if not (
+            0.2 <= self.tool_projection_ratio < self.summary_trigger_ratio <= 0.95
+            and 0.05 <= self.summary_keep_ratio < self.summary_trigger_ratio
+            and 1 <= self.history_turns <= 24
         ):
             raise ValueError("无效的上下文水位或历史轮次")
         if not 1 <= self.summary_timeout <= 30:
@@ -108,8 +113,16 @@ class Settings:
             context_safety_tokens=int(os.getenv("AGENT_CONTEXT_SAFETY_TOKENS", "2048")),
             token_counter=os.getenv("AGENT_TOKEN_COUNTER", "utf8"),
             token_encoding=os.getenv("AGENT_TOKEN_ENCODING", ""),
-            context_soft_ratio=float(os.getenv("AGENT_CONTEXT_SOFT_RATIO", "0.8")),
-            history_turns=int(os.getenv("AGENT_HISTORY_TURNS", "6")),
+            tool_projection_ratio=float(
+                os.getenv("AGENT_TOOL_PROJECTION_RATIO", "0.5")
+            ),
+            summary_trigger_ratio=float(
+                os.getenv("AGENT_SUMMARY_TRIGGER_RATIO", "0.8")
+            ),
+            summary_keep_ratio=float(
+                os.getenv("AGENT_SUMMARY_KEEP_RATIO", "0.2")
+            ),
+            history_turns=int(os.getenv("AGENT_HISTORY_TURNS", "24")),
             summary_enabled=(
                 os.getenv("AGENT_SUMMARY_ENABLED", "true").lower() == "true"
             ),

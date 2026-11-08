@@ -51,7 +51,15 @@ def policy(context):
     return (
         "summary-v1:"
         + digest(
-            repr((context.budget.version, context.settings.history_turns, PROMPT_HASH))
+            repr(
+                (
+                    context.budget.version,
+                    context.settings.history_turns,
+                    context.settings.summary_trigger_ratio,
+                    context.settings.summary_keep_ratio,
+                    PROMPT_HASH,
+                )
+            )
         )[:24]
     )
 
@@ -65,11 +73,11 @@ def background(summary):
     )
 
 
-async def prepare_summary(store, identity, run, context, model):
+async def prepare_summary(store, identity, run, context, model, retained_turns):
     if not context.settings.summary_enabled:
         return None
     key = policy(context)
-    args = (identity, run["runId"], context.settings.history_turns, key)
+    args = (identity, run["runId"], retained_turns, key)
     try:
         prepared = await store.summary(*args)
     except AgentError as exc:
@@ -165,7 +173,7 @@ async def _summarize(store, args, prepared, run, context, model):
             {
                 "runId": run["runId"],
                 "expectedRevision": prepared["expectedRevision"],
-                "retainedTurns": context.settings.history_turns,
+                "retainedTurns": args[2],
                 "sourceHash": prepared["sourceHash"],
                 "content": content,
                 "model": context.settings.model,

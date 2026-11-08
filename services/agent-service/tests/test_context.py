@@ -102,6 +102,20 @@ def test_history_keeps_complete_recent_turns_and_fails_instead_of_splitting_late
     assert error.value.code == "CONTEXT_BUDGET"
 
 
+def test_history_token_budget_retains_recent_complete_turns_without_fixed_turn_count():
+    rows = [turn(1), turn(2), turn(3)]
+    budget = RequestBudget(settings(model_context_tokens=8192))
+    latest = select_history(rows[-1:], "current", 60000, 24, budget, 8000)
+    latest_tokens = sum(
+        budget.measure_message(message).tokens for message in latest.messages
+    )
+    selected = select_history(
+        rows, "current", 60000, 24, budget, latest_tokens + 1
+    )
+    assert [message.id for message in selected.messages] == ["u-3", "a-3"]
+    assert selected.retained_turns == 1
+
+
 def test_unavailable_history_cannot_become_a_completed_operation_or_new_citation():
     failed = turn(1)
     failed.update(status="CANCELLED", assistant=None)

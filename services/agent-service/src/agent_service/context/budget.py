@@ -41,7 +41,9 @@ class RequestBudget:
             settings.token_encoding,
         )
         self.byte_limit = settings.context_byte_budget
-        self.soft_ratio = settings.context_soft_ratio
+        self.tool_projection_ratio = settings.tool_projection_ratio
+        self.summary_trigger_ratio = settings.summary_trigger_ratio
+        self.summary_keep_ratio = settings.summary_keep_ratio
         self.input_limit = (
             self.profile.window - self.profile.output - self.profile.safety
         )
@@ -59,7 +61,9 @@ class RequestBudget:
                     (
                         self.profile,
                         self.byte_limit,
-                        self.soft_ratio,
+                        self.tool_projection_ratio,
+                        self.summary_trigger_ratio,
+                        self.summary_keep_ratio,
                         settings.tool_byte_budget,
                     )
                 )
@@ -103,8 +107,9 @@ class RequestBudget:
             + (":" + self.profile.encoding if self.encoding else ""),
         )
 
-    def fits(self, size, *, soft=False):
-        ratio = self.soft_ratio if soft else 1
+    def fits(self, size, *, soft=False, ratio=None):
+        if ratio is None:
+            ratio = self.tool_projection_ratio if soft else 1
         return (
             size.tokens <= self.input_limit * ratio
             and size.bytes <= self.byte_limit * ratio
