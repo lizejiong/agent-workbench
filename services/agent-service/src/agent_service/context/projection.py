@@ -42,12 +42,41 @@ def prepare_request(request, budget):
     if not budget.fits(size, soft=True):
         # 按模型原始批次保护最近两个周期，不能用并行结果完成顺序猜测。
         for batch in batches[:-2]:
-            if any(call["name"] != "search_knowledge" for _, _, call in batch):
-                continue
             replacements = []
             for index, message, call in batch:
                 try:
                     data = json.loads(message.content)
+                    if isinstance(data, dict) and data.get("status") in {
+                        "success",
+                        "empty",
+                        "invalid_arguments",
+                        "denied",
+                        "timeout",
+                        "unavailable",
+                        "failed",
+                        "cancelled",
+                    }:
+                        result = {
+                            key: value for key, value in data.items() if key != "data"
+                        }
+                        result.update(
+                            data={},
+                            contextOmitted=True,
+                            notice="较早工具正文已省略，状态和本轮来源编号保留。精确事实须重新取得资料。",
+                        )
+                        content = encode(result).decode()
+                        if len(content.encode()) < len(message.content.encode()):
+                            replacements.append(
+                                (
+                                    index,
+                                    message.model_copy(
+                                        update={"content": content, "artifact": None}
+                                    ),
+                                )
+                            )
+                        continue
+                    if call["name"] != "search_knowledge":
+                        break
                     if not isinstance(data, dict) or data.get("status") not in {
                         "READY",
                         "NO_EVIDENCE",

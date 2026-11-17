@@ -30,6 +30,8 @@ spring:
     mapper:
       allow-coercion-of-scalars: false
   mvc:
+    async:
+      request-timeout: 145s
     problemdetails:
       enabled: false
   servlet:
@@ -53,6 +55,10 @@ mybatis-plus:
   global-config:
     banner: false
 kb:
+  tools:
+    agent-origin: ${KB_AGENT_ORIGIN:http://127.0.0.1:8090}
+    agent-token: ${KB_AGENT_TOKEN:}
+    allowed-origins: ${KB_MCP_ALLOWED_ORIGINS:}
   keyword:
     enabled: ${KB_KEYWORD_ENABLED:false}
     endpoint: ${KB_ES_ENDPOINT:http://localhost:9200}

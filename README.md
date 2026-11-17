@@ -1,8 +1,10 @@
 # Agent Workbench
 
+2026-11-17：统一只读工具、显式 Agent StateGraph、受控 MCP、Java 聊天代理、SSE v3、持久审计与撤权回放已打通，见 [工具接入说明](docs/rag/TOOLS.md) 和 [交付验收](docs/rag/TOOLS_DELIVERY.md)。开发验收自带 MCP/HTTP 模型 fixture，无需线上凭证。默认 RAG 入口保留；浏览器统一访问 Java。
+
 面向智能体应用的工作台，规划涵盖模型接入、知识检索、Agent 编排、工具调用与任务执行。RAG 是其中的知识能力模块。
 
-当前已实现 AI 服务、知识库后端、Java 独立 RAG 问答、Web 管理台，以及 Python 主 Agent 的 FastAPI/LangGraph 运行入口，并提供 Java/Python 公共组件。主 Agent 复用 Java 证据服务，实际供应商模型、业务 MCP 工具和生产部署仍需分别验收。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
+当前已实现 AI 服务、知识库后端、Java 独立 RAG 问答、Web 管理台，以及 Python 主 Agent 的 FastAPI/LangGraph 运行入口，并提供 Java/Python 公共组件。主 Agent 复用 Java 证据服务；只读 MCP 已完成 fixture 闭环和少量真实供应商冒烟，具体业务服务与生产部署按各自环境验收。现有包名和 Maven 坐标继续沿用 `com.lzj.rag`。
 
 Python / LangGraph 承载 Agent 执行、当前图检查点与主模型调用，Java 统一管理 Agent 会话/消息/证据及运行状态，并承载知识业务、检索、独立问答及平台能力；业务工具按需扩展。目录、接口和上下文边界见 [项目架构边界](docs/ARCHITECTURE.md)。
 
@@ -50,4 +52,4 @@ AI 服务的启动、模型配置、HTTP/SSE 和 Python 调用示例见 [AI 服�
 
 RAG 普通/流式问答及内部证据接口见 [RAG 运行手册](docs/rag/RUNBOOK.md)。Python 主 Agent 的启动入口、`POST /api/agent/chat`、身份委托、会话与引用见 [Agent 服务说明](services/agent-service/README.md)。原 [rag_agent 示例](examples/integration/rag_agent/README.md) 通过兼容入口复用正式工具实现，没有第二套检索算法。
 
-知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，阶段结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173；已有账号登录后先进入聊天页，通过按钮进入原知识后台，不新增用户管理。聊天复用 Python Agent，只保留本次登录内的前端会话列表；跨刷新历史和流式等缺口见 [Web 接入说明](docs/web/CHAT.md)。原导航为`GET /api/knowledge/management`，知识管理 HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`。
+知识库后端已接入根 Maven 构建；配置、启动、数据库迁移和验收见 [运行手册](docs/knowledge-base/RUNBOOK.md)，阶段结果见 [进度](docs/knowledge-base/PROGRESS.md)。Web 启动见 [web/README.md](web/README.md)，开发入口为 http://127.0.0.1:5173；已有账号登录后先进入聊天页，通过按钮进入原知识后台，不新增用户管理。聊天通过 Java 代理调用 Python Agent，会话、流式结果和工具轨迹持久化到 Java，重新登录后恢复；详见 [Web 接入说明](docs/web/CHAT.md)。原导航为`GET /api/knowledge/management`，知识管理 HTTP 验收为`python scripts/knowledge-base/delivery_acceptance.py`。

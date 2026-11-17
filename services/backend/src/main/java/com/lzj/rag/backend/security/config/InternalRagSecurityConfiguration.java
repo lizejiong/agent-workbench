@@ -35,6 +35,7 @@ public class InternalRagSecurityConfiguration {
                 if(!config.enabled()){failure(res,503,"RAG_INTERNAL_DISABLED");return;}
                 String service=req.getHeader("X-Rag-Service"),auth=req.getHeader("Authorization");
                 String expected=service==null?null:config.serviceTokenHashes().get(service);
+                if(req.getRequestURI().startsWith("/internal/tools/") && !"backend-tools".equals(req.getHeader("X-Rag-Audience"))){failure(res,401,"RAG_SERVICE_AUDIENCE");return;}
                 if(Collections.list(req.getHeaders("Authorization")).size()!=1 || Collections.list(req.getHeaders("X-Rag-Service")).size()!=1
                         || expected==null || auth==null || !auth.matches("Bearer [A-Za-z0-9_-]{32,256}")
                         || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.US_ASCII),
@@ -64,6 +65,7 @@ public class InternalRagSecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,"/internal/agent/conversations/*/context-summary").hasRole("INTERNAL_RAG")
                         .requestMatchers(HttpMethod.PUT,"/internal/agent/conversations/*/context-summary").hasRole("INTERNAL_RAG")
                         .requestMatchers(HttpMethod.POST,"/internal/agent/conversations/*/context-summary/use").hasRole("INTERNAL_RAG")
+                        .requestMatchers("/internal/tools/runs/**").hasRole("INTERNAL_RAG")
                         .anyRequest().denyAll())
                 .build();
     }

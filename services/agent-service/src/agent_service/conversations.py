@@ -95,6 +95,7 @@ class ConversationClient:
                 "requestId": str(request.requestId or uuid.uuid4()),
                 "messageId": str(request.messageId or uuid.uuid4()),
                 "question": request.question,
+                "mode": request.mode,
                 "deadline": (
                     datetime.now(UTC) + timedelta(seconds=seconds)
                 ).isoformat(),

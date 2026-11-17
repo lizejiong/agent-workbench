@@ -20,6 +20,8 @@ dependencies = [
   "aiosqlite>=0.22,<1",
   "langsmith>=0.14,<1",
   "tiktoken>=0.14,<1",
+  "mcp==1.26.0",
+  "jsonschema>=4.26,<5",
 ]
 
 [tool.uv.sources]

@@ -59,6 +59,17 @@ class AgentContext:
     authorize_model: Callable[[], Awaitable] | None = None
     budget: RequestBudget = field(init=False)
     tool_allowances: dict = field(default_factory=dict)
+    run_id: str = ""
+    mode: str = "rag"
+    control: object = None
+    mcp: object = None
+    execution: object = None
+    registry: object = None
+    executor: object = None
+    call_ids: dict = field(default_factory=dict)
+    external_sources: set = field(default_factory=set)
+    batch: int = 0
+    tool_results: dict = field(default_factory=dict)
 
     def __post_init__(self):
         self.budget = RequestBudget(self.settings)
@@ -70,24 +81,48 @@ async def search_knowledge(
 ) -> dict:
     """用完整独立问题检索当前授权知识，返回证据、来源和状态；不生成答案。"""
     context = runtime.context
-    context.tool_calls += 1
-    if context.tool_calls > context.settings.max_tool_calls:
-        raise AgentError(429, "TOOL_CALL_BUDGET", "本轮工具调用预算已用尽")
-    call_id = runtime.tool_call_id
-    context.tools[call_id] = {
-        "toolCallId": call_id,
-        "name": "search_knowledge",
-        "status": "RUNNING",
-    }
-    if context.changed:
-        await context.changed("tool", context.tools[call_id])
-    allowance = context.tool_allowances.get(call_id)
+    if context.executor:
+        from agent_service.tools.builtins import invoke_tool
+
+        result = await invoke_tool(
+            context, "search_knowledge", {"query": query}, runtime.tool_call_id
+        )
+        if result.sourceType == "knowledge":
+            return result.modelContent
+        return {
+            "status": "UNAVAILABLE",
+            "errorCode": result.errorCode,
+            "guidance": "工具未完成，不能视为资料不存在。",
+            "evidence": [],
+        }
+    return await perform_search(context, runtime.tool_call_id, query)
+
+
+async def perform_search(context, call_id, query):
+    """现有证据路径，统一执行器和兼容图共用；不生成答案。"""
+    if not context.executor:
+        context.tool_calls += 1
+        if context.tool_calls > context.settings.max_tool_calls:
+            raise AgentError(429, "TOOL_CALL_BUDGET", "本轮工具调用预算已用尽")
+        context.tools[call_id] = {
+            "toolCallId": call_id,
+            "name": "search_knowledge",
+            "status": "RUNNING",
+        }
+        if context.changed:
+            await context.changed("tool", context.tools[call_id])
+    provider_id = next(
+        (p for p, platform in context.call_ids.items() if platform == call_id), call_id
+    )
+    allowance = context.tool_allowances.get(provider_id)
     if allowance is None:
         raise AgentError(502, "CONTEXT_PROTOCOL", "工具调用缺少当前批次预算")
     result = await context.gateway.bind(
         context.identity,
         context.references,
-        byte_budget=allowance.byte_limit,
+        byte_budget=max(
+            512, allowance.byte_limit - (768 if context.mode == "agent" else 0)
+        ),
         accepts=allowance.accepts,
         result_view=model_view,
     )(query)
@@ -152,13 +187,14 @@ async def search_knowledge(
                 "toolTruncated",
             )
         }
-    context.tools[call_id] = {
-        "toolCallId": call_id,
-        "name": "search_knowledge",
-        **context.tool_events[-1],
-    }
+    if not context.executor:
+        context.tools[call_id] = {
+            "toolCallId": call_id,
+            "name": "search_knowledge",
+            **context.tool_events[-1],
+        }
     context.tool_evidence[call_id] = [e["evidenceId"] for e in result["evidence"]]
-    if context.changed:
+    if context.changed and not context.executor:
         await context.changed("tool", context.tools[call_id])
     return model_view(result)
 
@@ -194,6 +230,7 @@ class TurnLimits(AgentMiddleware):
             size.counter,
             projected,
         )
+        context.budget.reserve(size)
         response = await handler(
             request.override(
                 messages=messages,

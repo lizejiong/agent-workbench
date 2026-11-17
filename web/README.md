@@ -1,8 +1,8 @@
 # Workbench 聊天与知识后台
 
-React + Ant Design + Vite 应用。登录后进入 `/#/chat`，通过 Python 主 Agent 对话；右上角进入原知识后台，提供知识库、上传/URL 导入、文档配置、入库任务、Chunk 维护、刷新及检索测试，不建设新的账号/角色管理。
+React + Ant Design + Vite 应用。登录后进入 `/#/chat`，通过 Java 代理调用 Python 主 Agent；右上角进入原知识后台，提供知识库、上传/URL 导入、文档配置、入库任务、Chunk 维护、刷新及检索测试，不建设新的账号/角色管理。
 
-聊天页支持 Java 持久会话/消息分页、刷新及重新登录恢复、标题搜索、重命名/删除、知识范围、原生 Agent SSE、工具状态、Markdown/真实来源和停止后部分结果保留。功能、代理及边界见 [Web 聊天说明](../docs/web/CHAT.md) 和 [会话契约](../docs/rag/CONVERSATIONS.md)。
+聊天页支持 Java 持久会话/消息分页、刷新及重新登录恢复、标题搜索、重命名/删除、知识范围、RAG/Agent 模式、SSE v3 工具卡、Markdown/真实来源和停止后部分结果保留。MCP 来源独立展示，失效工具依赖按当前权限隐藏。功能、代理及边界见 [Web 聊天说明](../docs/web/CHAT.md) 和 [工具说明](../docs/rag/TOOLS.md)。
 
 ## 界面设计
 
@@ -19,11 +19,10 @@ cd web
 npm ci --registry=https://registry.npmjs.org
 # 后端默认 http://127.0.0.1:8080；不同地址在启动 Vite 的进程设置：
 $env:KB_BACKEND_ORIGIN='http://127.0.0.1:8080'
-$env:KB_AGENT_ORIGIN='http://127.0.0.1:8090'
 npm run dev
 ```
 
-打开 <http://127.0.0.1:5173>，使用后端已有账号登录后进入聊天页。KB_BACKEND_ORIGIN 和 KB_AGENT_ORIGIN 只在 Vite 服务端使用，不会进入浏览器包。也可首次复制 `.env.example` 为 `.env.local`，不要覆盖已有配置。仅 `/api/agent/chat` 及其流路径代理到 Python，偏好和其他 `/api/`、`/openapi/` 发往 Java，不用放开 CORS。Python 先按 [服务说明](../services/agent-service/README.md) 配置并启动，Java 需启用原内部委托能力；未启动 Python 时仍可从聊天页进入后台。生产使用 HTTPS；凭据只存内存，不写入 URL、Cookie、localStorage/sessionStorage，刷新需重新登录。
+打开 <http://127.0.0.1:5173>，使用后端已有账号登录后进入聊天页。KB_BACKEND_ORIGIN 只在 Vite 服务端使用，不会进入浏览器包。也可首次复制 `.env.example` 为 `.env.local`，不要覆盖已有配置。所有 `/api/`、`/openapi/` 发往 Java，不用放开 CORS；Java 为聊天请求注入独立服务凭据和 audience 后调用 Python。按 [工具配置](../docs/rag/TOOLS.md) 对齐 Java KB_AGENT_TOKEN 与 Python AGENT_INBOUND_TOKEN，并启用原内部委托能力。未启动 Python 时仍可进入后台。生产使用 HTTPS；用户凭据只存内存，不写入 URL、Cookie、localStorage/sessionStorage，刷新需重新登录。
 
 账号菜单提供“回答偏好”，设置语言/详略/格式并恢复默认，Java V14统一保存、按新run生效，版本冲突先重新加载。它不自动记录聊天事实，也不缓存到浏览器。契约与升级顺序见 [PREFERENCES.md](../docs/rag/PREFERENCES.md)。
 
@@ -46,9 +45,9 @@ preview 为本地构建预览（4173），复用同一代理配置，不作为�
 docker compose --env-file deploy/knowledge-base/.env -f deploy/knowledge-base/compose.yml --profile web up -d --build
 ```
 
-入口 <http://127.0.0.1:8088>，Nginx 将 Agent 路径转到运行时 `KB_AGENT_UPSTREAM`（默认 `http://agent-service:8090`），其他 API 仍发往 `backend:8080`。现有 Compose 不自动部署 Agent，请接入同网络服务或配置可达受控地址；Agent 延迟解析，不因缺少其 DNS 阻止后台启动。可叠加 `--profile keyword`，相关配置仍须启用。镜像构建只传 web 目录并排除本地环境文件/依赖，不包含模型密钥。镜像和生产设施需部署验收；本轮未执行应用镜像/Nginx 真联调。生产可通过 build args 固定 WEB_NODE_IMAGE、WEB_NGINX_IMAGE 为组织镜像 digest。
+入口 <http://127.0.0.1:8088>，Nginx 将全部 API 发往 `backend:8080`，Agent 流关闭缓冲并传播断连。现有 Compose 不自动部署 Python Agent；通过 Java 的 KB_AGENT_ORIGIN 配置受控地址及服务凭据。可叠加 `--profile keyword`，相关配置仍须启用。镜像构建只传 web 目录并排除本地环境文件/依赖，不包含模型密钥。镜像和生产设施需部署验收；本轮未执行应用镜像/Nginx 真联调。生产可通过 build args 固定 WEB_NODE_IMAGE、WEB_NGINX_IMAGE 为组织镜像 digest。
 
-也可将 `dist/` 部署到现有静态服务器。`nginx.conf` 是 envsubst 模板，镜像 entrypoint 会生成实际配置；手动部署须替换 KB_AGENT_UPSTREAM、Java 地址和 Docker resolver，保留 Nginx 自身变量。HTTPS 上游使用 SNI/CA 校验，私有 CA 需配置信任文件。保留 Authorization、同源路由、190 秒预算和安全响应头，入口使用 HTTPS。上传默认 20 MiB，Nginx 21 MiB 包含 multipart 开销，改上限时同步调整。
+也可将 `dist/` 部署到现有静态服务器。镜像 entrypoint 读取 `nginx.conf` 模板，默认 Java 地址为 backend:8080；手动部署须按环境替换 Java 地址，保留 Nginx 自身变量。HTTPS 上游使用 SNI/CA 校验，私有 CA 需配置信任文件。保留 Authorization、同源路由、190 秒预算和安全响应头，入口使用 HTTPS。上传默认 20 MiB，Nginx 21 MiB 包含 multipart 开销，改上限时同步调整。
 
 ## 操作约定
 

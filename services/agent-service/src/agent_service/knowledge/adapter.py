@@ -207,6 +207,7 @@ class KnowledgeGateway:
         return {
             "Authorization": f"Bearer {self._service_token}",
             "X-Rag-Service": self.service_id,
+            "X-Rag-Audience": "backend-tools",
             "X-Rag-Delegation": context.delegation_token,
             "X-Request-Id": request_id,
             "traceparent": f"00-{context.trace_id}-{uuid.uuid4().hex[:16]}-01",

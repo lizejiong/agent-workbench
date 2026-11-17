@@ -17,6 +17,7 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     question: Annotated[StrictStr, Field(min_length=1, max_length=4000)]
+    mode: Literal["rag", "agent"] = "rag"
     sessionId: UUID | None = None
     conversationId: UUID | None = None
     requestId: UUID | None = None

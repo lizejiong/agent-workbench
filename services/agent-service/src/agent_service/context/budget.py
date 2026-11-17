@@ -48,6 +48,8 @@ class RequestBudget:
             self.profile.window - self.profile.output - self.profile.safety
         )
         self.scale = 1.15
+        self.run_token_limit = settings.max_run_tokens
+        self.reserved_tokens = 0
         self.encoding = None
         if self.profile.counter == "tiktoken":
             import tiktoken
@@ -121,3 +123,12 @@ class RequestBudget:
             actual = usage.get("input_tokens")
             if isinstance(actual, int) and actual > size.tokens:
                 self.scale = min(4.0, self.scale * actual / size.tokens * 1.1)
+
+    def reserve(self, size, *, leave_final=False):
+        from agent_service.contracts import AgentError
+
+        cost = size.tokens + self.profile.output
+        reserve = cost if leave_final else 0
+        if self.reserved_tokens + cost + reserve > self.run_token_limit:
+            raise AgentError(429, "RUN_TOKEN_BUDGET", "本轮模型 Token 预算已用尽")
+        self.reserved_tokens += cost

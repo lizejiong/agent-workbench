@@ -1,0 +1,200 @@
+{
+  "date": "2026-11-17",
+  "status": "complete",
+  "repository": "Agent Workbench",
+  "git": {
+    "scope": "Acceptance snapshot before the subsequent user-authorized commit and push; see Git history for the published revision",
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  },
+  "actualStack": [
+    "Spring Boot/JdbcTemplate/Flyway",
+    "React/Ant Design/Vite/Zod",
+    "FastAPI/LangGraph/ChatOpenAI",
+    "PostgreSQL"
+  ],
+  "implementation": {
+    "migration": "V15__agent_tools.sql",
+    "modes": [
+      "rag",
+      "agent"
+    ],
+    "protocol": "Existing SSE v1/v2 plus v3 data-tool; browser uses Java proxy",
+    "builtinTools": [
+      "builtin:knowledge_search (modelName search_knowledge)",
+      "builtin:evidence_read"
+    ],
+    "graphTool": "No graph service exists in this repository; not fabricated",
+    "mcpSdk": "mcp==1.26.0",
+    "mcpTransport": "Streamable HTTP",
+    "onlyExplicitlyApprovedReadOnlyTools": true,
+    "authorization": "Existing Basic principal, service bearer hash, session delegation, ROLE_KB_OPERATOR; internal audience and run binding",
+    "trustedContextOutsideModelAndGraphState": true,
+    "durableCallAuditAndExpiry": true,
+    "currentAuthorizationCheckedForHistory": true,
+    "singleWorkerStateLockVerified": true
+  },
+  "verification": {
+    "python": {
+      "passed": 55,
+      "failed": 0,
+      "command": "uv run --project services/agent-service pytest services/agent-service/tests -q --basetemp=.cache/tools-python-final-20261117",
+      "log": ".cache/tools-python-final-20261117.log"
+    },
+    "knowledgeAdapterRegression": {
+      "passed": 4,
+      "failed": 0,
+      "command": "uv run --project services/agent-service pytest examples/integration/rag_agent/test_knowledge_tool.py -q --basetemp=.cache/tools-knowledge-regression-20261117",
+      "log": ".cache/tools-knowledge-regression-20261117.log"
+    },
+    "pythonLint": {
+      "passed": true,
+      "command": "uv run --project services/agent-service ruff check services/agent-service/src services/agent-service/tests scripts/tools",
+      "formattedRelatedFiles": 37
+    },
+    "web": {
+      "files": 6,
+      "passed": 41,
+      "failed": 0,
+      "types": true,
+      "build": true,
+      "commands": [
+        "npm --prefix web run check",
+        "npm --prefix web test",
+        "npm --prefix web run build"
+      ],
+      "testLog": ".cache/tools-web-tests-20261117.log",
+      "buildLog": ".cache/tools-web-build-20261117.log"
+    },
+    "javaFull": {
+      "modules": 10,
+      "build": "SUCCESS",
+      "testsReportedAcrossModules": 328,
+      "failures": 0,
+      "errors": 0,
+      "conditionalSkipped": 2,
+      "backendTestsReported": 219,
+      "moduleTestCounts": [
+        9,
+        11,
+        27,
+        7,
+        33,
+        8,
+        14,
+        219
+      ],
+      "command": ".\\mvnw.cmd -B -Dmaven.repo.local=.cache/maven/repository verify",
+      "log": ".cache/tools-java-verify-20261116-green.log"
+    },
+    "javaConfiguredCrossLanguage": {
+      "build": "SUCCESS",
+      "backendTests": 36,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "coversPriorTwoSkipped": true,
+      "tests": "ToolIntegrationTest,KnowledgeSearchTest",
+      "exactCommand": "docs/rag/TOOLS_DELIVERY.md",
+      "log": ".cache/tools-java-cross-language-20261117.log",
+      "countsOverlapFullRun": true
+    },
+    "scriptedE2E": {
+      "realServices": [
+        "Java",
+        "PostgreSQL/pgvector",
+        "FastAPI/LangGraph",
+        "Official MCP SDK fixture over HTTP",
+        "React history UI"
+      ],
+      "model": "Scripted native Chat Completions HTTP stub",
+      "latestBuildVerified": true,
+      "receipt": "output/tools/smoke.json",
+      "successfulTools": 2,
+      "auditRows": 2,
+      "continuousSeq": true,
+      "events": 21,
+      "historyReplay": true,
+      "secretRedaction": true,
+      "disabledAndHidden": true
+    },
+    "cancellationE2E": {
+      "receipt": "output/tools/cancellation-smoke.json",
+      "cases": [
+        "explicit-stop",
+        "disconnect"
+      ],
+      "runStatus": "CANCELLED",
+      "toolStatus": "cancelled",
+      "startReceivedBeforeCompletion": true
+    },
+    "realProviderSmoke": {
+      "receipt": "output/tools/provider-smoke.json",
+      "successfulTools": 1,
+      "events": 73,
+      "continuousSeq": true,
+      "historyReplay": true,
+      "auditRows": 1,
+      "secretRedaction": true,
+      "disabledAndHidden": true,
+      "semanticBenchmark": false
+    },
+    "browser": {
+      "passed": true,
+      "screenshots": [
+        "output/tools/browser-timeline.png",
+        "output/tools/browser-replay.png",
+        "output/tools/browser-revoked.png"
+      ],
+      "checks": [
+        "Authenticated history replay from Java",
+        "Parallel tools in stable order",
+        "Server duration",
+        "Distinct MCP citations with unified numeric labels",
+        "Expanded structured output with sensitive fields hidden",
+        "Tool disable followed by history reread hides parameters, timeline and dependent answer"
+      ]
+    },
+    "diffCheck": true
+  },
+  "resources": {
+    "taskDevSupervisorsStopped": true,
+    "taskViteProcessesStopped": true,
+    "temporaryWindowsPostgresStopped": true,
+    "testDockerContainer": "atlas-tools-test-20261116",
+    "testDockerContainerStatus": "exited",
+    "taskPortsNoLongerListening": [
+      8087,
+      8097,
+      8767,
+      8768,
+      8089,
+      8099,
+      8769,
+      8770,
+      5176,
+      5177,
+      55467,
+      55468
+    ],
+    "originalKnowledgePostgresAndMinioStopped": false,
+    "originalBusinessDatabaseMigrated": false,
+    "realModelConfigurationModified": false,
+    "testDataRetainedInStoppedContainer": true
+  },
+  "observedDiagnostics": [
+    "Pinned MCP SDK compatibility alias deprecation warning and fixture Pydantic lifespan forward-reference warning",
+    "Existing Java test background tasks log after Testcontainers shutdown; Surefire fork JVM exit-timeout diagnostic, with all assertions and Maven build successful"
+  ],
+  "limitations": [
+    "Single Java and single AI worker; no shared SQLite multi-worker graph recovery",
+    "Streamable HTTP and environment bearer credentialRef only; no per-user OAuth",
+    "Only explicitly approved read-only tools; no business write tools or external Atlas MCP server",
+    "No full administration UI or multi-level approvals",
+    "Real provider smoke is small and is not a broad semantic benchmark",
+    "Production container/Nginx deployment and load/SLO are not validated"
+  ],
+  "report": "docs/rag/TOOLS_DELIVERY.md",
+  "runbook": "docs/rag/TOOLS.md"
+}

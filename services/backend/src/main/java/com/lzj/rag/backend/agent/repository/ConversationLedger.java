@@ -12,6 +12,7 @@ import com.lzj.rag.backend.rag.service.bo.DelegationBO;
 import com.lzj.rag.backend.search.service.HybridRetrievalService;
 import com.lzj.rag.backend.search.service.bo.SearchBO;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
+import com.lzj.rag.backend.tools.ToolLedger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,9 @@ public class ConversationLedger {
     private final JdbcTemplate jdbc;private final ObjectMapper json;
     private final HybridRetrievalService scopes;private final ConversationEvidence evidence;private final ConversationSummaryGuard summaries;
     private final AgentPreferences preferences;
-    public ConversationLedger(JdbcTemplate jdbc,ObjectMapper json,HybridRetrievalService scopes,ConversationEvidence evidence,ConversationSummaryGuard summaries,AgentPreferences preferences) {
-        this.jdbc=jdbc;this.json=json;this.scopes=scopes;this.evidence=evidence;this.summaries=summaries;this.preferences=preferences;
+    private final ToolLedger toolLedger;
+    public ConversationLedger(JdbcTemplate jdbc,ObjectMapper json,HybridRetrievalService scopes,ConversationEvidence evidence,ConversationSummaryGuard summaries,AgentPreferences preferences,ToolLedger toolLedger) {
+        this.jdbc=jdbc;this.json=json;this.scopes=scopes;this.evidence=evidence;this.summaries=summaries;this.preferences=preferences;this.toolLedger=toolLedger;
     }
     @Transactional(timeout=10)
     public Conversation create(KnowledgeBasePrincipal actor,Create input) {
@@ -82,7 +84,7 @@ public class ConversationLedger {
     @Transactional(timeout=10)
     public Run begin(DelegationBO g,UUID conversationId,Begin input,String traceId) {
         delegated(g,conversationId,true);expire(conversationId);
-        String question=clean(input.question());String requestHash=hash(List.of(input.messageId(),question));
+        String question=clean(input.question());String mode=input.mode()==null?"rag":input.mode();String requestHash=hash(List.of(input.messageId(),question,mode));
         var old=jdbc.query("SELECT * FROM kb_agent_run WHERE conversation_id=? AND request_id=?",this::run,conversationId,input.requestId());
         if(!old.isEmpty()) {
             var saved=jdbc.queryForMap("SELECT request_hash FROM kb_agent_run WHERE id=?",old.get(0).runId());
@@ -98,6 +100,7 @@ public class ConversationLedger {
         long sequence=jdbc.queryForObject("SELECT next_sequence FROM kb_agent_conversation WHERE id=?",Long.class,conversationId);
         jdbc.update("INSERT INTO kb_agent_run(id,conversation_id,request_id,request_hash,user_message_id,assistant_message_id,service_id,trace_id,status,deadline_at,preferences_snapshot) VALUES(?,?,?,?,?,?,?,?,'RUNNING',?,?::jsonb)",
                 id,conversationId,input.requestId(),requestHash,input.messageId(),assistant,g.serviceId(),traceId,Timestamp.from(deadline),encode(preferences.get(g.actor())));
+        jdbc.update("UPDATE kb_agent_run SET mode=? WHERE id=?",mode,id);
         jdbc.update("INSERT INTO kb_agent_message(id,conversation_id,run_id,request_id,sequence,role,content,status) VALUES(?,?,?,?,?,'user',?,'COMPLETED'),(?,?,?,?,?,'assistant','','RUNNING')",
                 input.messageId(),conversationId,id,input.requestId(),sequence,question,assistant,conversationId,id,input.requestId(),sequence+1);
         jdbc.update("UPDATE kb_agent_conversation SET next_sequence=next_sequence+2,active_at=clock_timestamp(),title=CASE WHEN next_sequence=1 AND title='新对话' THEN ? ELSE title END WHERE id=?",
@@ -144,6 +147,9 @@ public class ConversationLedger {
             var matched=new HashSet<String>();var pattern=java.util.regex.Pattern.compile("\\[(K[a-f0-9]{32}_E[1-9][0-9]{0,3})\\]");
             var matcher=pattern.matcher(input.content());while(matcher.find())matched.add(matcher.group(1));
             if(!matched.equals(new HashSet<>(input.citations())) || pattern.matcher(input.content()).replaceAll("").contains("[K") || input.content().matches("(?s).*\\[E[0-9]+\\].*"))throw conflict("CITATION_INVALID");
+            var external=new ArrayList<String>();var m=java.util.regex.Pattern.compile("\\[(M[a-f0-9]{32})\\]").matcher(input.content());while(m.find())external.add(m.group(1));
+            if(java.util.regex.Pattern.compile("\\[(M[a-f0-9]{32})\\]").matcher(input.content()).replaceAll("").contains("[M"))throw conflict("CITATION_INVALID");
+            if(!external.isEmpty())toolLedger.validate(g,id,external);
         }
         String previousText=jdbc.queryForObject("SELECT content FROM kb_agent_message WHERE id=?",String.class,r.assistantMessageId());
         if(!input.content().startsWith(previousText))throw conflict("AGENT_SNAPSHOT_CONFLICT");
@@ -224,6 +230,7 @@ public class ConversationLedger {
         List<Snapshot> snapshots=decode(row.get("evidence").toString(),new TypeReference<>(){});
         var available=evidence.visible(actor,c.kbIds(),c.documentIds(),snapshots);
         boolean restricted=available.size()!=snapshots.size();
+        if(!toolLedger.historyAllowed(actor,(UUID)row.get("run_id")))restricted=true;
         if(row.get("context_summary_revision") instanceof Number revision && summaries.read(actor,c,revision.longValue())==null)restricted=true;
         List<String> selected=decode(row.get("citations").toString(),new TypeReference<>(){});
         var value=new LinkedHashMap<String,Object>();
@@ -236,8 +243,20 @@ public class ConversationLedger {
         List<Tool> tools=decode(row.get("tools").toString(),new TypeReference<>(){});
         List<Block> blocks=decode(row.get("blocks").toString(),new TypeReference<>(){});
         value.put("eventSeq",row.get("event_seq"));
-        value.put("blocks",restricted?List.of():ConversationTimeline.visible(blocks,tools,available,row.get("status").toString()));
-        value.put("tools",tools.stream().map(t->!row.get("status").equals("RUNNING") && t.status().equals("RUNNING")
+        var visibleBlocks=restricted?List.<Map<String,Object>>of():ConversationTimeline.visible(blocks,tools,available,row.get("status").toString());
+        if(!restricted) {
+            var calls=toolLedger.historyCalls(actor,(UUID)row.get("run_id"));
+            for(var block:visibleBlocks)if(block.get("kind").equals("tool"))calls.stream().filter(t->Objects.equals(t.get("call_id"),block.get("toolCallId"))).findFirst().ifPresent(t->{
+                block.put("callId",t.get("call_id"));block.put("arguments",decode(t.get("arguments").toString(),new TypeReference<Map<String,Object>>(){}));
+                block.put("toolKey",t.get("tool_key"));
+                block.put("displayName",toolLedger.displayName(actor,t.get("tool_key").toString()));
+                block.put("toolStatus",t.get("status"));
+                if(t.get("result")!=null){Map<String,Object> result=decode(t.get("result").toString(),new TypeReference<>(){});block.put("summary",result.get("summary"));block.put("sourceType",result.get("sourceType"));block.put("durationMs",result.get("durationMs"));
+                    if("mcp".equals(result.get("sourceType"))){block.put("result",Map.of("evidence",List.of(),"content",result.get("modelContent")));}}
+            });
+        }
+        value.put("blocks",visibleBlocks);
+        value.put("tools",restricted?List.of():tools.stream().map(t->!row.get("status").equals("RUNNING") && t.status().equals("RUNNING")
                 ?new Tool(t.toolCallId(),t.name(),"UNAVAILABLE",t.requestId(),t.traceId(),t.degraded(),t.strategy(),t.toolTruncated(),"AGENT_RUN_ENDED",false):t).toList());
         if(restricted)value.put("content","相关知识已变化或不可访问，本条回答已隐藏。请重新提问。");
         return value;

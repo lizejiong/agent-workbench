@@ -15,6 +15,7 @@ interface ChatStore {
   rename: (id: string, title: string) => Promise<void>; remove: (id: string) => Promise<void>;
   load: (id: string, older?: boolean) => Promise<void>;
   draft: (id: string, text: string) => void; scope: (id: string, ids?: string[]) => void;
+  mode: (id: string, mode: 'rag' | 'agent') => void;
   send: (id: string) => Promise<void>; stop: (id: string) => void;
 }
 const ChatContext = createContext<ChatStore | null>(null);
@@ -75,14 +76,14 @@ export function ChatProvider({ children }: PropsWithChildren) {
     try {
       const data = await api.get<MessagePage>(`/api/conversations/${item.sessionId}/messages` + query({ size: 30, beforeSequence: older ? item.beforeSequence : undefined }));
       const old = stored.current.get(id) || [];
-      const byId = new Map((older ? [...data.records, ...old] : [...old, ...data.records]).map(m => [m.id, m]));
+      const byId = new Map((older ? [...data.records, ...old] : data.records).map(m => [m.id, m]));
       const messages = [...byId.values()]; stored.current.set(id, messages);
       change(id, c => ({ ...c, loaded: true, loading: false, turns: turnsFromMessages(messages, item.sessionId!).map(remote => {
         const live = c.turns.find(t => t.id === remote.id);
         // 加载更早历史不能用较旧批量快照覆盖仍在消费的实时块及 seq。
         return live && requests.current.has(id) && live.runId === remote.runId && !remote.sourcesRestricted ? live : remote;
       }),
-        hasMore: older ? data.hasMore : c.hasMore || data.hasMore, beforeSequence: older || !c.beforeSequence ? data.nextBeforeSequence : c.beforeSequence }));
+        hasMore: data.hasMore, beforeSequence: data.nextBeforeSequence }));
       setError(undefined);
     } catch (e) { change(id, c => ({ ...c, loading: false })); if (!closed.current) setError(e instanceof Error ? e : new Error('历史消息加载失败')); }
   }, [api, change]);
@@ -126,11 +127,11 @@ export function ChatProvider({ children }: PropsWithChildren) {
         const created = await api.send<RemoteConversation>('POST', '/api/conversations', { requestId: conversation.id, ...(conversation.knowledgeIds?.length ? { kbIds: conversation.knowledgeIds } : {}) }, undefined, controller.signal);
         conversationId = created.id; change(id, c => ({ ...c, sessionId: created.id, knowledgeIds: created.kbIds }));
       }
-      await api.stream('/api/agent/chat/stream', { conversationId, question, requestId, messageId }, (name, data) => {
+      await api.stream('/api/agent/chat/stream', { conversationId, question, requestId, messageId, mode: conversation.mode || 'rag' }, (name, data) => {
         editTurn(t => reduceAgentEvent(t, name, data, conversationId!));
       }, controller.signal);
     } catch (failure) {
-      if (!closed.current) editTurn(t => ({ ...t, status: t.runId ? 'pending' : 'failed', persisted: false, runStatus: controller.signal.aborted ? 'CANCELLING' : 'UNKNOWN', error: controller.signal.aborted ? undefined : failure instanceof Error ? failure : new Error('连接中断，请查询历史状态。') }));
+      if (!closed.current) editTurn(t => ({ ...t, status: t.runId ? 'pending' : controller.signal.aborted ? 'cancelled' : 'failed', persisted: false, runStatus: controller.signal.aborted ? t.runId ? 'CANCELLING' : 'CANCELLED' : 'UNKNOWN', error: controller.signal.aborted ? undefined : failure instanceof Error ? failure : new Error('连接中断，请查询历史状态。') }));
     } finally {
       if (requests.current.get(id) === controller) requests.current.delete(id);
       if (conversationId && !closed.current) {
@@ -151,8 +152,18 @@ export function ChatProvider({ children }: PropsWithChildren) {
     const remaining = current.current.filter(c => c.id !== id); if (!remaining.length) remaining.push(fresh());
     update(() => remaining); if (activeId === id) setActiveId(remaining[0].id);
   };
-  return <ChatContext.Provider value={{ conversations, activeId, error, listMore, listLoading, select: setActiveId, create,
+  const select = (id: string) => {
+    const item = current.current.find(c => c.id === id);
+    if (item?.sessionId && !requests.current.has(id)) {
+      stored.current.delete(id);
+      change(id, c => ({ ...c, turns: [], loaded: false, beforeSequence: undefined, hasMore: false }));
+      void load(id);
+    }
+    setActiveId(id);
+  };
+  return <ChatContext.Provider value={{ conversations, activeId, error, listMore, listLoading, select, create,
     load, rename, remove, search: text => { filter.current = text; void loadList(1, text); }, more: () => void loadList(pages.current + 1),
+    mode: (id, mode) => change(id, item => ({ ...item, mode })),
     draft: (id, draft) => change(id, item => ({ ...item, draft })), scope: (id, knowledgeIds) => change(id, item => item.sessionId || item.turns.length ? item : ({ ...item, knowledgeIds })), send, stop }}>{children}</ChatContext.Provider>;
 }
 export function useChat() { const store = useContext(ChatContext); if (!store) throw new Error('Chat provider missing'); return store; }

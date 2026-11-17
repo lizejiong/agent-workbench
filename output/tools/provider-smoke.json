@@ -1,0 +1,14 @@
+{
+  "modelKind": "configured-model",
+  "conversationId": "4e4cdf8d-a560-4fb7-ae2a-e2dabed1a0a0",
+  "runId": "21e1e954-e456-40fc-baf3-0bc9dc9012d2",
+  "serverId": "e6b837ed-25c4-49e6-a2d5-ec1500ae5305",
+  "discovered": 7,
+  "toolSuccesses": 1,
+  "events": 73,
+  "continuousSeq": true,
+  "historyReplay": true,
+  "auditRows": 1,
+  "secretRedaction": true,
+  "disabledAndHidden": true
+}

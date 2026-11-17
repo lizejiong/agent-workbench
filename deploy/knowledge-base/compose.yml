@@ -7,8 +7,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - '127.0.0.1:8088:80'
-    environment:
-      KB_AGENT_UPSTREAM: ${KB_AGENT_UPSTREAM:-http://agent-service:8090}
     depends_on:
       backend:
         condition: service_started
@@ -85,6 +83,9 @@ services:
       KB_TENANT_ID: ${KB_TENANT_ID:?Set KB_TENANT_ID}
       KB_USER_ID: ${KB_USER_ID:?Set KB_USER_ID}
       KB_OPERATOR: ${KB_OPERATOR:-false}
+      KB_AGENT_ORIGIN: ${KB_AGENT_ORIGIN:-http://host.docker.internal:8090}
+      KB_AGENT_TOKEN: ${KB_AGENT_TOKEN:-}
+      KB_MCP_ALLOWED_ORIGINS: ${KB_MCP_ALLOWED_ORIGINS:-}
       KB_STORAGE_ENABLED: 'true'
       KB_S3_ENDPOINT: http://minio:9000
       KB_S3_REGION: us-east-1

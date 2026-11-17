@@ -1,0 +1,14 @@
+{
+  "modelKind": "scripted-http-fixture",
+  "conversationId": "39182e58-e0b5-442e-817f-361d48700e3c",
+  "runId": "3e7e195c-1cca-44cd-9468-45f14361be42",
+  "serverId": "aa585b01-69ad-4b5a-a81d-dcae4bd7e16a",
+  "discovered": 7,
+  "toolSuccesses": 2,
+  "events": 21,
+  "continuousSeq": true,
+  "historyReplay": true,
+  "auditRows": 2,
+  "secretRedaction": true,
+  "disabledAndHidden": true
+}

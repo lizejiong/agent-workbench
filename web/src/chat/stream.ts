@@ -1,4 +1,5 @@
 import type { AgentReply, ChatBlock, ChatTurn, ToolEvent } from './types';
+import { toolEvent } from './toolContract';
 
 const ended = new Set(['done', 'failed', 'interrupted']);
 function block(value: unknown): ChatBlock {
@@ -35,7 +36,7 @@ function finish(turn: ChatTurn, data: Record<string, unknown>): ChatTurn {
 /** 序号去重；缺帧停止消费并读取 Java 快照，不重提 Agent 请求。 */
 export function reduceAgentEvent(turn: ChatTurn, name: string, data: Record<string, unknown>, conversationId: string): ChatTurn {
   let next = turn;
-  if (data.protocolVersion === 2) {
+  if (data.protocolVersion === 2 || data.protocolVersion === 3) {
     if (turn.runId && data.runId !== turn.runId) return turn;
     if (!Number.isSafeInteger(data.seq) || Number(data.seq) < 1 || typeof data.runId !== 'string') throw new Error('事件标识无效，请重新加载历史。');
     const seq = Number(data.seq), previous = turn.eventSeq || 0;
@@ -45,7 +46,12 @@ export function reduceAgentEvent(turn: ChatTurn, name: string, data: Record<stri
     next = { ...turn, eventSeq: seq };
   }
   if (name === 'meta') return { ...next, runId: String(data.runId), assistantMessageId: String(data.assistantMessageId || data.messageId) };
-  if (next.sourcesRestricted && ['message', 'delta', 'block', 'tool', 'hint'].includes(name)) return next;
+  if (next.sourcesRestricted && (['message', 'delta', 'block', 'tool', 'hint'].includes(name) || name.startsWith('tool.'))) return next;
+  if (name.startsWith('tool.')) {
+    const parsed = toolEvent.parse(data);
+    if (name !== `tool.${parsed.eventType}` || parsed.block.toolCallId !== parsed.callId) throw new Error('工具事件身份不匹配，请读取历史。');
+    return { ...next, blocks: put(next.blocks || [], block({ ...parsed.block, toolStatus: parsed.status, callId: parsed.callId, summary: parsed.summary, displayName: parsed.displayName, toolKey: parsed.toolKey })) };
+  }
   if (name === 'message' || name === 'delta') {
     if (turn.sourcesRestricted) return next;
     if (name === 'message' && data.type !== 'answer') return next;

@@ -20,7 +20,8 @@ export interface ChatBlock {
   status: 'streaming' | 'pending' | 'running' | 'done' | 'failed' | 'interrupted';
   text?: string; toolCallId?: string; name?: string; displayName?: string;
   batchId?: string; callIndex?: number; startedAt?: string; durationMs?: number;
-  arguments?: { query: string } | null; result?: { evidence: Citation[] };
+  arguments?: Record<string, unknown> | null; result?: { evidence: Citation[]; content?: unknown };
+  callId?: string; toolKey?: string; toolStatus?: string; summary?: string; sourceType?: 'knowledge' | 'mcp' | 'none';
   evidenceIds?: string[]; retrievalStatus?: RetrievalSummary['status'] | 'RUNNING';
   degraded?: boolean; strategy?: string; toolTruncated?: boolean; errorCode?: string;
 }
@@ -36,6 +37,7 @@ export interface Conversation {
   id: string; title: string; sessionId?: string; knowledgeIds?: string[];
   turns: ChatTurn[]; draft: string; updatedAt: number;
   loaded?: boolean; hasMore?: boolean; beforeSequence?: number; loading?: boolean;
+  mode?: 'rag' | 'agent';
 }
 export interface ToolEvent { toolCallId: string; name: string; status: string; requestId?: string; traceId?: string; degraded?: boolean; strategy?: string; toolTruncated?: boolean; errorCode?: string; retryable?: boolean }
 export interface StoredMessage {

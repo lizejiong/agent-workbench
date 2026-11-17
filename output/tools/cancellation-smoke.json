@@ -1,0 +1,16 @@
+[
+  {
+    "mode": "explicit-stop",
+    "runId": "4bdb268c-74b4-4ab6-ba6b-bb42292fb252",
+    "runStatus": "CANCELLED",
+    "toolStatus": "cancelled",
+    "startReceivedBeforeCompletion": true
+  },
+  {
+    "mode": "disconnect",
+    "runId": "9709195e-4e56-4c13-9769-149c0095a566",
+    "runStatus": "CANCELLED",
+    "toolStatus": "cancelled",
+    "startReceivedBeforeCompletion": true
+  }
+]

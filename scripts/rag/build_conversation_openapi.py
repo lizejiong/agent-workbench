@@ -26,14 +26,14 @@ schemas = {
     "Create": obj({"requestId": UUID, "title": {**TEXT, "maxLength": 120}, **scope}, ["requestId"]),
     "Rename": obj({"title": {**TEXT, "minLength": 1, "maxLength": 120}}, ["title"]),
     "Delegate": obj({"serviceId": {**TEXT, "pattern": "^[a-z0-9-]{1,80}$"}}, ["serviceId"]),
-    "Begin": obj({"requestId": UUID, "messageId": UUID, "question": {**TEXT, "minLength": 1, "maxLength": 4000}, "deadline": TIME}, ["requestId", "messageId", "question", "deadline"]),
+    "Begin": obj({"requestId": UUID, "messageId": UUID, "question": {**TEXT, "minLength": 1, "maxLength": 4000}, "deadline": TIME, "mode": {**TEXT, "enum": ["rag", "agent"], "default": "rag"}}, ["requestId", "messageId", "question", "deadline"]),
     "Snapshot": obj({"evidenceId": {**TEXT, "pattern": "^K[a-f0-9]{32}_E[1-9][0-9]{0,3}$"}, "kbId": UUID, "documentId": UUID, "chunkId": UUID,
                      "generation": {"type": "integer", "minimum": 1}, "content": {**TEXT, "minLength": 1, "maxLength": 16384},
                      "sourceContentHash": {**TEXT, "pattern": "^[a-f0-9]{64}$"}, "snapshotHash": {**TEXT, "pattern": "^[a-f0-9]{64}$"},
                      "sourceMetadata": {"type": "object", "maxProperties": 64, "nullable": True}, "versions": {"type": "object", "maxProperties": 64, "nullable": True},
                      "truncated": {"type": "boolean"}, "toolTruncated": {"type": "boolean"}},
                     ["evidenceId", "kbId", "documentId", "chunkId", "generation", "content", "sourceContentHash", "snapshotHash"]),
-    "Tool": obj({"toolCallId": {**TEXT, "maxLength": 128}, "name": {**TEXT, "enum": ["search_knowledge"]}, "status": {**TEXT, "enum": ["RUNNING", "READY", "NO_EVIDENCE", "NEEDS_CLARIFICATION", "UNAVAILABLE"]},
+    "Tool": obj({"toolCallId": {**TEXT, "maxLength": 128}, "name": {**TEXT, "pattern": "^[A-Za-z0-9_-]{1,64}$"}, "status": {**TEXT, "enum": ["RUNNING", "READY", "NO_EVIDENCE", "NEEDS_CLARIFICATION", "UNAVAILABLE", "success", "empty", "invalid_arguments", "denied", "timeout", "unavailable", "failed", "cancelled"]},
                  "requestId": {**UUID, "nullable": True}, "traceId": {**TEXT, "maxLength": 32, "nullable": True}, "strategy": {**TEXT, "maxLength": 32, "nullable": True},
                  "degraded": {"type": "boolean"}, "toolTruncated": {"type": "boolean"}, "errorCode": {**TEXT, "nullable": True, "pattern": "^[A-Z0-9_]{1,80}$"}, "retryable": {"type": "boolean"}}, ["toolCallId", "name", "status"]),
     "Checkpoint": obj({"sequence": {"type": "integer", "minimum": 1}, "status": {**TEXT, "enum": STATES}, "content": {**TEXT, "maxLength": 65536},
@@ -45,12 +45,12 @@ schemas = {
 }
 
 
-schemas['ToolArguments'] = obj({'query': {**TEXT, 'minLength': 1, 'maxLength': 1000}}, ['query'])
+schemas['ToolArguments'] = {'type': 'object', 'maxProperties': 32, 'additionalProperties': True}
 schemas['Block'] = obj({
     'blockId': {**TEXT, 'pattern': '^B[a-f0-9]{32}$'}, 'kind': {**TEXT, 'enum': ['answer', 'tool', 'hint', 'error']},
     'status': {**TEXT, 'enum': ['streaming', 'pending', 'running', 'done', 'failed', 'interrupted']},
     'text': {**TEXT, 'maxLength': 65536, 'nullable': True}, 'toolCallId': {**TEXT, 'maxLength': 128, 'nullable': True},
-    'name': {**TEXT, 'enum': ['search_knowledge'], 'nullable': True}, 'startedAt': {**TIME, 'nullable': True},
+    'name': {**TEXT, 'pattern': '^[A-Za-z0-9_-]{1,64}$', 'nullable': True}, 'startedAt': {**TIME, 'nullable': True},
     'durationMs': {'type': 'integer', 'minimum': 0, 'maximum': 120000, 'nullable': True},
     'batchId': {**TEXT, 'pattern': '^B[a-f0-9]{32}$', 'nullable': True},
     'callIndex': {'type': 'integer', 'minimum': 0, 'maximum': 31, 'nullable': True},
@@ -195,7 +195,7 @@ history["parameters"] += [
 ]
 history["responses"]["200"]["content"]["application/json"]["schema"] = {"allOf": [ref("Result"),
     {"type": "object", "properties": {"data": {"oneOf": [ref("History"), ref("ContextHistoryPage")]}}}]}
-document = {"openapi": "3.0.3", "info": {"title": "Java Agent Conversation API", "version": "2026-11-07", "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"},
+document = {"openapi": "3.0.3", "info": {"title": "Java Agent Conversation API", "version": "2026-11-16", "description": "Response fields and Python SSE v1/v2/v3: docs/rag/CONVERSATIONS.md, TIMELINE.md and TOOLS.md"},
             "paths": paths, "components": {"schemas": schemas, "securitySchemes": {
                 "basicAuth": {"type": "http", "scheme": "basic"}, "serviceBearer": {"type": "http", "scheme": "bearer"},
                 "serviceId": {"type": "apiKey", "in": "header", "name": "X-Rag-Service"},

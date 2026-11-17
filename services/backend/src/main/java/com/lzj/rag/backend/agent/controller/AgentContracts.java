@@ -13,7 +13,10 @@ public final class AgentContracts {
     public record Rename(@NotBlank @Size(max=120) String title) {}
     public record Delegate(@NotBlank @Pattern(regexp="[a-z0-9-]{1,80}") String serviceId) {}
     public record Begin(@NotNull UUID requestId,@NotNull UUID messageId,
-            @NotBlank @Size(max=4000) String question,@NotNull Instant deadline) {}
+            @NotBlank @Size(max=4000) String question,@NotNull Instant deadline,
+            @Pattern(regexp="rag|agent") String mode) {
+        public Begin(UUID requestId,UUID messageId,String question,Instant deadline){this(requestId,messageId,question,deadline,"rag");}
+    }
     public record Snapshot(@NotBlank @Pattern(regexp="K[a-f0-9]{32}_E[1-9][0-9]{0,3}") String evidenceId,
             @NotNull UUID kbId,@NotNull UUID documentId,@NotNull UUID chunkId,@Min(1) long generation,
             @NotBlank @Size(max=16384) String content,@NotBlank @Pattern(regexp="[a-f0-9]{64}") String sourceContentHash,
@@ -21,8 +24,8 @@ public final class AgentContracts {
             @Size(max=64) Map<String,Object> sourceMetadata,boolean truncated,boolean toolTruncated,
             @Size(max=64) Map<String,Object> versions) {}
     public record Tool(@NotBlank @Size(max=128) String toolCallId,
-            @NotBlank @Pattern(regexp="search_knowledge") String name,
-            @NotBlank @Pattern(regexp="RUNNING|READY|NO_EVIDENCE|NEEDS_CLARIFICATION|UNAVAILABLE") String status,
+            @NotBlank @Pattern(regexp="[A-Za-z0-9_-]{1,64}") String name,
+            @NotBlank @Pattern(regexp="RUNNING|READY|NO_EVIDENCE|NEEDS_CLARIFICATION|UNAVAILABLE|success|empty|invalid_arguments|denied|timeout|unavailable|failed|cancelled") String status,
             UUID requestId,@Size(max=32) String traceId,boolean degraded,@Size(max=32) String strategy,
             boolean toolTruncated,@Pattern(regexp="[A-Z0-9_]{1,80}") String errorCode,boolean retryable) {}
     public record ToolArguments(@NotBlank @Size(max=1000) String query) {}
@@ -30,11 +33,11 @@ public final class AgentContracts {
     public record Block(@NotBlank @Pattern(regexp="B[a-f0-9]{32}") String blockId,
             @NotBlank @Pattern(regexp="answer|tool|hint|error") String kind,
             @Size(max=65536) String text,
-            @Size(max=128) String toolCallId,@Pattern(regexp="search_knowledge") String name,
+            @Size(max=128) String toolCallId,@Pattern(regexp="[A-Za-z0-9_-]{1,64}") String name,
             @NotBlank @Pattern(regexp="streaming|pending|running|done|failed|interrupted") String status,
             Instant startedAt,@Min(0) @Max(120000) Long durationMs,
             @Pattern(regexp="B[a-f0-9]{32}") String batchId,@Min(0) @Max(31) Integer callIndex,
-            @Valid ToolArguments arguments,
+            @Size(max=32) Map<String,Object> arguments,
             @Size(max=128) List<@Pattern(regexp="K[a-f0-9]{32}_E[1-9][0-9]{0,3}") String> evidenceIds,
             @Pattern(regexp="[A-Z0-9_]{1,80}") String errorCode) {}
     public record Checkpoint(@Min(1) long sequence,

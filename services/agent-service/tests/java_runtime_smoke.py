@@ -28,6 +28,7 @@ async def run(config):
         model_api_key="fixture-only-not-a-secret",
         state_dir=Path(config["stateDir"]),
         turn_timeout=20,
+        inbound_token="fixture-java-to-agent-token-1234567890",
     )
     app = create_app(settings, model_transport=httpx.MockTransport(fixture.model))
     listener = socket.socket()
@@ -50,7 +51,14 @@ async def run(config):
                     await serving
                     raise RuntimeError("ASGI 启动失败")
                 await asyncio.sleep(0.02)
-        async with httpx.AsyncClient(trust_env=False, timeout=25) as client:
+        async with httpx.AsyncClient(
+            trust_env=False,
+            timeout=25,
+            headers={
+                "X-Agent-Service-Token": settings.inbound_token,
+                "X-Agent-Audience": "agent-execution",
+            },
+        ) as client:
             response = await client.post(
                 f"http://127.0.0.1:{port}/api/agent/chat",
                 auth=(config["username"], config["password"]),

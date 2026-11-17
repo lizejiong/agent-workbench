@@ -139,6 +139,7 @@ async def _summarize(store, args, prepared, run, context, model):
         if timeout <= 0:
             return
         context.model_calls += 1
+        context.budget.reserve(size, leave_final=True)
         with tracing_context(enabled=False):
             async with asyncio.timeout(timeout):
                 response = await model.ainvoke(

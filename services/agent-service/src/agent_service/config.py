@@ -53,6 +53,12 @@ class Settings:
     history_turns: int = 24
     summary_enabled: bool = True
     summary_timeout: float = 10
+    inbound_token: str = field(default="", repr=False)
+    mcp_allowed_origins: tuple[str, ...] = ()
+    tool_concurrency: int = 3
+    max_result_bytes: int = 32768
+    model_tools_supported: bool = True
+    max_run_tokens: int = 131072
 
     def __post_init__(self):
         trusted_url(self.java_origin, origin=True)
@@ -90,6 +96,15 @@ class Settings:
             raise ValueError("无效的上下文水位或历史轮次")
         if not 1 <= self.summary_timeout <= 30:
             raise ValueError("无效的摘要调用超时")
+        if (
+            not 1 <= self.tool_concurrency <= 8
+            or not 4096 <= self.max_result_bytes <= 131072
+        ):
+            raise ValueError("无效的工具并发或总结果预算")
+        if not 4096 <= self.max_run_tokens <= 2097152:
+            raise ValueError("无效的运行 Token 预算")
+        if self.max_result_bytes < self.max_tool_calls * 512:
+            raise ValueError("结果预算必须容纳所有调用的最小状态")
 
     @classmethod
     def from_env(cls):
@@ -119,12 +134,21 @@ class Settings:
             summary_trigger_ratio=float(
                 os.getenv("AGENT_SUMMARY_TRIGGER_RATIO", "0.8")
             ),
-            summary_keep_ratio=float(
-                os.getenv("AGENT_SUMMARY_KEEP_RATIO", "0.2")
-            ),
+            summary_keep_ratio=float(os.getenv("AGENT_SUMMARY_KEEP_RATIO", "0.2")),
             history_turns=int(os.getenv("AGENT_HISTORY_TURNS", "24")),
             summary_enabled=(
                 os.getenv("AGENT_SUMMARY_ENABLED", "true").lower() == "true"
             ),
             summary_timeout=float(os.getenv("AGENT_SUMMARY_TIMEOUT", "10")),
+            inbound_token=os.environ["AGENT_INBOUND_TOKEN"],
+            mcp_allowed_origins=tuple(
+                filter(None, os.getenv("AGENT_MCP_ALLOWED_ORIGINS", "").split(","))
+            ),
+            tool_concurrency=int(os.getenv("AGENT_TOOL_CONCURRENCY", "3")),
+            max_result_bytes=int(os.getenv("AGENT_MAX_RESULT_BYTES", "32768")),
+            model_tools_supported=os.getenv(
+                "AGENT_MODEL_TOOLS_SUPPORTED", "true"
+            ).lower()
+            == "true",
+            max_run_tokens=int(os.getenv("AGENT_MAX_RUN_TOKENS", "131072")),
         )

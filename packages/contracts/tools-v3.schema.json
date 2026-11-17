@@ -1,0 +1,123 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "part": {
+      "const": "data-tool",
+      "default": "data-tool",
+      "title": "Part",
+      "type": "string"
+    },
+    "eventType": {
+      "enum": [
+        "start",
+        "success",
+        "failure",
+        "cancel"
+      ],
+      "title": "Eventtype",
+      "type": "string"
+    },
+    "callId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Callid",
+      "type": "string"
+    },
+    "toolKey": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Toolkey",
+      "type": "string"
+    },
+    "displayName": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Displayname",
+      "type": "string"
+    },
+    "batchId": {
+      "title": "Batchid",
+      "type": "string"
+    },
+    "order": {
+      "maximum": 31,
+      "minimum": 0,
+      "title": "Order",
+      "type": "integer"
+    },
+    "status": {
+      "anyOf": [
+        {
+          "enum": [
+            "pending",
+            "running"
+          ],
+          "type": "string"
+        },
+        {
+          "enum": [
+            "success",
+            "empty",
+            "invalid_arguments",
+            "denied",
+            "timeout",
+            "unavailable",
+            "failed",
+            "cancelled"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Status"
+    },
+    "startedAt": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Startedat"
+    },
+    "durationMs": {
+      "anyOf": [
+        {
+          "maximum": 120000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Durationms"
+    },
+    "summary": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "Summary",
+      "type": "string"
+    },
+    "block": {
+      "additionalProperties": true,
+      "title": "Block",
+      "type": "object"
+    }
+  },
+  "required": [
+    "eventType",
+    "callId",
+    "toolKey",
+    "displayName",
+    "batchId",
+    "order",
+    "status",
+    "block"
+  ],
+  "title": "ToolEvent",
+  "type": "object"
+}

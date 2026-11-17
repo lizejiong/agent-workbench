@@ -3,6 +3,7 @@
 import asyncio
 import json
 import re
+import secrets
 import uuid
 from contextlib import AsyncExitStack, asynccontextmanager
 
@@ -22,7 +23,10 @@ from agent_service.context.budget import RequestBudget
 from agent_service.contracts import AgentError, AgentReply, ChatRequest
 from agent_service.graph import build_graph
 from agent_service.knowledge.adapter import KnowledgeGateway
+from agent_service.react import build_react_graph
 from agent_service.runtime import AgentRuntime
+from agent_service.state_lock import StateDirectoryLock
+from agent_service.tools.mcp import MCPManager
 
 
 class PrivateResponses:
@@ -41,14 +45,25 @@ class PrivateResponses:
 
 
 def create_app(
-    settings: Settings | None = None, *, java_transport=None, model_transport=None
+    settings: Settings | None = None,
+    *,
+    java_transport=None,
+    model_transport=None,
+    mcp_transport=None,
 ):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         config = settings or Settings.from_env()
+        if java_transport is None and len(config.inbound_token) < 32:
+            raise ValueError("AGENT_INBOUND_TOKEN 必须配置为至少32字符的独立服务凭证")
+        app.state.config = config
         RequestBudget(config)  # 计数器配置错误在启动时失败，不留下孤立运行。
         config.state_dir.mkdir(parents=True, exist_ok=True)
         async with AsyncExitStack() as stack:
+            stack.enter_context(StateDirectoryLock(config.state_dir))
+            mcp = MCPManager(config.mcp_allowed_origins, transport=mcp_transport)
+            stack.push_async_callback(mcp.aclose)
+            app.state.mcp = mcp
             java = await stack.enter_async_context(
                 httpx.AsyncClient(
                     base_url=config.java_origin,
@@ -110,6 +125,7 @@ def create_app(
                 use_responses_api=False,
             )
             graph, prompt_hash = build_graph(model, saver)
+            react_graph = build_react_graph(model, saver)
             gateway = KnowledgeGateway(
                 java,
                 config.service_id,
@@ -117,7 +133,13 @@ def create_app(
                 token_budget=config.tool_byte_budget,
             )
             app.state.runtime = AgentRuntime(
-                config, gateway, graph, prompt_hash, summary_model=model
+                config,
+                gateway,
+                graph,
+                prompt_hash,
+                summary_model=model,
+                react_graph=react_graph,
+                mcp=mcp,
             )
             try:
                 yield
@@ -130,6 +152,19 @@ def create_app(
     basic = HTTPBasic(auto_error=False)
 
     async def identity(request):
+        config = app.state.config
+        if config.inbound_token or java_transport is None:
+            if (
+                request.headers.get("X-Agent-Audience") != "agent-execution"
+                or len(request.headers.getlist("X-Agent-Service-Token")) != 1
+                or not secrets.compare_digest(
+                    request.headers.get("X-Agent-Service-Token", ""),
+                    config.inbound_token,
+                )
+            ):
+                raise AgentError(
+                    401, "AGENT_SERVICE_UNAUTHENTICATED", "仅允许业务后端以服务身份调用"
+                )
         credentials = await basic(request)
         if credentials is None:
             raise AgentError(401, "AUTHENTICATION_REQUIRED", "请使用现有 Java 账号认证")
@@ -146,6 +181,43 @@ def create_app(
     async def health():
         # 仅进程存活；不声称模型、Java 或数据库依赖已验收。
         return Result.success({"status": "UP", "service": "agent-service"})
+
+    @app.post("/internal/mcp/discover")
+    async def discover(request: Request):
+        token = app.state.config.inbound_token
+        if (
+            not token
+            or request.headers.get("X-Agent-Audience") != "mcp-control"
+            or len(request.headers.getlist("Authorization")) != 1
+            or not secrets.compare_digest(
+                request.headers.get("Authorization", ""), "Bearer " + token
+            )
+        ):
+            raise AgentError(401, "AGENT_SERVICE_UNAUTHENTICATED", "内部控制认证失败")
+        from pydantic import BaseModel, ConfigDict, Field
+
+        class Connection(BaseModel):
+            model_config = ConfigDict(extra="forbid")
+            serverId: uuid.UUID
+            configVersion: int = Field(ge=1)
+            url: str = Field(max_length=1000)
+            credentialRef: str | None = Field(
+                default=None, pattern=r"^env:[A-Z][A-Z0-9_]{1,100}$"
+            )
+
+        try:
+            body = Connection.model_validate(await request.json()).model_dump(
+                mode="json"
+            )
+            return await app.state.mcp.discover(body)
+        except AgentError:
+            raise
+        except Exception:
+            raise AgentError(
+                503,
+                "MCP_DISCOVERY_UNAVAILABLE",
+                "MCP 发现失败，请检查配置、类型限制与连接",
+            ) from None
 
     @app.post("/api/agent/chat", response_model=Result[AgentReply])
     async def chat(body: ChatRequest, request: Request):
@@ -183,7 +255,7 @@ def create_app(
     @app.post("/api/agent/chat/stream")
     async def stream(body: ChatRequest, request: Request):
         version = request.headers.get("X-Agent-Stream-Version", "1")
-        if version not in {"1", "2"}:
+        if version not in {"1", "2", "3"}:
             raise AgentError(400, "STREAM_VERSION_UNSUPPORTED", "不支持的事件协议版本")
         if not body.conversationId or not body.requestId or not body.messageId:
             raise AgentError(

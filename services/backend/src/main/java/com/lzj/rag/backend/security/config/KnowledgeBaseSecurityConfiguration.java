@@ -128,6 +128,8 @@ public class KnowledgeBaseSecurityConfiguration {
                                         .hasRole("KB_OPERATOR")
                                         .requestMatchers("/actuator/**")
                                         .denyAll()
+                                        .requestMatchers("/api/tools/**")
+                                        .hasRole("KB_OPERATOR")
                                         .anyRequest()
                                         .hasRole("KB_USER"))
                 .httpBasic(

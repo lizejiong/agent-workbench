@@ -19,6 +19,7 @@ from agent_service.graph import PROMPT_VERSION, AgentContext, planning_request
 from agent_service.knowledge.adapter import TrustedContext, encode
 from agent_service.knowledge.delegation import DelegationClient
 from agent_service.timeline import StreamEvents, Timeline
+from agent_service.tools.builtins import platform_id, prepare_tools
 
 logger = logging.getLogger(__name__)
 
@@ -69,11 +70,16 @@ class TurnWriter:
     async def model_completed(self, message):
         if not isinstance(message, AIMessage):
             return
-        await self.model_text(
-            message.text, message.id or f"model-{self.context.model_calls}"
-        )
+        if self.context.mode != "agent" or not message.tool_calls:
+            await self.model_text(
+                message.text, message.id or f"model-{self.context.model_calls}"
+            )
         async with self.mutations:
-            for block in self.timeline.prepare(message.tool_calls):
+            calls = [
+                {**call, "id": platform_id(self.context, call["id"])}
+                for call in message.tool_calls
+            ]
+            for block in self.timeline.prepare(calls):
                 self.dirty = True
                 await self.save()
                 await self.emit(
@@ -124,13 +130,22 @@ class TurnWriter:
                 await self.save()
             state = await self.store.state(self.identity, self.run["runId"])
             self.status = state["run"]["status"]
+            if state.get("message", {}).get("sourcesRestricted"):
+                raise AgentError(409, "EVIDENCE_CHANGED", "本轮来源权限已变化")
             if self.status != "RUNNING":
                 raise AgentError(409, "AGENT_RUN_ENDED", "本轮生成已取消或结束")
 
 
 class AgentRuntime:
     def __init__(
-        self, settings: Settings, gateway, graph, prompt_hash, summary_model=None
+        self,
+        settings: Settings,
+        gateway,
+        graph,
+        prompt_hash,
+        summary_model=None,
+        react_graph=None,
+        mcp=None,
     ):
         self.settings, self.gateway, self.graph = settings, gateway, graph
         self.delegations = DelegationClient(gateway.client, settings.service_id)
@@ -138,6 +153,7 @@ class AgentRuntime:
         self.prompt_hash = prompt_hash
         self.active = 0
         self.summary_model = summary_model
+        self.react_graph, self.mcp = react_graph, mcp
 
     async def run(
         self,
@@ -228,6 +244,7 @@ class AgentRuntime:
                     await emit("done", reply)
                 return reply
             context = AgentContext(self.gateway, identity, self.settings)
+            context.run_id, context.mode = run["runId"], request.mode
             writer = TurnWriter(
                 self.store,
                 identity,
@@ -243,6 +260,7 @@ class AgentRuntime:
             try:
 
                 async def execute():
+                    await prepare_tools(context, self.mcp)
                     messages = await self._messages(request, run, context, writer)
                     await self._generate(messages, run, context, writer)
 
@@ -257,6 +275,24 @@ class AgentRuntime:
                 monitor.cancel()
                 await asyncio.gather(monitor, return_exceptions=True)
                 selected = context.references.validate_answer(writer.text)
+                if context.mode == "agent":
+                    import re
+
+                    used = re.findall(r"\[(M[a-f0-9]{32})\]", writer.text)
+                    if any(
+                        source not in context.external_sources for source in used
+                    ) or "[M" in re.sub(r"\[M[a-f0-9]{32}\]", "", writer.text):
+                        raise ValueError("无效 MCP 来源引用")
+                    if used:
+                        await context.control.validate(context.execution, used)
+                    if (
+                        (context.references.sources or context.external_sources)
+                        and not selected
+                        and not used
+                    ):
+                        raise AgentError(
+                            502, "CITATION_REQUIRED", "最终回答缺少本轮有效来源引用"
+                        )
                 writer.citations = [r["evidenceId"] for r in selected]
                 writer.timeline.settle("COMPLETED")
                 terminal = await writer.save("COMPLETED")
@@ -360,6 +396,16 @@ class AgentRuntime:
                     "本轮未完成，已保存的内容可从历史查看",
                 ) from None
             finally:
+                if context.execution:
+                    context.execution.cancel.set()
+                    tasks = [
+                        task
+                        for _, task in context.execution.calls.values()
+                        if not task.done()
+                    ]
+                    for task in tasks:
+                        task.cancel()
+                    await asyncio.gather(*tasks, return_exceptions=True)
                 for task in (generation, monitor):
                     if task:
                         task.cancel()
@@ -380,6 +426,10 @@ class AgentRuntime:
             ([preferences] if preferences else [])
             + [HumanMessage(content=request.question)]
         )
+        if context.mode == "agent":
+            from agent_service.react import planning
+
+            fixed = planning(fixed.messages, context)
 
         def select_recent(ratio):
             baseline = context.budget.measure(fixed)
@@ -445,6 +495,16 @@ class AgentRuntime:
         # Java 以同一个 retainedTurns 计算摘要水位；只在 caughtUp 时返回可绑定摘要，
         # 因而摘要边界与这里的完整近期轮次连续。
         messages = selection.messages
+        dependency_messages = [row["id"] for row in selection.rows]
+        if summary:
+            dependency_messages += [s["messageId"] for s in summary.get("sources", [])]
+        if dependency_messages:
+            await context.control.read(
+                "POST",
+                context.execution,
+                "/history-dependencies",
+                {"messageIds": list(dict.fromkeys(dependency_messages))},
+            )
         snapshots = [s for row in selection.assistants for s in row.get("evidence", [])]
         if summary:
             snapshots += summary["evidence"]
@@ -532,8 +592,9 @@ class AgentRuntime:
         }
         last = None
         streamed = {}
+        graph = self.react_graph if context.mode == "agent" else self.graph
         with tracing_context(enabled=False):
-            async for mode, data in self.graph.astream(
+            async for mode, data in graph.astream(
                 {"messages": messages},
                 config=config,
                 context=context,
@@ -543,7 +604,8 @@ class AgentRuntime:
                     message, metadata = data
                     if (
                         isinstance(message, AIMessageChunk)
-                        and metadata.get("langgraph_node") == "model"
+                        and metadata.get("langgraph_node")
+                        == ("final" if context.mode == "agent" else "model")
                         and metadata.get("lc_source") != "summarization"
                         and "context-summary" not in metadata.get("tags", [])
                     ):

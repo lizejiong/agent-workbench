@@ -11,6 +11,7 @@ import type { AgentReply, ChatBlock, Citation } from './types';
 import Timeline from './Timeline';
 import SourceCards from './SourceCards';
 import { groupSources, sourceExcerpt, sourceKey, sourceLocation } from './sourcePresentation';
+import { externalSources } from './externalSources';
 
 function CitationMarker({ source, index, disabled, onSelect }: {
   source: Citation; index: number; disabled: boolean; onSelect: (source: Citation) => void;
@@ -32,6 +33,7 @@ export default function Answer({ reply, blocks }: { reply: AgentReply; blocks?: 
   const api = useApi(); const { message } = App.useApp();
   const [sourceId, setSourceId] = useState<string>(); const [copied, setCopied] = useState(false); const [downloading, setDownloading] = useState(false);
   const citations = reply.citations;
+  const remote = externalSources(blocks || []);
   const citedGroups = groupSources(citations);
   const available = [...new Map([...citations, ...(blocks || []).flatMap(item => item.result?.evidence || [])].map(item => [item.evidenceId, item])).values()];
   const source = available.find(item => item.evidenceId === sourceId);
@@ -39,7 +41,7 @@ export default function Answer({ reply, blocks }: { reply: AgentReply; blocks?: 
   const citationIndex = source ? citations.findIndex(item => item.evidenceId === source.evidenceId) : -1;
   const selectSource = (value: Citation) => setSourceId(value.evidenceId);
   const copy = async () => {
-    try { await navigator.clipboard.writeText(copyAnswer(reply.answer, citations)); setCopied(true); }
+    try { await navigator.clipboard.writeText(copyAnswer(reply.answer, citations, remote)); setCopied(true); }
     catch { void message.info('浏览器未允许复制，请手动选择文字。'); }
   };
   const download = async () => {
@@ -55,11 +57,12 @@ export default function Answer({ reply, blocks }: { reply: AgentReply; blocks?: 
       <Markdown skipHtml remarkPlugins={[remarkGfm]} components={{
         a: ({ href, children }) => {
           const match = citations.find(item => href === `#source-${item.evidenceId}`);
-          return match ? <CitationMarker source={match} index={citations.indexOf(match)} disabled={!!source} onSelect={selectSource} /> : <span>{children}</span>;
+          const external = remote.find(item => href === `#mcp-${item.sourceId}`);
+          return match ? <CitationMarker source={match} index={citations.indexOf(match)} disabled={!!source} onSelect={selectSource} /> : external ? <Popover content={<div className="chat-citation-preview"><strong>MCP · {external.displayName}</strong><pre>{JSON.stringify(external.content, null, 2)}</pre></div>}><button type="button" className="chat-citation" aria-label={`查看 MCP 来源：${external.displayName}`} onClick={() => { const card = document.getElementById(`tool-${external.callId}`); const details = card?.querySelector('details'); if (details) details.open = true; card?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>{citations.length + remote.indexOf(external) + 1}</button></Popover> : <span>{children}</span>;
         },
         img: ({ alt }) => <span>{alt || '图片'}</span>,
         table: ({ children }) => <div className="chat-table-scroll"><table>{children}</table></div>,
-      }}>{citationMarkdown(text, citations)}</Markdown>
+      }}>{citationMarkdown(text, citations, remote)}</Markdown>
     </div>
   );
   return <>

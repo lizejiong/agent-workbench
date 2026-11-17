@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 final class TestDatabaseCleanup {
     private TestDatabaseCleanup(){ }
     static void clear(JdbcTemplate jdbc){
+        for(String table:new String[]{"kb_tool_dependency","kb_tool_call","kb_tool_grant","kb_tool_definition","kb_tool_server","kb_tool_config_audit"})jdbc.update("DELETE FROM "+table);
         jdbc.update("DELETE FROM kb_agent_message");
         jdbc.update("DELETE FROM kb_agent_context_summary");
         jdbc.update("DELETE FROM kb_agent_run");

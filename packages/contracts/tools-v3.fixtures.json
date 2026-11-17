@@ -1,0 +1,272 @@
+[
+  {
+    "event": "tool.start",
+    "data": {
+      "part": "data-tool",
+      "eventType": "start",
+      "callId": "T00000000000000000000000000000000",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 0,
+      "status": "running",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": null,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000000",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000000",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 0,
+        "status": "running",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.success",
+    "data": {
+      "part": "data-tool",
+      "eventType": "success",
+      "callId": "T00000000000000000000000000000001",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 1,
+      "status": "success",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000001",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000001",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 1,
+        "status": "done",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.success",
+    "data": {
+      "part": "data-tool",
+      "eventType": "success",
+      "callId": "T00000000000000000000000000000002",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 2,
+      "status": "empty",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000002",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000002",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 2,
+        "status": "done",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.failure",
+    "data": {
+      "part": "data-tool",
+      "eventType": "failure",
+      "callId": "T00000000000000000000000000000003",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 3,
+      "status": "invalid_arguments",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000003",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000003",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 3,
+        "status": "failed",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.failure",
+    "data": {
+      "part": "data-tool",
+      "eventType": "failure",
+      "callId": "T00000000000000000000000000000004",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 4,
+      "status": "denied",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000004",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000004",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 4,
+        "status": "failed",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.failure",
+    "data": {
+      "part": "data-tool",
+      "eventType": "failure",
+      "callId": "T00000000000000000000000000000005",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 5,
+      "status": "timeout",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000005",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000005",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 5,
+        "status": "failed",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.failure",
+    "data": {
+      "part": "data-tool",
+      "eventType": "failure",
+      "callId": "T00000000000000000000000000000006",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 6,
+      "status": "unavailable",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000006",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000006",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 6,
+        "status": "failed",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.failure",
+    "data": {
+      "part": "data-tool",
+      "eventType": "failure",
+      "callId": "T00000000000000000000000000000007",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 7,
+      "status": "failed",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000007",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000007",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 7,
+        "status": "failed",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  },
+  {
+    "event": "tool.cancel",
+    "data": {
+      "part": "data-tool",
+      "eventType": "cancel",
+      "callId": "T00000000000000000000000000000008",
+      "toolKey": "mcp:fixture:read",
+      "displayName": "只读工具",
+      "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "order": 8,
+      "status": "cancelled",
+      "startedAt": "2026-11-16T10:00:00Z",
+      "durationMs": 23,
+      "summary": "已脱敏摘要",
+      "block": {
+        "blockId": "B00000000000000000000000000000008",
+        "kind": "tool",
+        "toolCallId": "T00000000000000000000000000000008",
+        "name": "fixture_read",
+        "displayName": "只读工具",
+        "batchId": "Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callIndex": 8,
+        "status": "interrupted",
+        "arguments": {
+          "query": "已脱敏参数"
+        },
+        "evidenceIds": []
+      }
+    }
+  }
+]

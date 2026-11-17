@@ -8,6 +8,7 @@ import com.lzj.rag.backend.model.catalog.EmbeddingCatalog;
 import com.lzj.rag.backend.security.model.KnowledgeBasePrincipal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import com.lzj.rag.backend.tools.ToolLedger;
 import java.util.*;
 
 /** 读取摘要及派生答案前重验不可变来源和当前有效证据，不用 TTL 代替授权。 */
@@ -15,8 +16,8 @@ import java.util.*;
 public class ConversationSummaryGuard {
     // PostgreSQL 内置 sha256，无额外扩展；只回传指纹，避免每次复核搬运全部历史正文/快照。
     private static final String SOURCE_HASH="encode(sha256(convert_to(jsonb_build_array(id,run_id,sequence,role,status,content,evidence,context_summary_revision)::text,'UTF8')),'hex')";
-    private final JdbcTemplate jdbc;private final ObjectMapper json;private final ConversationEvidence evidence;
-    public ConversationSummaryGuard(JdbcTemplate jdbc,ObjectMapper json,ConversationEvidence evidence){this.jdbc=jdbc;this.json=json;this.evidence=evidence;}
+    private final JdbcTemplate jdbc;private final ObjectMapper json;private final ConversationEvidence evidence;private final ToolLedger tools;
+    public ConversationSummaryGuard(JdbcTemplate jdbc,ObjectMapper json,ConversationEvidence evidence,ToolLedger tools){this.jdbc=jdbc;this.json=json;this.evidence=evidence;this.tools=tools;}
     public Summary read(KnowledgeBasePrincipal actor,Conversation c,long revision) {
         var rows=jdbc.queryForList("SELECT * FROM kb_agent_context_summary WHERE conversation_id=? AND revision=?",c.id(),revision);
         if(rows.isEmpty())return null;
@@ -24,7 +25,8 @@ public class ConversationSummaryGuard {
         List<Source> sources=decode(row.get("sources"),new TypeReference<>(){});
         if(sources.isEmpty() || sources.size()>512)return null;
         String ids=sources.stream().map(s->s.messageId().toString()).collect(java.util.stream.Collectors.joining(",","{","}"));
-        var current=jdbc.queryForList("SELECT id,"+SOURCE_HASH+" AS source_hash FROM kb_agent_message WHERE conversation_id=? AND id=ANY(?::uuid[])",c.id(),ids);
+        var current=jdbc.queryForList("SELECT id,run_id,"+SOURCE_HASH+" AS source_hash FROM kb_agent_message WHERE conversation_id=? AND id=ANY(?::uuid[])",c.id(),ids);
+        if(current.stream().anyMatch(s->!tools.historyAllowed(actor,(UUID)s.get("run_id"))))return null;
         var hashes=new HashMap<UUID,String>();for(var source:current)hashes.put((UUID)source.get("id"),source.get("source_hash").toString());
         if(sources.stream().anyMatch(s->!s.hash().equals(hashes.get(s.messageId()))))return null;
         List<com.lzj.rag.backend.agent.controller.AgentContracts.Snapshot> snapshots=decode(row.get("evidence"),new TypeReference<>(){});

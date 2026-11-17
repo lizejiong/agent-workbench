@@ -97,7 +97,7 @@ export default function Chat() {
                   {!turn.blocks?.length && !!turn.tools?.length && <details className="chat-tool-events"><summary>历史工具记录 · {turn.tools.length} 次</summary>{turn.tools.map(tool => <p key={tool.toolCallId}>{({ RUNNING: '检索中', READY: '已取得证据', NO_EVIDENCE: '资料不足', NEEDS_CLARIFICATION: '需要补充信息', UNAVAILABLE: '检索暂不可用' } as Record<string, string>)[tool.status] || '已结束'}</p>)}</details>}
                   {(turn.reply || !!turn.blocks?.length) && <Answer key={turn.sourcesRestricted ? 'restricted' : 'visible'} blocks={turn.blocks} reply={turn.reply || { sessionId: active.sessionId || '', runId: turn.runId || '', traceId: '', status: 'RUNNING', answer: '', citations: [], retrievals: [], model: '', promptVersion: '', promptHash: '' }} />}
                   {turn.status === 'pending' && <div className="chat-thinking" role="status"><span className="chat-thinking-dot" /><span>{turn.runStatus === 'UNKNOWN' ? '正在确认运行及保存状态' : turn.runStatus === 'CANCELLING' ? '正在确认取消结果' : turn.reply?.answer ? '正在生成回答' : '正在处理你的问题'}</span></div>}
-                  {turn.status === 'cancelled' && <p className="chat-stopped" role="status">已取消，已保存的内容保留在此。</p>}
+                  {turn.status === 'cancelled' && <p className="chat-stopped" role="status">已取消{turn.persisted === false ? '。' : '，已保存的内容保留在此。'}</p>}
                   {turn.status === 'failed' && <div className="chat-send-error" role="alert">{turn.error ? <ErrorPanel error={turn.error} /> : <p>{turn.runStatus === 'TIMED_OUT' ? '生成超时' : '本轮未完成'}，已保存的内容保留在此。</p>}<button type="button" onClick={() => { chat.draft(active.id, turn.question); input.current?.focus(); }}>重新编辑问题</button></div>}
                 </article>
               </div>)}
@@ -107,7 +107,7 @@ export default function Chat() {
               if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); submit(); }
             }} />
             <div className="chat-composer-tools"><div className="chat-scope" title={empty ? '选择本次对话使用的知识库' : '当前对话的知识范围已固定，新对话可调整'}><BookOutlined /><Select mode="multiple" variant="borderless" aria-label="知识库范围" placeholder="全部知识库" maxTagCount="responsive" allowClear value={active.knowledgeIds || []} disabled={!!active.sessionId || !empty || knowledge.loading || !!knowledge.error} loading={knowledge.loading} options={knowledge.value?.map(kb => ({ value: kb.id, label: kb.name }))} onChange={ids => chat.scope(active.id, ids.length ? ids : undefined)} popupMatchSelectWidth={260} notFoundContent="暂无可选知识库" /></div>
-              <div className="chat-composer-submit">{active.draft.length > 3600 && <span className="chat-character-count">{active.draft.length}/4000</span>}
+              <div className="chat-composer-submit"><Select aria-label="执行模式" size="small" value={active.mode || 'rag'} disabled={busy} onChange={mode => chat.mode(active.id, mode)} options={[{ value: 'rag', label: 'RAG 知识检索' }, { value: 'agent', label: 'Agent 工具' }]} popupMatchSelectWidth={170} />{active.draft.length > 3600 && <span className="chat-character-count">{active.draft.length}/4000</span>}
                 {busy ? <button type="button" className="chat-send-button" aria-label="停止回复" onClick={() => chat.stop(active.id)}><StopOutlined /></button>
                   : <button type="submit" className="chat-send-button" aria-label="发送问题" disabled={!active.draft.trim() || active.loading || !active.loaded}><ArrowUpOutlined /></button>}
               </div>

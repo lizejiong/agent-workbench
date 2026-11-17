@@ -54,10 +54,44 @@ class ProtocolFixture:
         self.block_summary = False
         self.summary_started = asyncio.Event()
         self.summary_closed = asyncio.Event()
+        self.tool_calls = {}
+        self.connections = {}
+        self.tools_denied = False
+        self.audit_down = False
+        self.tool_definitions = [
+            {
+                "toolKey": "builtin:knowledge_search",
+                "modelName": "search_knowledge",
+                "displayName": "知识库检索",
+                "description": "检索当前授权知识，只返回证据。",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "minLength": 1, "maxLength": 4000}
+                    },
+                    "required": ["query"],
+                    "additionalProperties": False,
+                },
+            },
+            {
+                "toolKey": "builtin:evidence_read",
+                "modelName": "evidence_read",
+                "displayName": "证据读取",
+                "description": "读取本轮当前有效证据。",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {"evidenceId": {"type": "string", "minLength": 1}},
+                    "required": ["evidenceId"],
+                    "additionalProperties": False,
+                },
+            },
+        ]
 
     async def java(self, request):
         self.java_requests.append(request)
         path = request.url.path
+        if path.startswith("/internal/tools/"):
+            return await self.tools(request)
         if (
             path == "/api/conversations"
             or path.startswith("/api/conversations/")
@@ -551,6 +585,63 @@ class ProtocolFixture:
         return httpx.Response(
             200, json={"code": "0", "data": {"run": run, "message": view}}
         )
+
+    async def tools(self, request):
+        if self.audit_down:
+            return httpx.Response(503)
+        assert request.headers["Authorization"] == "Bearer " + "s" * 32
+        assert request.headers["X-Rag-Audience"] == "backend-tools"
+        grant = self.grants[request.headers["X-Rag-Delegation"]]
+        parts = request.url.path.split("/")
+        run = self.runs[parts[4]]
+        assert run["conversationId"] == grant["agentSessionId"]
+        body = json.loads(request.content) if request.content else {}
+        data = {}
+        if parts[-1] == "tools":
+            data = self.tool_definitions
+        elif parts[-1] == "calls":
+            old = self.tool_calls.get(body["callId"])
+            if old:
+                data = {"execute": False, "result": old["result"]}
+            else:
+                self.tool_calls[body["callId"]] = {**body, "runId": run["runId"]}
+                if self.tools_denied or not any(
+                    d["toolKey"] == body["toolKey"] for d in self.tool_definitions
+                ):
+                    result = {
+                        "callId": body["callId"],
+                        "status": "denied",
+                        "errorCode": "TOOL_DENIED",
+                    }
+                    self.tool_calls[body["callId"]]["result"] = result
+                    data = {"execute": False, "result": result}
+                else:
+                    data = {"execute": True}
+        elif request.method == "PUT":
+            self.tool_calls[parts[-1]]["result"] = body
+            data = {"status": body["status"]}
+        elif parts[-1] == "evidence":
+            data = next(
+                s
+                for row in self.messages[run["conversationId"]]
+                if row["runId"] == run["runId"]
+                for s in row.get("evidence", [])
+                if s["evidenceId"] == body["evidenceId"]
+            )
+            data = {**data, "documentName": "备份说明"}
+        elif parts[-1] == "connection":
+            call = self.tool_calls[parts[-2]]
+            definition = next(
+                d for d in self.tool_definitions if d["toolKey"] == call["toolKey"]
+            )
+            data = self.connections[definition["serverId"]]
+        elif parts[-1] in {"authorize", "validate", "history-dependencies"}:
+            if self.tools_denied:
+                return httpx.Response(403)
+            data = {"allowed": True}
+        else:
+            raise AssertionError(request.url.path)
+        return httpx.Response(200, json={"code": "0", "data": data})
 
     def summary(self, request, rows, body):
         """仅模拟摘要 HTTP 契约；真实来源校验、CAS、撤权和派生依赖由 Java 测试覆盖。"""

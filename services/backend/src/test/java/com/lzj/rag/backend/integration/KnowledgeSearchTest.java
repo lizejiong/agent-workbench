@@ -737,7 +737,7 @@ class KnowledgeSearchTest {
         var call=client.newCall(new okhttp3.Request.Builder().url("http://127.0.0.1:"+port+"/api/rag/answer/stream")
                 .header("Authorization",okhttp3.Credentials.basic("alice","alice-local-test-password"))
                 .post(okhttp3.RequestBody.create(json.writeValueAsBytes(body),okhttp3.MediaType.get("application/json"))).build());
-        var response=call.execute();assertThat(response.code()).isEqualTo(200);assertThat(response.header("Cache-Control")).isEqualTo("no-store");return new SseSession(client,call,response);
+        var response=call.execute();assertThat(response.code()).isEqualTo(200);assertThat(response.header("Cache-Control")).contains("no-store");return new SseSession(client,call,response);
     }
     private final class SseSession implements AutoCloseable {
         final okhttp3.OkHttpClient client;final okhttp3.Call call;final okhttp3.Response response;

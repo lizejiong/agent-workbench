@@ -2,7 +2,7 @@
 
 2026-11-07当前版本需要Java V14。用户可在Web账号菜单设置跨会话回答偏好；Java按tenant/owner保存，begin run绑定快照，Python严格校验后按固定枚举注入预算内背景。设置不包含自由文本、事实或授权，不增加模型调用；默认值不增加动态消息。新设置在下一新run生效，幂等重提保留旧快照。无新增环境变量，缺失/非法快照以INVALID_PREFERENCES停止；先升级Java再升级Python/Web。详见 [PREFERENCES.md](../../docs/rag/PREFERENCES.md)。
 
-正式入口 `agent_service.app:app`。Python 负责官方 LangChain create_agent / LangGraph 工具循环、上下文选择、主模型原生调用和 SSE；Java 统一保存业务会话、消息、运行状态、引用及证据快照。当前实际工具只有 search_knowledge，调用 Java /internal/rag/retrieve，共用 Java RAG 算法，不调用 /answer 后重新转述。
+正式入口 `agent_service.app:app`。Python 负责官方 LangChain create_agent / LangGraph StateGraph、统一工具、上下文选择、主模型原生调用和 SSE；Java 统一保存业务会话、消息、运行状态、引用、配置、授权及审计。search_knowledge 调用 Java /internal/rag/retrieve，共用原 RAG 算法；另有 evidence_read 和显式批准的只读 MCP。新增配置与验收见 [TOOLS.md](../../docs/rag/TOOLS.md)。
 
 ## 模块
 
@@ -12,6 +12,7 @@
 | runtime.py | Java 执行权、历史预算、原生增量、分批保存、取消和引用校验 |
 | conversations.py | Java 业务会话受授权 HTTP 客户端 |
 | graph.py | 官方图、query-only 工具、可信上下文、模型/工具调用预算 |
+| react.py / tools/ | 显式 ReAct、统一工具 Schema/执行、MCP manager、服务端授权/审计适配 |
 | context/ | 完整历史轮次、模型请求预算、工具请求投影及受授权摘要 |
 | knowledge/delegation.py | 按当前用户申请会话绑定短期委托并撤销 |
 | knowledge/adapter.py | 唯一 Java 知识适配器、来源映射及受控结果 |
@@ -21,13 +22,14 @@ Python 3.12+，uv.lock 锁定现有 LangChain 1.4.7、LangGraph 1.2.19、langcha
 
 ## 启动
 
-先启动支持 `history?view=turns` 和 `context-summary` 且已迁移 V13 的 Java，再更新 Python，并按 [RAG RUNBOOK](../../docs/rag/RUNBOOK.md) 配好原内部接口服务凭证。摘要需要V13迁移，关闭新增摘要调用仍可使用近期完整历史。
+先启动已迁移 V15 的 Java，再更新 Python，并按 [RAG RUNBOOK](../../docs/rag/RUNBOOK.md) 配好原内部接口服务凭证。Java KB_AGENT_TOKEN 与 Python AGENT_INBOUND_TOKEN 使用同一个至少32字符的独立服务凭据；不复用模型 key。Java KB_AGENT_ORIGIN 指向本服务。摘要沿用 V13，回答偏好沿用 V14。
 
 ```powershell
 uv sync --project services/agent-service --locked
 $env:JAVA_RAG_ORIGIN='http://127.0.0.1:8080'
 $env:RAG_SERVICE_ID='python-agent'
 # 安全注入 RAG_SERVICE_TOKEN，与 Java 保存的 SHA-256 对应。
+# 安全注入 AGENT_INBOUND_TOKEN，与 Java KB_AGENT_TOKEN 对齐。
 $env:AGENT_MODEL_BASE_URL='供应商原生兼容接口的 HTTPS 地址及实际 /v1 路径'
 $env:AGENT_MODEL='支持原生工具调用和流式响应的模型'
 # 安全注入 AGENT_MODEL_API_KEY。
@@ -39,13 +41,13 @@ uv run --project services/agent-service --locked uvicorn agent_service.app:app -
 
 ## 会话与调用
 
-Web/客户端先以当前用户 Basic 调用 Java POST /api/conversations，拿到 id；再以相同用户认证调用 Python POST /api/agent/chat/stream：
+Web/客户端先以当前用户 Basic 调用 Java POST /api/conversations，拿到 id；再以相同用户认证调用 Java POST /api/agent/chat/stream，由代理注入服务身份后访问 Python：
 
 ```json
 {"conversationId":"00000000-0000-0000-0000-000000000001","requestId":"00000000-0000-0000-0000-000000000002","messageId":"00000000-0000-0000-0000-000000000003","question":"PostgreSQL 如何备份？"}
 ```
 
-默认流保留v1 meta、delta、tool、error、done；请求头 `X-Agent-Stream-Version: 2` 使用Web当前的有序块协议。正常结束和错误均读取 Java 权威状态。需要幂等重提时保留原三标识，服务端返回已有运行，绝不重执行；不支持 Last-Event-ID 事件重放。普通 POST /api/agent/chat 保留 JSON 及旧 sessionId 别名；旧无标识首次请求会通过 Java 创建会话，不能保证两次无 ID HTTP 是同一操作。
+默认无版本头保留v1 meta、delta、tool、error、done；Web 请求头 `X-Agent-Stream-Version: 3` 使用稳定 data-tool，有序块 v2 仍兼容。正常结束和错误均读取 Java 权威状态。需要幂等重提时保留原三标识，服务端返回已有运行，绝不重执行；不支持 Last-Event-ID 事件重放。普通 POST /api/agent/chat 保留 JSON 及旧 sessionId 别名；旧无标识首次请求会通过 Java 创建会话，不能保证两次无 ID HTTP 是同一操作。
 
 每轮重新认证并申请绑定会话、服务和固定知识范围的短期委托。租户/用户、委托、服务令牌和截止时间不进入模型工具参数。Python 经服务身份 + 委托读写 Java，不直接写业务表，也不再维护 Python 会话租约。
 
@@ -64,7 +66,7 @@ uv run --project services/agent-service --locked pytest services/agent-service/t
 uv run --project services/agent-service --locked ruff check services/agent-service
 ```
 
-只运行与变更相关的检查，不默认 Maven 全量 verify。真实 Java/PG/MinIO/Python 流式验收和供应商协议桩明确分层，见 [验证回执](../../docs/rag/CONVERSATION_VALIDATION.json)。真实模型效果、业务工具、人机恢复和生产部署仍未验收。
+真实 Java/PG/MinIO/Python 流式验收和供应商协议桩明确分层。原 [验证回执](../../docs/rag/CONVERSATION_VALIDATION.json) 保留，本次统一工具完整测试、真实 MCP 与少量供应商冒烟见 [TOOLS_DELIVERY.md](../../docs/rag/TOOLS_DELIVERY.md)。广泛语义评测、业务写工具、人机恢复和生产部署未包含。
 
 ## 会话摘要
 
@@ -73,3 +75,6 @@ uv run --project services/agent-service --locked ruff check services/agent-servi
 ## 动态工具结果预算
 
 `context/tool_results.py` 在原模型中间件里按完整下一次请求分配同批工具额度；知识适配器按精简模型视图的Token和字节裁剪新结果。模型只看引用编号、标题、来源定位、正文和状态/截断信息，内部UUID、哈希、版本、评分、trace及调试字段留在宿主侧；Java快照仍保存实际下发片段及完整来源校验信息。`AGENT_TOOL_BYTE_BUDGET=4096` 是每次模型结果的最大上限，已下发的旧证据依赖不删除；并行结果不抢占其他调用额度。独立KnowledgeGateway未指定result_view时保持原完整结果契约。策略context-v3/tool-results-v2，调试只看trace及计数；无新依赖或Java/Web协议变化。说明与限制见 [CONTEXT_MANAGEMENT.md](../../docs/rag/CONTEXT_MANAGEMENT.md)。
+# 统一工具更新（2026-11-16）
+
+启动前须配置 `AGENT_INBOUND_TOKEN`，并与 Java `KB_AGENT_TOKEN` 对齐。浏览器经 Java `/api/agent/chat[/stream]` 访问；Python 同名路径仅接受业务后端服务身份及用户认证。新增请求 `mode=rag|agent`、SSE v3、统一工具、MCP Streamable HTTP 与执行审计。安装使用 `uv sync --locked`，运行保持 `--workers 1`，不得让两个 worker 共享 state_dir。完整配置、管理 API、fixture/smoke、失败处理及当前边界见 [TOOLS.md](../../docs/rag/TOOLS.md)。

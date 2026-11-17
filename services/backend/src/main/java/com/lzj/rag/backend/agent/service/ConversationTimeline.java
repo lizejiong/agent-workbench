@@ -29,7 +29,7 @@ public final class ConversationTimeline {
                 text.add(b.text());
             } else if(b.kind().equals("tool")) {
                 if(b.text()!=null || !calls.add(b.toolCallId()) || !tools.containsKey(b.toolCallId())
-                        || !Objects.equals(b.name(),"search_knowledge") || b.batchId()==null || b.callIndex()==null
+                        || !Objects.equals(b.name(),tools.get(b.toolCallId()).name()) || b.batchId()==null || b.callIndex()==null
                         || b.status().equals("streaming") || b.evidenceIds()==null || !snapshots.keySet().containsAll(b.evidenceIds()))throw invalid();
                 if(!b.status().equals("pending") && b.startedAt()==null)throw invalid();
                 if(TERMINAL.contains(b.status()) && b.durationMs()==null)throw invalid();

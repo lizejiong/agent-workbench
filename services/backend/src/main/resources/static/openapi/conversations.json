@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Java Agent Conversation API",
-    "version": "2026-11-07",
-    "description": "Response fields and Python SSE v1/v2: docs/rag/CONVERSATIONS.md and TIMELINE.md"
+    "version": "2026-11-16",
+    "description": "Response fields and Python SSE v1/v2/v3: docs/rag/CONVERSATIONS.md, TIMELINE.md and TOOLS.md"
   },
   "paths": {
     "/api/conversations": {
@@ -1595,6 +1595,14 @@
           "deadline": {
             "type": "string",
             "format": "date-time"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "rag",
+              "agent"
+            ],
+            "default": "rag"
           }
         },
         "required": [
@@ -1679,9 +1687,7 @@
           },
           "name": {
             "type": "string",
-            "enum": [
-              "search_knowledge"
-            ]
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
           },
           "status": {
             "type": "string",
@@ -1690,7 +1696,15 @@
               "READY",
               "NO_EVIDENCE",
               "NEEDS_CLARIFICATION",
-              "UNAVAILABLE"
+              "UNAVAILABLE",
+              "success",
+              "empty",
+              "invalid_arguments",
+              "denied",
+              "timeout",
+              "unavailable",
+              "failed",
+              "cancelled"
             ]
           },
           "requestId": {
@@ -1833,17 +1847,8 @@
       },
       "ToolArguments": {
         "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1000
-          }
-        },
-        "required": [
-          "query"
-        ],
-        "additionalProperties": false
+        "maxProperties": 32,
+        "additionalProperties": true
       },
       "Block": {
         "type": "object",
@@ -1884,9 +1889,7 @@
           },
           "name": {
             "type": "string",
-            "enum": [
-              "search_knowledge"
-            ],
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
             "nullable": true
           },
           "startedAt": {
@@ -2287,9 +2290,7 @@
           },
           "name": {
             "type": "string",
-            "enum": [
-              "search_knowledge"
-            ],
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
             "nullable": true
           },
           "startedAt": {

@@ -19,3 +19,6 @@ Java 17 / Spring Boot 3.5.16 / Spring MVC，接入根 Maven 多模块和公共 W
 第6阶段交付Chunk分页/新增/编辑/删除、独立启停和显式批量，以及文档启停、墓碑删除和持久化清理回执。人工正文与向量同PG事务更新；文档重新启用保留单独禁用块，重新入库覆盖人工内容必须显式确认当前版本。Flyway新增V5；对象清理在事务外有限重试、租约恢复，原文件bucket须未开启版本控制并授予GetBucketVersioning/DeleteObject。真实HTTP验收：python scripts/knowledge-base/maintenance_acceptance.py（只删除脚本自己的临时资源）。
 
 第7阶段沿用同一内核扩展PDF/Office/Excel/CSV/PNG/JPEG；GET /api/knowledge/formats查询配置能力。fast与fidelity路由明确，扫描PDF的fast无OCR；MinerU2.7.6和既有AI vision默认关闭，失败不降档。本地解析使用有界堆/超时子进程，表头、公式值、实际行号/页号/幻灯片号进入统一来源。支持/实测矩阵见[FORMATS](../../docs/knowledge-base/FORMATS.md)；验收：python scripts/knowledge-base/formats_acceptance.py（保留自身样例库，外部调用需显式开启）。
+# 统一工具与 Agent 代理更新（2026-11-16）
+
+Flyway V15 保存 MCP 配置、已批准 Schema、用户授权及调用/配置审计。`/api/tools/**` 复用 KB_OPERATOR；`/internal/tools/**` 复用服务身份、会话委托及 audience，并绑定运行主体。聊天统一经 Java `/api/agent/chat[/stream]` 代理，需配置 KB_AGENT_ORIGIN、KB_AGENT_TOKEN、KB_MCP_ALLOWED_ORIGINS。配置与可执行验收见 [TOOLS.md](../../docs/rag/TOOLS.md)。

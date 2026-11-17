@@ -52,3 +52,6 @@ V12 为 kb_agent_message 增加 blocks 和 event_seq。输入块最多128个，�
 ## 验证范围
 
 定向验证覆盖：前后文本、同名并行工具逆序完成、调用身份、seq 去重和缺口、刷新恢复、取消保留片段、旧协议兼容、Java 追加约束与撤权后隐藏工具证据。协议桩测试与真实供应商联调分别记录在 PROGRESS；小规模联调不构成回答事实正确性或检索效果保证。
+# SSE v3 工具事件（2026-11-16）
+
+`X-Agent-Stream-Version: 3` 在原有消息/终态事件上增加 `tool.start`、`tool.success`、`tool.failure`、`tool.cancel`；其稳定载荷为 `data-tool`，包含 callId、toolKey、displayName、batchId/order、独立工具状态、服务端时间/耗时、受限摘要和内容块。schema 与跨语言样例在 packages/contracts。Web 默认 v3，v1/v2 保留兼容。事件分配器串行生成连续 seq，done 后不再发事件；超大终态只标记 snapshotRequired，由既有只读历史恢复，不重提执行。管理、审计与来源策略见 [TOOLS.md](TOOLS.md)。以下 v2 内容块说明继续适用于持久化结构。

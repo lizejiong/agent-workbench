@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from agent_service.contracts import AgentError
 from agent_service.knowledge.adapter import encode
 
-OLD_REFERENCE = re.compile(r"\[K[a-f0-9]{32}_E[1-9][0-9]{0,3}\]")
+OLD_REFERENCE = re.compile(r"\[(?:K[a-f0-9]{32}_E[1-9][0-9]{0,3}|M[a-f0-9]{32})\]")
 
 
 @dataclass
